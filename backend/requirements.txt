@@ -1,0 +1,17 @@
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+supabase>=2.3.0
+google-generativeai>=0.8.0
+pydantic>=2.5.3
+pydantic-settings>=2.1.0
+python-multipart>=0.0.6
+httpx>=0.26.0
+feedparser>=6.0.11
+scikit-learn>=1.4.0
+pandas>=3.0.0
+numpy>=2.0.0
+python-dotenv>=1.0.0
+slowapi>=0.1.9
+cachetools>=5.3.2
+apscheduler>=3.10.0
+bytez>=3.0.0

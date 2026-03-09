@@ -1,0 +1,116 @@
+import { useFilters } from '../context/FilterContext';
+
+const TIME_OPTIONS = ['24h', '7d', '30d'];
+const TOPICS = [
+  'Water Supply', 'Roads & Infrastructure', 'Healthcare', 'Education',
+  'Corruption', 'Public Safety', 'Electricity', 'Sanitation',
+  'Employment', 'Housing', 'Public Transport', 'Digital Services',
+];
+const SOURCES = ['twitter', 'news', 'reddit', 'survey', 'csv'];
+const LANGUAGES = [
+  { code: 'en', name: 'English' },
+  { code: 'hi', name: 'Hindi' },
+  { code: 'ta', name: 'Tamil' },
+  { code: 'te', name: 'Telugu' },
+  { code: 'bn', name: 'Bengali' },
+  { code: 'mr', name: 'Marathi' },
+  { code: 'kn', name: 'Kannada' },
+  { code: 'ml', name: 'Malayalam' },
+  { code: 'gu', name: 'Gujarati' },
+];
+const SENTIMENTS = ['positive', 'negative', 'neutral'];
+
+export default function FilterSidebar() {
+  const { filters, setFilters, resetFilters } = useFilters();
+
+  return (
+    <div className="w-64 bg-slate-800 border-r border-slate-700 p-4 space-y-5 overflow-y-auto">
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold text-sm">Filters</h3>
+        <button onClick={resetFilters} className="text-xs text-blue-400 hover:underline">
+          Reset
+        </button>
+      </div>
+
+      {/* Time Range */}
+      <div>
+        <label className="text-xs text-slate-400 font-medium block mb-2">Time Range</label>
+        <div className="flex gap-1">
+          {TIME_OPTIONS.map((t) => (
+            <button
+              key={t}
+              onClick={() => setFilters({ timeRange: t })}
+              className={`flex-1 py-1.5 text-xs rounded-lg font-medium ${
+                filters.timeRange === t
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Topic */}
+      <div>
+        <label className="text-xs text-slate-400 font-medium block mb-2">Topic</label>
+        <select
+          value={filters.topic || ''}
+          onChange={(e) => setFilters({ topic: e.target.value || null })}
+          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white"
+        >
+          <option value="">All Topics</option>
+          {TOPICS.map((t) => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Source */}
+      <div>
+        <label className="text-xs text-slate-400 font-medium block mb-2">Source</label>
+        <select
+          value={filters.source || ''}
+          onChange={(e) => setFilters({ source: e.target.value || null })}
+          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white"
+        >
+          <option value="">All Sources</option>
+          {SOURCES.map((s) => (
+            <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Language */}
+      <div>
+        <label className="text-xs text-slate-400 font-medium block mb-2">Language</label>
+        <select
+          value={filters.language || ''}
+          onChange={(e) => setFilters({ language: e.target.value || null })}
+          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white"
+        >
+          <option value="">All Languages</option>
+          {LANGUAGES.map((l) => (
+            <option key={l.code} value={l.code}>{l.name}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Sentiment */}
+      <div>
+        <label className="text-xs text-slate-400 font-medium block mb-2">Sentiment</label>
+        <select
+          value={filters.sentiment || ''}
+          onChange={(e) => setFilters({ sentiment: e.target.value || null })}
+          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white"
+        >
+          <option value="">All Sentiments</option>
+          {SENTIMENTS.map((s) => (
+            <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+}

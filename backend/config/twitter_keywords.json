@@ -1,0 +1,7 @@
+{
+  "governance": ["government", "sarkar", "nagar palika", "municipality", "MLA", "MP", "panchayat", "collector", "IAS"],
+  "infrastructure": ["road", "sadak", "water supply", "paani", "bijli", "electricity", "bridge", "metro"],
+  "services": ["hospital", "school", "police", "ration", "pension", "scheme", "yojana"],
+  "complaints": ["complaint", "shikayat", "problem", "issue", "demand", "protest", "dharna", "andolan"],
+  "locations_india": ["Delhi", "Mumbai", "Chennai", "Bangalore", "Hyderabad", "Kolkata", "Pune", "Lucknow", "Varanasi"]
+}

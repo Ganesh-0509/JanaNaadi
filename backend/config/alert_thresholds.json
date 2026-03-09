@@ -1,0 +1,22 @@
+{
+  "sentiment_spike": {
+    "description": "Negative sentiment ratio exceeds threshold in a time window",
+    "negative_ratio_threshold": 0.6,
+    "min_entries": 5,
+    "window_hours": 6
+  },
+  "volume_spike": {
+    "description": "Volume exceeds N times the 7-day average for the same window",
+    "multiplier": 3.0,
+    "min_entries": 10,
+    "window_hours": 6,
+    "baseline_days": 7
+  },
+  "urgency_high": {
+    "description": "Average urgency score exceeds threshold",
+    "urgency_threshold": 0.7,
+    "critical_threshold": 0.85,
+    "min_entries": 3,
+    "window_hours": 6
+  }
+}
