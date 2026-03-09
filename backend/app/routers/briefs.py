@@ -37,7 +37,18 @@ async def list_briefs(
         query = query.eq("scope_id", id)
 
     result = query.order("generated_at", desc=True).limit(limit).execute()
-    return [BriefSummary(**b) for b in result.data or []]
+
+    # Resolve scope_id → scope_name for each brief
+    scope_tables = {"state": "states", "district": "districts", "constituency": "constituencies", "ward": "wards"}
+    briefs = []
+    for b in result.data or []:
+        scope_name = None
+        if b.get("scope_id") and b.get("scope_type") in scope_tables:
+            tbl = scope_tables[b["scope_type"]]
+            row = sb.table(tbl).select("name").eq("id", b["scope_id"]).limit(1).execute()
+            scope_name = row.data[0]["name"] if row.data else None
+        briefs.append(BriefSummary(**b, scope_name=scope_name))
+    return briefs
 
 
 @router.get("/{brief_id}", response_model=BriefDetail)

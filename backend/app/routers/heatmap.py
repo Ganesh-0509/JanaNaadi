@@ -1,5 +1,6 @@
 """Heatmap data endpoints."""
 
+import asyncio
 from fastapi import APIRouter, Query
 from app.core.supabase_client import get_supabase_admin
 from app.core.cache import general_cache
@@ -80,10 +81,17 @@ async def _build_heatmap_points(
     return points
 
 
+TIME_RANGE_HOURS = {"24h": 24, "7d": 168, "30d": 720}
+
+
 @router.get("/states", response_model=list[HeatmapPoint])
-async def heatmap_states():
-    """Get state-level heatmap data."""
-    cache_key = "heatmap_states"
+async def heatmap_states(
+    time_range: str = Query("30d"),
+    topic: str | None = Query(None),
+):
+    """Get state-level heatmap data with optional filters."""
+    period_hours = TIME_RANGE_HOURS.get(time_range, 720)
+    cache_key = f"heatmap_states:{time_range}:{topic or 'all'}"
     if cache_key in general_cache:
         return general_cache[cache_key]
 
@@ -92,16 +100,36 @@ async def heatmap_states():
 
     # Pre-fetch all topics
     topics = {t["id"]: t["name"] for t in (sb.table("topic_taxonomy").select("id, name").execute().data or [])}
+    topic_id_filter = None
+    if topic:
+        topic_id_filter = next((tid for tid, name in topics.items() if name.lower() == topic.lower()), None)
+
+    # Parallelize snapshot computation across all states
+    state_list = states.data or []
+    snapshots = await asyncio.gather(
+        *(get_or_compute_snapshot("state", s["id"], period_hours=period_hours) for s in state_list)
+    )
 
     points = []
-    for s in states.data or []:
-        snapshot = await get_or_compute_snapshot("state", s["id"], period_hours=24)
+    for s, snapshot in zip(state_list, snapshots):
         lat, lng = STATE_CENTROIDS.get(s["code"], (22.5, 82.0))
 
         dominant_topic = None
         if snapshot.get("top_topics"):
             tid = snapshot["top_topics"][0]["topic_id"]
             dominant_topic = topics.get(tid)
+
+        # If filtering by topic, skip states where the topic isn't dominant
+        if topic_id_filter and not any(t["topic_id"] == topic_id_filter for t in snapshot.get("top_topics", [])):
+            # Still include but show zero volume so user sees all states
+            points.append(
+                HeatmapPoint(
+                    id=s["id"], name=s["name"], code=s["code"],
+                    lat=lat, lng=lng, avg_sentiment=0, volume=0,
+                    dominant_topic=None, positive_count=0, negative_count=0, neutral_count=0,
+                )
+            )
+            continue
 
         points.append(
             HeatmapPoint(

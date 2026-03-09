@@ -10,7 +10,7 @@ from app.models.schemas import IngestStatus, ManualEntryRequest, CSVUploadRespon
 from app.services.sentiment_engine import score_sentiment
 from app.services.geo_engine import geolocate
 from app.services.topic_engine import match_topic
-from app.services.dedup_service import normalize_text
+from app.services.dedup_service import normalize_text, is_near_duplicate
 
 router = APIRouter(prefix="/api/ingest", tags=["ingest"])
 
@@ -41,6 +41,20 @@ async def _process_and_store(
     )
     if existing.data:
         return None  # Skip duplicate
+
+    # Near-duplicate check: compare against recent entries from same source
+    cleaned = normalize_text(text)
+    recent = (
+        sb.table("sentiment_entries")
+        .select("cleaned_text")
+        .eq("source", source)
+        .order("published_at", desc=True)
+        .limit(50)
+        .execute()
+    )
+    for row in recent.data or []:
+        if is_near_duplicate(cleaned, row["cleaned_text"]):
+            return None  # Skip near-duplicate
 
     nlp = await score_sentiment(text)
 

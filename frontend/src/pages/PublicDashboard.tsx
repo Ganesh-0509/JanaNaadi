@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { getNationalPulse, getStateRankings, getTrendingTopics, getRecentVoices, getAreaPulse } from '../api/public';
 import SentimentGauge from '../components/SentimentGauge';
 import StatCard from '../components/StatCard';
 import TopicCard from '../components/TopicCard';
-import { formatNumber } from '../utils/formatters';
+import { StatCardSkeleton, VoiceCardSkeleton, TopicCardSkeleton, TableRowSkeleton, CardSkeleton } from '../components/Skeleton';
+import { formatNumber, formatRelative } from '../utils/formatters';
 import { Link } from 'react-router-dom';
 import { Map, ArrowRight, Search, MessageSquare, Users, TrendingUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -106,14 +108,44 @@ export default function PublicDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-slate-400">Loading community pulse...</div>
+      <div className="p-6 space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-8 w-48 bg-slate-700/50 rounded-lg animate-pulse" />
+            <div className="h-4 w-72 bg-slate-700/50 rounded-lg animate-pulse mt-2" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)}
+        </div>
+        <div className="grid md:grid-cols-3 gap-6">
+          <CardSkeleton />
+          <div className="md:col-span-2">
+            <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
+              <div className="h-5 w-32 bg-slate-700/50 rounded animate-pulse mb-4" />
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {Array.from({ length: 6 }).map((_, i) => <TopicCardSkeleton key={i} />)}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
+          <div className="h-5 w-40 bg-slate-700/50 rounded animate-pulse mb-4" />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {Array.from({ length: 6 }).map((_, i) => <VoiceCardSkeleton key={i} />)}
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-8">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="p-6 space-y-8"
+    >
       {/* Header — different for public vs authenticated */}
       <div className="flex items-center justify-between">
         <div>
@@ -283,7 +315,7 @@ export default function PublicDashboard() {
               }`}>
                 <p className="text-sm text-slate-300 leading-relaxed line-clamp-2 mb-2">"{v.text}"</p>
                 <div className="flex items-center justify-between text-xs text-slate-500">
-                  <span>{v.state}</span>
+                  <span>{v.state} {v.time ? `· ${formatRelative(v.time)}` : ''}</span>
                   <div className="flex gap-1.5">
                     <span className={`px-1.5 py-0.5 rounded ${
                       v.sentiment === 'positive' ? 'bg-emerald-500/20 text-emerald-400' :
@@ -347,6 +379,6 @@ export default function PublicDashboard() {
           </table>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

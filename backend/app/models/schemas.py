@@ -194,6 +194,7 @@ class BriefSummary(BaseModel):
     title: str
     scope_type: str
     scope_id: int | None = None
+    scope_name: str | None = None
     period: str
     summary: str
     generated_at: datetime | None = None

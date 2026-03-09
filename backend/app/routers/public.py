@@ -1,5 +1,6 @@
 """Public endpoints — no authentication required."""
 
+import asyncio
 from fastapi import APIRouter, BackgroundTasks
 from pydantic import BaseModel, Field
 from app.core.supabase_client import get_supabase_admin
@@ -20,7 +21,7 @@ class CitizenVoiceRequest(BaseModel):
 @router.get("/national-pulse", response_model=NationalPulse)
 async def national_pulse():
     """Get the national-level sentiment overview."""
-    snapshot = await get_or_compute_snapshot("national", None, period_hours=24)
+    snapshot = await get_or_compute_snapshot("national", None, period_hours=720)
 
     total = snapshot["total_entries"]
     pos = snapshot["positive_count"]
@@ -58,14 +59,21 @@ async def state_rankings():
     sb = get_supabase_admin()
     states = sb.table("states").select("id, name, code").execute()
 
+    # Pre-fetch all topics
+    topics = {t["id"]: t["name"] for t in (sb.table("topic_taxonomy").select("id, name").execute().data or [])}
+
+    # Parallelize snapshot computation across all states
+    state_list = states.data or []
+    snapshots = await asyncio.gather(
+        *(get_or_compute_snapshot("state", s["id"], period_hours=720) for s in state_list)
+    )
+
     rankings = []
-    for state in states.data or []:
-        snapshot = await get_or_compute_snapshot("state", state["id"], period_hours=24)
+    for state, snapshot in zip(state_list, snapshots):
         top_issue = None
         if snapshot.get("top_topics"):
             tid = snapshot["top_topics"][0]["topic_id"]
-            topic = sb.table("topic_taxonomy").select("name").eq("id", tid).limit(1).execute()
-            top_issue = topic.data[0]["name"] if topic.data else None
+            top_issue = topics.get(tid)
 
         rankings.append(
             StateRanking(
@@ -85,8 +93,8 @@ async def state_rankings():
 @router.get("/trending-topics", response_model=list[TrendingTopic])
 async def trending_topics():
     """Get trending topics across India."""
-    snapshot_7d = await get_or_compute_snapshot("national", None, period_hours=168)
-    snapshot_24h = await get_or_compute_snapshot("national", None, period_hours=24)
+    snapshot_7d = await get_or_compute_snapshot("national", None, period_hours=720)
+    snapshot_24h = await get_or_compute_snapshot("national", None, period_hours=168)
 
     sb = get_supabase_admin()
     topics_7d = {t["topic_id"]: t["count"] for t in snapshot_7d.get("top_topics", [])}

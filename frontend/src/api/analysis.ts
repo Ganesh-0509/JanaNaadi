@@ -1,6 +1,6 @@
 import client from './client';
 
-export async function getRegionAnalysis(type: string, id: number) {
+export async function getRegionAnalysis(type: string, id: number | string) {
   const { data } = await client.get(`/api/analysis/${type}/${id}`);
   return data;
 }

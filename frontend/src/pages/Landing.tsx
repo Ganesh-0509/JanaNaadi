@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Map, Activity, BarChart3, Shield, ArrowRight, Send, MessageSquare, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import LiveTicker from '../components/LiveTicker';
 import { getNationalPulse, submitCitizenVoice, getRecentVoices } from '../api/public';
+import { formatRelative } from '../utils/formatters';
 
 export default function Landing() {
   const [entries, setEntries] = useState(0);
@@ -10,7 +12,7 @@ export default function Landing() {
   const [voiceArea, setVoiceArea] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [recentVoices, setRecentVoices] = useState<Array<{ text: string; sentiment: string; topic: string; state: string; source: string }>>([]);
+  const [recentVoices, setRecentVoices] = useState<Array<{ text: string; sentiment: string; topic: string; state: string; source: string; time?: string }>>([]);
 
   useEffect(() => {
     getNationalPulse().then((data) => setEntries(data.total_entries_24h ?? 0)).catch(() => {});
@@ -62,20 +64,49 @@ export default function Landing() {
       <LiveTicker entries={entries} />
 
       {/* Hero */}
-      <section className="max-w-7xl mx-auto px-6 py-20 text-center">
-        <div className="inline-block mb-4 px-4 py-1.5 rounded-full bg-blue-500/10 text-blue-400 text-sm font-medium border border-blue-500/20">
-          🇮🇳 India Innovates 2026
+      <section className="max-w-7xl mx-auto px-6 py-20 text-center relative overflow-hidden">
+        {/* Pulsing background rings */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[500px] h-[500px] rounded-full border border-blue-500/10 animate-ping" style={{ animationDuration: '4s' }} />
+          <div className="absolute w-[350px] h-[350px] rounded-full border border-emerald-500/10 animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }} />
+          <div className="absolute w-[200px] h-[200px] rounded-full bg-blue-500/5 animate-pulse" />
         </div>
-        <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-          Your Voice.
-          <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
-            India's Pulse.
-          </span>
-        </h1>
-        <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-          Report local issues anonymously. See how your community feels. Help policymakers understand the real India — powered by AI.
-        </p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="relative z-10"
+        >
+          <div className="inline-block mb-4 px-4 py-1.5 rounded-full bg-blue-500/10 text-blue-400 text-sm font-medium border border-blue-500/20">
+            🇮🇳 India Innovates 2026
+          </div>
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+            Your Voice.
+            <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+              India's Pulse.
+            </span>
+          </h1>
+          <p className="text-xl text-slate-400 mb-6 max-w-2xl mx-auto leading-relaxed">
+            Report local issues anonymously. See how your community feels. Help policymakers understand the real India — powered by AI.
+          </p>
+
+          {/* Language showcase */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-10">
+            {['English', 'हिन्दी', 'தமிழ்', 'తెలుగు', 'বাংলা', 'मराठी', 'ಕನ್ನಡ', 'മലയാളം', 'ગુજરાતી'].map((lang, i) => (
+              <motion.span
+                key={lang}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: 0.8 + i * 0.08 }}
+                className="px-3 py-1 rounded-full text-xs bg-slate-800 text-slate-300 border border-slate-700"
+              >
+                {lang}
+              </motion.span>
+            ))}
+          </div>
+        </motion.div>
       </section>
 
       {/* 🎯 SUBMIT YOUR VOICE — the unique citizen participation feature */}
@@ -163,7 +194,7 @@ export default function Landing() {
                   "{v.text}"
                 </p>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500">{v.state}</span>
+                  <span className="text-slate-500">{v.state} {v.time ? `· ${formatRelative(v.time)}` : ''}</span>
                   <div className="flex items-center gap-2">
                     <span
                       className={`px-2 py-0.5 rounded-full text-xs ${
@@ -223,16 +254,19 @@ export default function Landing() {
             icon={<MessageSquare className="text-blue-400" size={28} />}
             title="Be the Voice"
             description="Report local issues anonymously. Your concern gets AI-analyzed and mapped to your area's democratic geography."
+            index={0}
           />
           <FeatureCard
             icon={<BarChart3 className="text-emerald-400" size={28} />}
             title="Multilingual AI Analysis"
             description="Powered by Gemini 2.5 Flash via Bytez. Understands 22+ Indian languages with contextual sentiment analysis."
+            index={1}
           />
           <FeatureCard
             icon={<Shield className="text-amber-400" size={28} />}
             title="AI Policy Intelligence"
             description="Your voices become AI-generated policy briefs & alerts that reach governance analysts & policymakers."
+            index={2}
           />
         </div>
       </section>
@@ -247,12 +281,18 @@ export default function Landing() {
   );
 }
 
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
+function FeatureCard({ icon, title, description, index = 0 }: { icon: React.ReactNode; title: string; description: string; index?: number }) {
   return (
-    <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700 hover:border-slate-600 transition-colors">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay: index * 0.15 }}
+      className="bg-slate-800 rounded-2xl p-6 border border-slate-700 hover:border-slate-600 transition-colors"
+    >
       <div className="mb-4">{icon}</div>
       <h3 className="text-lg font-bold mb-2">{title}</h3>
       <p className="text-sm text-slate-400 leading-relaxed">{description}</p>
-    </div>
+    </motion.div>
   );
 }

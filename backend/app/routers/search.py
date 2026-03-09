@@ -42,7 +42,10 @@ async def search_entries(
     if state_id:
         query = query.eq("state_id", state_id)
     elif state:
-        state_row = sb.table("states").select("id").ilike("name", f"%{state}%").limit(1).execute()
+        # Try exact code match first, then name match
+        state_row = sb.table("states").select("id").eq("code", state.upper()).limit(1).execute()
+        if not state_row.data:
+            state_row = sb.table("states").select("id").ilike("name", f"%{state}%").limit(1).execute()
         if state_row.data:
             query = query.eq("state_id", state_row.data[0]["id"])
     if district_id:

@@ -105,7 +105,14 @@ export default function PolicyBriefs() {
         <div className="space-y-3">
           <h2 className="font-bold">Previous Briefs</h2>
           {loading ? (
-            <div className="text-slate-400 text-sm">Loading...</div>
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="bg-slate-800 rounded-xl p-4 border border-slate-700 animate-pulse">
+                  <div className="h-4 w-3/4 bg-slate-700/50 rounded" />
+                  <div className="h-3 w-1/2 bg-slate-700/50 rounded mt-2" />
+                </div>
+              ))}
+            </div>
           ) : briefs.length === 0 ? (
             <div className="text-slate-400 text-sm">No briefs generated yet</div>
           ) : (

@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { getRegionAnalysis, searchEntries } from '../api/analysis';
 import { useSentimentTrend } from '../hooks/useSentimentTrend';
 import SentimentGauge from '../components/SentimentGauge';
 import TrendChart from '../components/TrendChart';
 import VoiceTable from '../components/VoiceTable';
 import StatCard from '../components/StatCard';
+import { StatCardSkeleton, CardSkeleton } from '../components/Skeleton';
 import { formatNumber, formatScore } from '../utils/formatters';
 import { useFilters } from '../context/FilterContext';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -34,23 +36,28 @@ const LANG_LABELS: Record<string, string> = {
 export default function AnalysisView() {
   const { type, id } = useParams<{ type: string; id: string }>();
   const { filters } = useFilters();
-  const scopeId = Number(id);
-  const scope = type || 'constituency';
+  const rawId = id || '0';
+  const scope = type || 'state';
+  // State IDs can be codes like "TN", "AP" — keep as string for API
+  const isNumericId = /^\d+$/.test(rawId);
+  const numericId = isNumericId ? Number(rawId) : undefined;
 
   const [analysis, setAnalysis] = useState<any>(null);
   const [voices, setVoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<'overview' | 'sources' | 'voices'>('overview');
 
-  const { data: trendData, loading: trendLoading } = useSentimentTrend(scope, scopeId);
+  const { data: trendData, loading: trendLoading } = useSentimentTrend(scope, numericId ?? 0);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
         const [a, v] = await Promise.all([
-          getRegionAnalysis(scope, scopeId),
-          searchEntries({ [`${scope}_id`]: scopeId, limit: 50 }),
+          getRegionAnalysis(scope, rawId),
+          searchEntries(isNumericId
+            ? { [`${scope}_id`]: numericId, limit: 50 }
+            : { state: rawId, limit: 50 }),
         ]);
         setAnalysis(a);
         setVoices(v);
@@ -61,12 +68,22 @@ export default function AnalysisView() {
       }
     };
     load();
-  }, [scope, scopeId, filters.timeRange]);
+  }, [scope, rawId, filters.timeRange]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-slate-400">Loading analysis...</div>
+      <div className="p-6 space-y-6">
+        <div>
+          <div className="h-8 w-48 bg-slate-700/50 rounded-lg animate-pulse" />
+          <div className="h-4 w-32 bg-slate-700/50 rounded-lg animate-pulse mt-2" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)}
+        </div>
+        <div className="grid md:grid-cols-2 gap-6">
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
       </div>
     );
   }
@@ -80,7 +97,12 @@ export default function AnalysisView() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="p-6 space-y-6"
+    >
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold">{analysis.name}</h1>
@@ -244,6 +266,6 @@ export default function AnalysisView() {
           <VoiceTable voices={voices} />
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
