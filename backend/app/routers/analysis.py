@@ -1,7 +1,6 @@
-"""Analysis / drill-down endpoints — authenticated."""
+"""Analysis / drill-down endpoints."""
 
-from fastapi import APIRouter, Depends, Path
-from app.core.auth import require_analyst
+from fastapi import APIRouter, Path
 from app.core.supabase_client import get_supabase_admin
 from app.services.snapshot_service import get_or_compute_snapshot
 from app.models.schemas import RegionAnalysis, SentimentDistribution, SentimentEntryBrief
@@ -14,18 +13,22 @@ async def _region_analysis(scope_type: str, scope_id: int) -> RegionAnalysis:
     sb = get_supabase_admin()
 
     # Get region name
-    table_map = {
-        "constituency": "constituencies",
-        "ward": "wards",
-        "district": "districts",
-        "state": "states",
-    }
-    table = table_map.get(scope_type, "states")
-    region = sb.table(table).select("name").eq("id", scope_id).limit(1).execute()
-    name = region.data[0]["name"] if region.data else f"{scope_type} #{scope_id}"
+    if scope_type == "national":
+        name = "India"
+    else:
+        table_map = {
+            "constituency": "constituencies",
+            "ward": "wards",
+            "district": "districts",
+            "state": "states",
+        }
+        table = table_map.get(scope_type, "states")
+        region = sb.table(table).select("name").eq("id", scope_id).limit(1).execute()
+        name = region.data[0]["name"] if region.data else f"{scope_type} #{scope_id}"
 
-    # Get snapshot
-    snapshot = await get_or_compute_snapshot(scope_type, scope_id, period_hours=168)
+    # Get snapshot — use 720h (30 days) to capture all data
+    sid = None if scope_type == "national" else scope_id
+    snapshot = await get_or_compute_snapshot(scope_type, sid, period_hours=720)
 
     # Sentiment distribution
     dist = SentimentDistribution(
@@ -43,12 +46,14 @@ async def _region_analysis(scope_type: str, scope_id: int) -> RegionAnalysis:
         topic_breakdown.append({"topic": topic_name, "count": t["count"]})
 
     # Source distribution
-    field = f"{scope_type}_id"
-    entries = (
+    query = (
         sb.table("sentiment_entries")
         .select("source, language, sentiment, sentiment_score, cleaned_text, published_at")
-        .eq(field, scope_id)
-        .order("ingested_at", desc=True)
+    )
+    if scope_type != "national":
+        query = query.eq(f"{scope_type}_id", scope_id)
+    entries = (
+        query.order("ingested_at", desc=True)
         .limit(200)
         .execute()
     )
@@ -86,37 +91,44 @@ async def _region_analysis(scope_type: str, scope_id: int) -> RegionAnalysis:
     )
 
 
+@router.get("/national/{scope_id}", response_model=RegionAnalysis)
+async def national_analysis(scope_id: int = Path(...)):
+    """National-level analysis."""
+    return await _region_analysis("national", scope_id)
+
+
 @router.get("/constituency/{constituency_id}", response_model=RegionAnalysis)
-async def constituency_analysis(
-    constituency_id: int = Path(...),
-    user: dict = Depends(require_analyst),
-):
+async def constituency_analysis(constituency_id: int = Path(...)):
     """Full analysis for a constituency."""
     return await _region_analysis("constituency", constituency_id)
 
 
 @router.get("/ward/{ward_id}", response_model=RegionAnalysis)
-async def ward_analysis(
-    ward_id: int = Path(...),
-    user: dict = Depends(require_analyst),
-):
+async def ward_analysis(ward_id: int = Path(...)):
     """Full analysis for a ward."""
     return await _region_analysis("ward", ward_id)
 
 
 @router.get("/district/{district_id}", response_model=RegionAnalysis)
-async def district_analysis(
-    district_id: int = Path(...),
-    user: dict = Depends(require_analyst),
-):
+async def district_analysis(district_id: int = Path(...)):
     """Full analysis for a district."""
     return await _region_analysis("district", district_id)
 
 
 @router.get("/state/{state_id}", response_model=RegionAnalysis)
-async def state_analysis(
-    state_id: int = Path(...),
-    user: dict = Depends(require_analyst),
-):
-    """Full analysis for a state."""
-    return await _region_analysis("state", state_id)
+async def state_analysis(state_id: str = Path(...)):
+    """Full analysis for a state. Accepts numeric ID or state code."""
+    sb = get_supabase_admin()
+    # Support state code (e.g. "TN") or numeric ID
+    if state_id.isdigit():
+        return await _region_analysis("state", int(state_id))
+    # Lookup by code
+    row = sb.table("states").select("id").eq("code", state_id.upper()).limit(1).execute()
+    if row.data:
+        return await _region_analysis("state", row.data[0]["id"])
+    # Fallback: try name match
+    row = sb.table("states").select("id").ilike("name", f"%{state_id}%").limit(1).execute()
+    if row.data:
+        return await _region_analysis("state", row.data[0]["id"])
+    from fastapi import HTTPException
+    raise HTTPException(status_code=404, detail=f"State '{state_id}' not found")

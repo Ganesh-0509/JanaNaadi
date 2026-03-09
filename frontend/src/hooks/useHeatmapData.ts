@@ -7,11 +7,15 @@ type Level = 'state' | 'district' | 'constituency' | 'ward';
 interface HeatmapPoint {
   id: number;
   name: string;
+  code?: string;
   lat: number;
   lng: number;
   avg_sentiment: number;
   volume: number;
   dominant_topic?: string;
+  positive_count?: number;
+  negative_count?: number;
+  neutral_count?: number;
 }
 
 export function useHeatmapData() {

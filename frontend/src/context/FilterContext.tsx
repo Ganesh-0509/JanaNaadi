@@ -15,7 +15,7 @@ interface FilterContextType {
 }
 
 const defaultFilters: Filters = {
-  timeRange: '7d',
+  timeRange: '30d',
   topic: null,
   source: null,
   language: null,

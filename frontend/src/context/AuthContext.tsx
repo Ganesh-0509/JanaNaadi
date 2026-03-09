@@ -29,6 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
+        localStorage.setItem('sb-access-token', session.access_token);
         setUser({
           id: session.user.id,
           email: session.user.email || '',
@@ -41,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
+        localStorage.setItem('sb-access-token', session.access_token);
         setUser({
           id: session.user.id,
           email: session.user.email || '',
@@ -48,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           token: session.access_token,
         });
       } else {
+        localStorage.removeItem('sb-access-token');
         setUser(null);
       }
     });
@@ -61,6 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    localStorage.removeItem('sb-access-token');
     await supabase.auth.signOut();
     setUser(null);
   };

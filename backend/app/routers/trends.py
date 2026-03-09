@@ -1,8 +1,7 @@
-"""Trend analysis endpoints — authenticated."""
+"""Trend analysis endpoints."""
 
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, Query
-from app.core.auth import require_analyst
+from fastapi import APIRouter, Query
 from app.core.supabase_client import get_supabase_admin
 from app.models.schemas import SentimentTrendPoint, TopicTrendPoint, ComparisonItem
 from app.services.snapshot_service import get_or_compute_snapshot
@@ -22,7 +21,6 @@ async def sentiment_trend(
     scope: str = Query("national"),
     id: int | None = Query(None),
     period: str = Query("30d"),
-    user: dict = Depends(require_analyst),
 ):
     """Get sentiment trend over time."""
     sb = get_supabase_admin()
@@ -87,7 +85,6 @@ async def topic_trend(
     scope: str = Query("national"),
     id: int | None = Query(None),
     period: str = Query("30d"),
-    user: dict = Depends(require_analyst),
 ):
     """Get topic mention trend over time."""
     sb = get_supabase_admin()
@@ -140,7 +137,6 @@ async def topic_trend(
 async def comparison(
     scope_ids: str = Query(..., description="Comma-separated IDs"),
     type: str = Query("constituency"),
-    user: dict = Depends(require_analyst),
 ):
     """Compare 2-3 regions side by side."""
     ids = [int(x.strip()) for x in scope_ids.split(",") if x.strip().isdigit()][:5]

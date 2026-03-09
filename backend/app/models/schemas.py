@@ -85,11 +85,15 @@ class SentimentEntryBrief(BaseModel):
 class HeatmapPoint(BaseModel):
     id: int
     name: str
+    code: str | None = None
     lat: float
     lng: float
     avg_sentiment: float
     volume: int
     dominant_topic: str | None = None
+    positive_count: int = 0
+    negative_count: int = 0
+    neutral_count: int = 0
 
 
 # ── National Pulse ────────────────────────────────────────────
