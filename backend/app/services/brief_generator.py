@@ -96,12 +96,20 @@ async def generate_brief(scope_type: str, scope_id: int | None, period: str) -> 
     neg_samples = [e["cleaned_text"][:200] for e in data if e["sentiment"] == "negative"][:3]
     pos_samples = [e["cleaned_text"][:200] for e in data if e["sentiment"] == "positive"][:3]
 
-    # Resolve region name
-    region_name = f"{scope_type} #{scope_id}" if scope_id else "National"
-    if scope_type == "state" and scope_id:
-        state = sb.table("states").select("name").eq("id", scope_id).limit(1).execute()
-        if state.data:
-            region_name = state.data[0]["name"]
+    # Resolve region name for all scope types
+    region_name = "National" if not scope_id else f"{scope_type} #{scope_id}"
+    if scope_id:
+        table_map = {
+            "state": "states",
+            "district": "districts",
+            "constituency": "constituencies",
+            "ward": "wards",
+        }
+        table = table_map.get(scope_type)
+        if table:
+            row = sb.table(table).select("name").eq("id", scope_id).limit(1).execute()
+            if row.data:
+                region_name = row.data[0]["name"]
 
     prompt = BRIEF_PROMPT.format(
         region_name=region_name,

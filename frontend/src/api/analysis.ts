@@ -18,13 +18,32 @@ export async function getTopicTrend(scope: string, id: number | null, period = '
 }
 
 export async function getComparison(params: { scope: string; ids: number[]; period?: string }) {
+  // Backend uses `type` not `scope` for the query param
   const { data } = await client.get('/api/trends/comparison', {
-    params: { scope: params.scope, scope_ids: params.ids.join(','), period: params.period },
+    params: { type: params.scope, scope_ids: params.ids.join(',') },
   });
   return data;
 }
 
+export async function summarizeRegion(type: string, id: number | string) {
+  const { data } = await client.get(`/api/analysis/summarize/${type}/${id}`);
+  return data as { summary: string; region: string; total_voices: number };
+}
+
 export async function searchEntries(params: Record<string, string | number | undefined>) {
   const { data } = await client.get('/api/search/entries', { params });
+  return data;
+}
+
+export interface ForecastPoint {
+  date: string;
+  forecast_score: number;
+  upper: number;
+  lower: number;
+  is_forecast: true;
+}
+
+export async function getForecast(scope: string, id: string | number, horizon = 7): Promise<ForecastPoint[]> {
+  const { data } = await client.get('/api/trends/forecast', { params: { scope, id, horizon } });
   return data;
 }

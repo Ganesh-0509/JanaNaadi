@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getAlerts, markAlertRead, markAlertResolved } from '../api/alerts';
 
 interface Alert {
@@ -11,11 +11,13 @@ interface Alert {
   is_read: boolean;
 }
 
-export function useAlerts() {
+export function useAlerts(isAdmin = false) {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(false);
+  const prevIdsRef = useRef<Set<string>>(new Set());
 
   const fetch = async () => {
+    if (!isAdmin) return;
     setLoading(true);
     try {
       const data = await getAlerts();
@@ -27,7 +29,38 @@ export function useAlerts() {
     }
   };
 
-  useEffect(() => { fetch(); }, []);
+  // Initial load
+  useEffect(() => { fetch(); }, [isAdmin]);
+
+  // Poll every 30 s for new alerts
+  useEffect(() => {
+    if (!isAdmin) return;
+    const interval = setInterval(fetch, 30_000);
+    return () => clearInterval(interval);
+  }, [isAdmin]);
+
+  // Fire a browser push notification when a new critical/high alert arrives
+  useEffect(() => {
+    if (alerts.length === 0) return;
+    const currentIds = new Set(alerts.map((a) => a.id));
+    if (prevIdsRef.current.size > 0) {
+      for (const a of alerts) {
+        if (
+          !prevIdsRef.current.has(a.id) &&
+          !a.is_read &&
+          (a.severity === 'critical' || a.severity === 'high')
+        ) {
+          if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+            new Notification(`JanaNaadi ⚠️ ${a.severity.toUpperCase()}`, {
+              body: a.title,
+              icon: '/favicon.ico',
+            });
+          }
+        }
+      }
+    }
+    prevIdsRef.current = currentIds;
+  }, [alerts]);
 
   const handleMarkRead = async (id: string) => {
     await markAlertRead(id);

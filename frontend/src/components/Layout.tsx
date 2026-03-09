@@ -1,14 +1,20 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useAlerts } from '../hooks/useAlerts';
 import { useState } from 'react';
 import {
-  Map, BarChart3, Bell, FileText, Database, Activity, LogOut, Home, Users, TrendingUp, Menu, X,
+  Map, BarChart3, Bell, FileText, Database, LogOut, Users, Menu, X,
+  Flame, Radio, Search, LayoutDashboard,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { to: '/pulse', label: 'Community Pulse', icon: Users, public: true },
+  { to: '/hotspots', label: 'Hotspots', icon: Flame, public: true },
+  { to: '/gov', label: 'Gov Intelligence', icon: LayoutDashboard, public: false },
   { to: '/map', label: 'Heatmap', icon: Map, public: false },
-  { to: '/analysis/national/1', label: 'Deep Analysis', icon: TrendingUp, public: false },
+  { to: '/compare', label: 'Compare States', icon: BarChart3, public: false },
+  { to: '/stream', label: 'Live Stream', icon: Radio, public: false },
+  { to: '/search', label: 'Search', icon: Search, public: false },
   { to: '/alerts', label: 'Alerts', icon: Bell, admin: true },
   { to: '/briefs', label: 'AI Briefs', icon: FileText, admin: true },
   { to: '/admin/ingest', label: 'Ingestion', icon: Database, admin: true },
@@ -16,6 +22,8 @@ const NAV_ITEMS = [
 
 export default function Layout() {
   const { user, logout } = useAuth();
+  const isAdmin = user?.role === 'admin';
+  const { unreadCount } = useAlerts(isAdmin);
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -75,7 +83,12 @@ export default function Layout() {
                 }`}
               >
                 <item.icon size={18} />
-                {item.label}
+                <span className="flex-1">{item.label}</span>
+                {item.to === '/alerts' && unreadCount > 0 && (
+                  <span className="ml-auto bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
               </Link>
             );
           })}

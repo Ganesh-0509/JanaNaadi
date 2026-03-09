@@ -35,3 +35,21 @@ export function scoreToHeatColor(score: number): string {
     return `rgb(${r},${g},${b})`;
   }
 }
+
+/** Urgency 0..1 → color: green(0) → amber(0.5) → red(1) */
+export function urgencyToHeatColor(score: number): string {
+  const s = Math.max(0, Math.min(1, score));
+  if (s <= 0.5) {
+    const t = s * 2; // 0→1
+    const r = Math.round(34 + t * (234 - 34));
+    const g = Math.round(197 - t * (197 - 179));
+    const b = Math.round(94 - t * 86);
+    return `rgb(${r},${g},${b})`;
+  } else {
+    const t = (s - 0.5) * 2; // 0→1
+    const r = Math.round(234 + t * (239 - 234));
+    const g = Math.round(179 - t * 111);
+    const b = Math.round(8 + t * 60);
+    return `rgb(${r},${g},${b})`;
+  }
+}

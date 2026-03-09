@@ -1,11 +1,22 @@
 """Heatmap data endpoints."""
 
 import asyncio
+import math
 from fastapi import APIRouter, Query
 from app.core.supabase_client import get_supabase_admin
 from app.core.cache import general_cache
 from app.services.snapshot_service import get_or_compute_snapshot
 from app.models.schemas import HeatmapPoint
+
+
+def _urgency(negative_count: int, total: int, avg_sentiment: float) -> float:
+    """Urgency score 0–1: high volume of negative voices = high urgency."""
+    if total == 0:
+        return 0.0
+    neg_ratio = negative_count / total
+    # weight by log(volume) so large cities with lots of complaints rank higher
+    raw = neg_ratio * math.log1p(total) / math.log1p(5000)  # normalise against 5k entries
+    return round(min(raw, 1.0), 4)
 
 router = APIRouter(prefix="/api/heatmap", tags=["heatmap"])
 
@@ -88,66 +99,140 @@ TIME_RANGE_HOURS = {"24h": 24, "7d": 168, "30d": 720}
 async def heatmap_states(
     time_range: str = Query("30d"),
     topic: str | None = Query(None),
+    source: str | None = Query(None),
+    language: str | None = Query(None),
+    sentiment: str | None = Query(None),
 ):
     """Get state-level heatmap data with optional filters."""
+    from datetime import datetime, timezone, timedelta
+    from collections import defaultdict
+
     period_hours = TIME_RANGE_HOURS.get(time_range, 720)
-    cache_key = f"heatmap_states:{time_range}:{topic or 'all'}"
-    if cache_key in general_cache:
-        return general_cache[cache_key]
-
     sb = get_supabase_admin()
-    states = sb.table("states").select("id, name, code").execute()
 
-    # Pre-fetch all topics
+    # Pre-fetch all topic names
     topics = {t["id"]: t["name"] for t in (sb.table("topic_taxonomy").select("id, name").execute().data or [])}
     topic_id_filter = None
     if topic:
-        topic_id_filter = next((tid for tid, name in topics.items() if name.lower() == topic.lower()), None)
+        topic_id_filter = next((tid for tid, tname in topics.items() if tname.lower() == topic.lower()), None)
 
-    # Parallelize snapshot computation across all states
-    state_list = states.data or []
-    snapshots = await asyncio.gather(
-        *(get_or_compute_snapshot("state", s["id"], period_hours=period_hours) for s in state_list)
-    )
+    has_extra_filters = bool(source or language or sentiment)
 
-    points = []
-    for s, snapshot in zip(state_list, snapshots):
-        lat, lng = STATE_CENTROIDS.get(s["code"], (22.5, 82.0))
+    if not has_extra_filters:
+        # ── Snapshot path (fast, cached) ───────────────────────────
+        cache_key = f"heatmap_states:{time_range}:{topic or 'all'}"
+        if cache_key in general_cache:
+            return general_cache[cache_key]
 
-        dominant_topic = None
-        if snapshot.get("top_topics"):
-            tid = snapshot["top_topics"][0]["topic_id"]
-            dominant_topic = topics.get(tid)
-
-        # If filtering by topic, skip states where the topic isn't dominant
-        if topic_id_filter and not any(t["topic_id"] == topic_id_filter for t in snapshot.get("top_topics", [])):
-            # Still include but show zero volume so user sees all states
-            points.append(
-                HeatmapPoint(
-                    id=s["id"], name=s["name"], code=s["code"],
-                    lat=lat, lng=lng, avg_sentiment=0, volume=0,
-                    dominant_topic=None, positive_count=0, negative_count=0, neutral_count=0,
-                )
-            )
-            continue
-
-        points.append(
-            HeatmapPoint(
-                id=s["id"],
-                name=s["name"],
-                code=s["code"],
-                lat=lat,
-                lng=lng,
-                avg_sentiment=snapshot["avg_sentiment_score"],
-                volume=snapshot["total_entries"],
-                dominant_topic=dominant_topic,
-                positive_count=snapshot["positive_count"],
-                negative_count=snapshot["negative_count"],
-                neutral_count=snapshot["neutral_count"],
-            )
+        states = sb.table("states").select("id, name, code").execute()
+        state_list = states.data or []
+        snapshots = await asyncio.gather(
+            *(get_or_compute_snapshot("state", s["id"], period_hours=period_hours) for s in state_list)
         )
 
-    general_cache[cache_key] = points
+        points = []
+        for s, snapshot in zip(state_list, snapshots):
+            lat, lng = STATE_CENTROIDS.get(s["code"], (22.5, 82.0))
+
+            dominant_topic = None
+            if snapshot.get("top_topics"):
+                tid = snapshot["top_topics"][0]["topic_id"]
+                dominant_topic = topics.get(tid)
+
+            # If filtering by topic, skip states where the topic isn't dominant
+            if topic_id_filter and not any(t["topic_id"] == topic_id_filter for t in snapshot.get("top_topics", [])):
+                # Still include but show zero volume so user sees all states
+                points.append(
+                    HeatmapPoint(
+                        id=s["id"], name=s["name"], code=s["code"],
+                        lat=lat, lng=lng, avg_sentiment=0, volume=0,
+                        dominant_topic=None, positive_count=0, negative_count=0, neutral_count=0,
+                    )
+                )
+                continue
+
+            neg = snapshot["negative_count"]
+            vol = snapshot["total_entries"]
+            points.append(
+                HeatmapPoint(
+                    id=s["id"],
+                    name=s["name"],
+                    code=s["code"],
+                    lat=lat,
+                    lng=lng,
+                    avg_sentiment=snapshot["avg_sentiment_score"],
+                    volume=vol,
+                    urgency_score=_urgency(neg, vol, snapshot["avg_sentiment_score"]),
+                    dominant_topic=dominant_topic,
+                    positive_count=snapshot["positive_count"],
+                    negative_count=neg,
+                    neutral_count=snapshot["neutral_count"],
+                )
+            )
+
+        general_cache[cache_key] = points
+        return points
+
+    # ── Direct query path (source / language / sentiment filters active) ──
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=period_hours)).isoformat()
+    query = (
+        sb.table("sentiment_entries")
+        .select("state_id, sentiment, sentiment_score, primary_topic_id")
+        .gte("ingested_at", cutoff)
+    )
+    if source:
+        query = query.eq("source", source)
+    if language:
+        query = query.eq("language", language)
+    if sentiment:
+        query = query.eq("sentiment", sentiment)
+    if topic_id_filter:
+        query = query.eq("primary_topic_id", topic_id_filter)
+
+    result = query.execute()
+    all_entries = result.data or []
+
+    states = sb.table("states").select("id, name, code").execute()
+
+    by_state: dict[int, list] = defaultdict(list)
+    for e in all_entries:
+        sid = e.get("state_id")
+        if sid:
+            by_state[sid].append(e)
+
+    points = []
+    for s in (states.data or []):
+        lat, lng = STATE_CENTROIDS.get(s["code"], (22.5, 82.0))
+        ents = by_state[s["id"]]
+        total = len(ents)
+        if total == 0:
+            points.append(HeatmapPoint(
+                id=s["id"], name=s["name"], code=s["code"],
+                lat=lat, lng=lng, avg_sentiment=0, volume=0,
+                urgency_score=0, dominant_topic=None,
+                positive_count=0, negative_count=0, neutral_count=0,
+            ))
+            continue
+
+        pos = sum(1 for e in ents if e["sentiment"] == "positive")
+        neg = sum(1 for e in ents if e["sentiment"] == "negative")
+        avg_s = sum(e.get("sentiment_score", 0) for e in ents) / total
+
+        topic_counts: dict[int, int] = {}
+        for e in ents:
+            tid = e.get("primary_topic_id")
+            if tid:
+                topic_counts[tid] = topic_counts.get(tid, 0) + 1
+        dom_topic_id = max(topic_counts, key=lambda k: topic_counts[k]) if topic_counts else None
+        dominant_topic = topics.get(dom_topic_id) if dom_topic_id else None
+
+        points.append(HeatmapPoint(
+            id=s["id"], name=s["name"], code=s["code"],
+            lat=lat, lng=lng, avg_sentiment=round(avg_s, 4), volume=total,
+            urgency_score=_urgency(neg, total, avg_s), dominant_topic=dominant_topic,
+            positive_count=pos, negative_count=neg, neutral_count=total - pos - neg,
+        ))
+
     return points
 
 
@@ -177,3 +262,78 @@ async def heatmap_wards(
     return await _build_heatmap_points(
         "wards", "constituency_id", constituency_id, "ward", "ward_id"
     )
+
+
+@router.get("/history", response_model=list[HeatmapPoint])
+async def heatmap_history(date: str = Query(..., description="ISO date YYYY-MM-DD")):
+    """Return state-level heatmap for a specific historical date (24h window)."""
+    from datetime import datetime, timezone
+
+    try:
+        day = datetime.strptime(date, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    except ValueError:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="date must be YYYY-MM-DD")
+
+    cache_key_hist = f"heatmap_history:{date}"
+    if cache_key_hist in general_cache:
+        return general_cache[cache_key_hist]
+
+    from datetime import timedelta
+    period_start = day
+    period_end = day + timedelta(hours=24)
+
+    sb = get_supabase_admin()
+    states = sb.table("states").select("id, name, code").execute()
+    topics_map = {t["id"]: t["name"] for t in (sb.table("topic_taxonomy").select("id, name").execute().data or [])}
+
+    entries_result = (
+        sb.table("sentiment_entries")
+        .select("state_id, sentiment, sentiment_score, primary_topic_id")
+        .gte("ingested_at", period_start.isoformat())
+        .lt("ingested_at", period_end.isoformat())
+        .execute()
+    )
+    all_entries = entries_result.data or []
+
+    # group entries by state_id
+    from collections import defaultdict
+    by_state: dict[int, list] = defaultdict(list)
+    for e in all_entries:
+        sid = e.get("state_id")
+        if sid:
+            by_state[sid].append(e)
+
+    points = []
+    for s in (states.data or []):
+        lat, lng = STATE_CENTROIDS.get(s["code"], (22.5, 82.0))
+        ents = by_state[s["id"]]
+        total = len(ents)
+        if total == 0:
+            points.append(HeatmapPoint(
+                id=s["id"], name=s["name"], code=s["code"],
+                lat=lat, lng=lng, avg_sentiment=0, volume=0,
+                urgency_score=0, dominant_topic=None,
+                positive_count=0, negative_count=0, neutral_count=0,
+            ))
+            continue
+        pos = sum(1 for e in ents if e["sentiment"] == "positive")
+        neg = sum(1 for e in ents if e["sentiment"] == "negative")
+        neu = total - pos - neg
+        avg_s = sum(e.get("sentiment_score", 0) for e in ents) / total
+        topic_counts: dict[int, int] = {}
+        for e in ents:
+            tid = e.get("primary_topic_id")
+            if tid:
+                topic_counts[tid] = topic_counts.get(tid, 0) + 1
+        dom_topic_id = max(topic_counts, key=lambda k: topic_counts[k]) if topic_counts else None
+        dominant_topic = topics_map.get(dom_topic_id) if dom_topic_id else None
+        points.append(HeatmapPoint(
+            id=s["id"], name=s["name"], code=s["code"],
+            lat=lat, lng=lng, avg_sentiment=round(avg_s, 4), volume=total,
+            urgency_score=_urgency(neg, total, avg_s), dominant_topic=dominant_topic,
+            positive_count=pos, negative_count=neg, neutral_count=neu,
+        ))
+
+    general_cache[cache_key_hist] = points
+    return points

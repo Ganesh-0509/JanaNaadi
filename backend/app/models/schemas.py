@@ -90,6 +90,7 @@ class HeatmapPoint(BaseModel):
     lng: float
     avg_sentiment: float
     volume: int
+    urgency_score: float = 0.0
     dominant_topic: str | None = None
     positive_count: int = 0
     negative_count: int = 0
@@ -110,6 +111,7 @@ class NationalPulse(BaseModel):
 
 
 class StateRanking(BaseModel):
+    state_id: int
     state: str
     state_code: str
     avg_sentiment: float
@@ -167,6 +169,11 @@ class ComparisonItem(BaseModel):
     avg_sentiment: float
     top_issue: str | None = None
     volume: int = 0
+    positive: int = 0
+    negative: int = 0
+    neutral: int = 0
+    top_topics: list[str] = []
+    urgency_score: float = 0.0
 
 
 # ── Alerts ────────────────────────────────────────────────────
@@ -217,6 +224,8 @@ class BriefGenerateRequest(BaseModel):
 class IngestStatus(BaseModel):
     twitter_last_run: datetime | None = None
     news_last_run: datetime | None = None
+    twitter_last_count: int | None = None
+    news_last_count: int | None = None
     total_today: int = 0
     queue_size: int = 0
 

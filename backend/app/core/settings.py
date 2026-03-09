@@ -1,6 +1,7 @@
 """Application settings loaded from environment variables."""
 
 from functools import lru_cache
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -28,7 +29,21 @@ class Settings(BaseSettings):
     # App
     app_name: str = "JanaNaadi"
     debug: bool = False
+    # Override via CORS_ORIGINS env var (comma-separated or JSON array).
+    # In production (Render), set CORS_ORIGINS=https://your-frontend.onrender.com
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"]
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v: object) -> list[str]:
+        """Accept JSON array or comma-separated string from env var."""
+        if isinstance(v, str):
+            v = v.strip()
+            if v.startswith("["):
+                import json
+                return json.loads(v)
+            return [o.strip() for o in v.split(",") if o.strip()]
+        return v
 
     # Rate limiting
     rate_limit_default: str = "60/minute"

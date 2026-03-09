@@ -1,21 +1,23 @@
 import { Link } from 'react-router-dom';
-import { Map, Activity, BarChart3, Shield, ArrowRight, Send, MessageSquare, Search } from 'lucide-react';
+import { Map, Activity, BarChart3, Shield, ArrowRight, Send, MessageSquare, Search, Wifi, WifiOff, Bell, FileText, TrendingUp, AlertTriangle, Globe, Cpu } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import LiveTicker from '../components/LiveTicker';
-import { getNationalPulse, submitCitizenVoice, getRecentVoices } from '../api/public';
+import { submitCitizenVoice, getRecentVoices } from '../api/public';
 import { formatRelative } from '../utils/formatters';
+import { useLivePulse } from '../hooks/useLivePulse';
 
 export default function Landing() {
-  const [entries, setEntries] = useState(0);
+  const { pulse, status } = useLivePulse();
   const [voiceText, setVoiceText] = useState('');
   const [voiceArea, setVoiceArea] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [recentVoices, setRecentVoices] = useState<Array<{ text: string; sentiment: string; topic: string; state: string; source: string; time?: string }>>([]);
 
+  const entries = pulse?.total_entries_24h ?? 0;
+
   useEffect(() => {
-    getNationalPulse().then((data) => setEntries(data.total_entries_24h ?? 0)).catch(() => {});
     getRecentVoices(8).then(setRecentVoices).catch(() => {});
   }, []);
 
@@ -60,8 +62,18 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* Live Ticker */}
-      <LiveTicker entries={entries} />
+      {/* Live Ticker + WS status badge */}
+      <div className="relative">
+        <LiveTicker entries={entries} />
+        <div className={`absolute top-2 right-4 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+          status === 'connected' ? 'bg-green-500/15 text-green-400' : 'bg-slate-700 text-slate-400'
+        }`}>
+          {status === 'connected'
+            ? <><Wifi size={11} /> LIVE</>
+            : <><WifiOff size={11} /> {status === 'connecting' ? 'Connecting…' : 'Offline'}</>
+          }
+        </div>
+      </div>
 
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-6 py-20 text-center relative overflow-hidden">
@@ -244,6 +256,89 @@ export default function Landing() {
             <Map size={20} />
             Governance Dashboard
           </Link>
+        </div>
+      </section>
+
+      {/* ═══ FOR GOVERNMENT SECTION ═══ */}
+      <section className="max-w-7xl mx-auto px-6 pb-24">
+        <div className="relative overflow-hidden bg-gradient-to-br from-blue-950/60 via-slate-900 to-slate-900 rounded-3xl border border-blue-500/20 p-10">
+          {/* Tri-colour stripe */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 via-white/60 to-green-500 opacity-60" />
+
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-semibold mb-4">
+              🏛️ For Government & Policymakers
+            </div>
+            <h2 className="text-3xl font-bold mb-3">Why Choose JanaNaadi for Governance?</h2>
+            <p className="text-slate-400 max-w-2xl mx-auto text-sm leading-relaxed">
+              Transform raw citizen voices into structured, actionable governance intelligence — in real-time, at every level of administration.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              {
+                icon: <AlertTriangle size={22} className="text-red-400" />,
+                iconBg: 'bg-red-500/10 border-red-500/20',
+                title: 'Crisis Early Warning',
+                desc: 'Detect sudden negative sentiment spikes before they escalate. Urgency scores rank states and districts requiring immediate attention from district collectors and state ministers.',
+              },
+              {
+                icon: <Globe size={22} className="text-emerald-400" />,
+                iconBg: 'bg-emerald-500/10 border-emerald-500/20',
+                title: 'All 29 States · 9 Languages',
+                desc: 'Real-time sentiment monitoring across every Indian state. Understands Hindi, Tamil, Telugu, Bengali, Marathi, Kannada, Malayalam, Gujarati and English — no translation lag.',
+              },
+              {
+                icon: <FileText size={22} className="text-purple-400" />,
+                iconBg: 'bg-purple-500/10 border-purple-500/20',
+                title: 'AI Policy Briefs',
+                desc: 'One-click AI-generated policy summaries with key findings, evidence counts, and prioritised recommendations — structured for Cabinet-level reporting.',
+              },
+              {
+                icon: <TrendingUp size={22} className="text-blue-400" />,
+                iconBg: 'bg-blue-500/10 border-blue-500/20',
+                title: 'Predictive Forecasting',
+                desc: '7-day sentiment forecasts using linear regression on historical data. Know if public mood toward a policy is rising or falling before major announcements.',
+              },
+              {
+                icon: <Cpu size={22} className="text-amber-400" />,
+                iconBg: 'bg-amber-500/10 border-amber-500/20',
+                title: 'Constituency-Level Drill',
+                desc: 'Drill from national → state → district → constituency → ward. MPs and MLAs see exactly what their constituents feel — not national averages.',
+              },
+              {
+                icon: <Bell size={22} className="text-teal-400" />,
+                iconBg: 'bg-teal-500/10 border-teal-500/20',
+                title: 'Automated Alert Engine',
+                desc: 'Configurable threshold alerts for sentiment drops, volume spikes, or topic surges. Real-time push notifications ensure no critical issue goes unnoticed.',
+              },
+            ].map((item, i) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: i * 0.1 }}
+                className="bg-slate-800/70 rounded-2xl p-5 border border-slate-700 hover:border-slate-600 transition-colors"
+              >
+                <div className={`w-10 h-10 rounded-xl border flex items-center justify-center mb-3 ${item.iconBg}`}>
+                  {item.icon}
+                </div>
+                <h3 className="font-bold text-sm mb-2">{item.title}</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="text-center mt-8">
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 px-8 py-3.5 bg-blue-500 hover:bg-blue-600 rounded-xl text-white font-bold transition-colors"
+            >
+              Access Governance Dashboard <ArrowRight size={18} />
+            </Link>
+          </div>
         </div>
       </section>
 

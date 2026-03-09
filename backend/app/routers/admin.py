@@ -1,5 +1,6 @@
 """Admin / system management endpoints."""
 
+import asyncio
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, BackgroundTasks
 from app.core.auth import require_admin
@@ -57,13 +58,14 @@ async def generate_snapshots(
 
     async def recompute():
         sb = get_supabase_admin()
-        # National
-        await compute_snapshot("national", None, period_hours=24)
+        # National snapshot — use 720 h (30 days) to cover all seeded data
+        await compute_snapshot("national", None, period_hours=720)
 
-        # All states
+        # All states — run in parallel
         states = sb.table("states").select("id").execute()
-        for s in states.data or []:
-            await compute_snapshot("state", s["id"], period_hours=24)
+        await asyncio.gather(
+            *[compute_snapshot("state", s["id"], period_hours=720) for s in states.data or []]
+        )
 
     background_tasks.add_task(recompute)
     return {"status": "triggered"}

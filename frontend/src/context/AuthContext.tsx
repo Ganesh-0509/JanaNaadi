@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 
 interface AuthUser {
   id: string;
@@ -16,10 +17,6 @@ interface AuthContextType {
   supabase: SupabaseClient;
 }
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -29,11 +26,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
-        localStorage.setItem('sb-access-token', session.access_token);
+        // Use app_metadata for role (server-only, cannot be edited by the user).
+        // Never trust user_metadata for RBAC — it is writable by the client.
         setUser({
           id: session.user.id,
           email: session.user.email || '',
-          role: (session.user.user_metadata as Record<string, string>)?.role || 'analyst',
+          role: (session.user.app_metadata as Record<string, string>)?.role || 'analyst',
           token: session.access_token,
         });
       }
@@ -42,15 +40,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        localStorage.setItem('sb-access-token', session.access_token);
         setUser({
           id: session.user.id,
           email: session.user.email || '',
-          role: (session.user.user_metadata as Record<string, string>)?.role || 'analyst',
+          role: (session.user.app_metadata as Record<string, string>)?.role || 'analyst',
           token: session.access_token,
         });
       } else {
-        localStorage.removeItem('sb-access-token');
         setUser(null);
       }
     });
@@ -64,7 +60,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    localStorage.removeItem('sb-access-token');
     await supabase.auth.signOut();
     setUser(null);
   };

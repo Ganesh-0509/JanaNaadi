@@ -37,6 +37,10 @@ async def search_entries(
         query = query.eq("source", source)
     if language:
         query = query.eq("language", language)
+    if topic:
+        topic_row = sb.table("topic_taxonomy").select("id").ilike("name", f"%{topic}%").limit(1).execute()
+        if topic_row.data:
+            query = query.eq("primary_topic_id", topic_row.data[0]["id"])
 
     # Direct ID filters (preferred — no extra DB lookups)
     if state_id:
@@ -67,6 +71,19 @@ async def search_entries(
         .execute()
     )
 
+    # Batch-resolve state names and topic names in 2 queries instead of N
+    state_ids = list({e["state_id"] for e in result.data or [] if e.get("state_id")})
+    state_name_map: dict[int, str] = {}
+    if state_ids:
+        sr = sb.table("states").select("id,name").in_("id", state_ids).execute()
+        state_name_map = {s["id"]: s["name"] for s in sr.data or []}
+
+    topic_ids = list({e["primary_topic_id"] for e in result.data or [] if e.get("primary_topic_id")})
+    topic_name_map: dict[int, str] = {}
+    if topic_ids:
+        tr = sb.table("topic_taxonomy").select("id,name").in_("id", topic_ids).execute()
+        topic_name_map = {t["id"]: t["name"] for t in tr.data or []}
+
     entries = []
     for e in result.data or []:
         entries.append(
@@ -75,8 +92,8 @@ async def search_entries(
                 text=e.get("cleaned_text", ""),
                 sentiment=e.get("sentiment", "neutral"),
                 sentiment_score=e.get("sentiment_score", 0),
-                topic=None,
-                location=None,
+                topic=topic_name_map.get(e.get("primary_topic_id")),
+                location=state_name_map.get(e.get("state_id")),
                 date=e.get("published_at"),
             )
         )

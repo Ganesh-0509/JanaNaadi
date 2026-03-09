@@ -12,3 +12,17 @@ export async function markAlertRead(id: string) {
 export async function markAlertResolved(id: string) {
   await client.post(`/api/alerts/${id}/resolve`);
 }
+
+export async function getAlertRecommendations(id: string) {
+  const { data } = await client.post(`/api/alerts/${id}/recommend`);
+  return data as {
+    summary: string;
+    actions: Array<{
+      priority: 'immediate' | 'short_term' | 'long_term';
+      department: string;
+      action: string;
+      rationale: string;
+      kpi: string;
+    }>;
+  };
+}

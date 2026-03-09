@@ -1,10 +1,12 @@
 """Public endpoints — no authentication required."""
 
 import asyncio
-from fastapi import APIRouter, BackgroundTasks
-from pydantic import BaseModel, Field
+import re
+from fastapi import APIRouter, BackgroundTasks, Request, HTTPException
+from pydantic import BaseModel, Field, field_validator
 from app.core.supabase_client import get_supabase_admin
 from app.core.cache import general_cache
+from app.core.rate_limiter import limiter
 from app.services.snapshot_service import get_or_compute_snapshot
 from app.models.schemas import NationalPulse, StateRanking, TrendingTopic
 
@@ -12,14 +14,26 @@ router = APIRouter(prefix="/api/public", tags=["public"])
 
 
 # --- Citizen Voice models ---
+_SAFE_AREA_RE = re.compile(r"[^\w\s,.()'\-]")  # strip HTML / special chars from area
+
+
 class CitizenVoiceRequest(BaseModel):
     text: str = Field(..., min_length=10, max_length=2000)
-    area: str | None = Field(None, max_length=200)
+    area: str | None = Field(None, max_length=100)
     category: str | None = Field(None, max_length=100)
+
+    @field_validator("area", "category", mode="before")
+    @classmethod
+    def sanitize_str(cls, v: object) -> str | None:
+        if v is None:
+            return None
+        cleaned = _SAFE_AREA_RE.sub("", str(v)).strip()
+        return cleaned if cleaned else None
 
 
 @router.get("/national-pulse", response_model=NationalPulse)
-async def national_pulse():
+@limiter.limit("60/minute")
+async def national_pulse(request: Request):
     """Get the national-level sentiment overview."""
     snapshot = await get_or_compute_snapshot("national", None, period_hours=720)
 
@@ -50,7 +64,8 @@ async def national_pulse():
 
 
 @router.get("/state-rankings", response_model=list[StateRanking])
-async def state_rankings():
+@limiter.limit("60/minute")
+async def state_rankings(request: Request):
     """Get all states ranked by sentiment."""
     cache_key = "state_rankings_24h"
     if cache_key in general_cache:
@@ -77,6 +92,7 @@ async def state_rankings():
 
         rankings.append(
             StateRanking(
+                state_id=state["id"],
                 state=state["name"],
                 state_code=state["code"],
                 avg_sentiment=snapshot["avg_sentiment_score"],
@@ -91,7 +107,8 @@ async def state_rankings():
 
 
 @router.get("/trending-topics", response_model=list[TrendingTopic])
-async def trending_topics():
+@limiter.limit("60/minute")
+async def trending_topics(request: Request):
     """Get trending topics across India."""
     snapshot_7d = await get_or_compute_snapshot("national", None, period_hours=720)
     snapshot_24h = await get_or_compute_snapshot("national", None, period_hours=168)
@@ -136,7 +153,8 @@ async def trending_topics():
 
 
 @router.get("/open-data")
-async def open_data(format: str = "csv", period: str = "weekly"):
+@limiter.limit("20/minute")
+async def open_data(request: Request, format: str = "csv", period: str = "weekly"):
     """Download anonymized aggregate data as CSV."""
     from fastapi.responses import StreamingResponse
     import csv
@@ -174,7 +192,8 @@ async def open_data(format: str = "csv", period: str = "weekly"):
 # ─────────────────────────────────────────────────────────────
 
 @router.post("/voice")
-async def submit_citizen_voice(req: CitizenVoiceRequest, background_tasks: BackgroundTasks):
+@limiter.limit("5/minute")
+async def submit_citizen_voice(request: Request, req: CitizenVoiceRequest, background_tasks: BackgroundTasks):
     """Submit an anonymous citizen concern — no login required.
     
     Processes through full NLP pipeline in the background.
@@ -202,7 +221,8 @@ async def submit_citizen_voice(req: CitizenVoiceRequest, background_tasks: Backg
 
 
 @router.get("/recent-voices")
-async def recent_voices(limit: int = 20):
+@limiter.limit("60/minute")
+async def recent_voices(request: Request, limit: int = 20):
     """Get recent anonymized citizen submissions for the public feed."""
     sb = get_supabase_admin()
     result = (
@@ -236,8 +256,13 @@ async def recent_voices(limit: int = 20):
 
 
 @router.get("/area-pulse")
-async def area_pulse(area: str):
+@limiter.limit("30/minute")
+async def area_pulse(request: Request, area: str):
     """Get sentiment pulse for a specific area (state name search)."""
+    # Sanitize query param: strip special chars, enforce length
+    area = re.sub(r"[^\w\s]", "", area).strip()[:100]
+    if not area:
+        raise HTTPException(status_code=400, detail="Invalid area name")
     sb = get_supabase_admin()
 
     # Find matching state
@@ -266,3 +291,131 @@ async def area_pulse(area: str):
         "neutral": snapshot["neutral_count"],
         "top_issues": top_issues,
     }
+
+
+@router.get("/keywords")
+@limiter.limit("30/minute")
+async def trending_keywords(request: Request, limit: int = 40, state_id: int | None = None):
+    """Return top keywords extracted from the last 24 h of voices."""
+    from collections import Counter
+    from datetime import datetime, timezone, timedelta
+
+    limit = min(max(limit, 5), 100)
+    sb = get_supabase_admin()
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+
+    query = sb.table("sentiment_entries").select("extracted_keywords").gte("ingested_at", cutoff)
+    if state_id:
+        query = query.eq("state_id", state_id)
+
+    result = query.execute()
+    counter: Counter = Counter()
+    for row in result.data or []:
+        kws = row.get("extracted_keywords") or []
+        # stored as JSON array of strings or comma-separated string
+        if isinstance(kws, str):
+            kws = [k.strip() for k in kws.split(",") if k.strip()]
+        for kw in kws:
+            kw = str(kw).strip().lower()
+            if 2 < len(kw) < 40:
+                counter[kw] += 1
+
+    return [{"keyword": kw, "count": cnt} for kw, cnt in counter.most_common(limit)]
+
+
+@router.get("/hotspots")
+@limiter.limit("30/minute")
+async def hotspots(request: Request, limit: int = 15):
+    """Return states ranked by urgency (high volume + negative sentiment)."""
+    from datetime import datetime, timezone, timedelta
+    from collections import defaultdict
+
+    limit = min(max(limit, 5), 30)
+    sb = get_supabase_admin()
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+
+    result = (
+        sb.table("sentiment_entries")
+        .select("state_id,sentiment_score")
+        .gte("ingested_at", cutoff)
+        .execute()
+    )
+
+    buckets: dict[int, list[float]] = defaultdict(list)
+    for row in result.data or []:
+        sid = row.get("state_id")
+        score = row.get("sentiment_score")
+        if sid and score is not None:
+            buckets[sid].append(float(score))
+
+    if not buckets:
+        return []
+
+    # Fetch state names
+    state_ids = list(buckets.keys())
+    states_res = sb.table("states").select("id,name,code").in_("id", state_ids).execute()
+    name_map = {s["id"]: {"name": s["name"], "code": s["code"]} for s in states_res.data or []}
+
+    def _urgency(scores: list[float]) -> float:
+        if not scores:
+            return 0.0
+        import math
+        avg = sum(scores) / len(scores)
+        # Normalise volume component (sigmoid-like)
+        vol_norm = 1 - math.exp(-len(scores) / 100)
+        neg_intensity = max(0.0, -avg)  # 0..1 when avg is -1..0
+        return round(0.5 * neg_intensity + 0.5 * vol_norm, 4)
+
+    hotspot_list = []
+    for sid, scores in buckets.items():
+        info = name_map.get(sid, {"name": f"State {sid}", "code": "???"})
+        avg_score = round(sum(scores) / len(scores), 4)
+        hotspot_list.append({
+            "state_id": sid,
+            "state": info["name"],
+            "state_code": info["code"],
+            "urgency_score": _urgency(scores),
+            "avg_sentiment": avg_score,
+            "volume": len(scores),
+        })
+
+    hotspot_list.sort(key=lambda x: x["urgency_score"], reverse=True)
+    return hotspot_list[:limit]
+
+
+# ── Geographic hierarchy lookups ──────────────────────────────
+
+@router.get("/geo/districts")
+@limiter.limit("60/minute")
+async def geo_districts(request: Request, state_id: int | None = None):
+    """Return districts, optionally filtered by state."""
+    sb = get_supabase_admin()
+    q = sb.table("districts").select("id, name, state_id")
+    if state_id:
+        q = q.eq("state_id", state_id)
+    result = q.order("name").limit(500).execute()
+    return result.data or []
+
+
+@router.get("/geo/constituencies")
+@limiter.limit("60/minute")
+async def geo_constituencies(request: Request, district_id: int | None = None):
+    """Return constituencies, optionally filtered by district."""
+    sb = get_supabase_admin()
+    q = sb.table("constituencies").select("id, name, type, district_id")
+    if district_id:
+        q = q.eq("district_id", district_id)
+    result = q.order("name").limit(500).execute()
+    return result.data or []
+
+
+@router.get("/geo/wards")
+@limiter.limit("60/minute")
+async def geo_wards(request: Request, constituency_id: int | None = None):
+    """Return wards, optionally filtered by constituency."""
+    sb = get_supabase_admin()
+    q = sb.table("wards").select("id, name, constituency_id")
+    if constituency_id:
+        q = q.eq("constituency_id", constituency_id)
+    result = q.order("name").limit(500).execute()
+    return result.data or []

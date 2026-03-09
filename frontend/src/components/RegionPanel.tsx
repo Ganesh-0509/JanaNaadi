@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { SENTIMENT_COLORS } from '../utils/colors';
 import { Link } from 'react-router-dom';
@@ -83,6 +83,17 @@ export default function RegionPanel({ region, onClose }: Props) {
     negative: 'bg-red-500',
   };
 
+  // Compute 7-day trend direction from analysis data
+  const trend7d: number[] = analysis?.trend_7d || [];
+  let trendDir: 'up' | 'down' | 'flat' = 'flat';
+  if (trend7d.length >= 2) {
+    const last = trend7d[trend7d.length - 1];
+    const prev = trend7d[trend7d.length - 2];
+    const diff = last - prev;
+    if (diff > 0.05) trendDir = 'up';
+    else if (diff < -0.05) trendDir = 'down';
+  }
+
   return (
     <div className="fixed right-0 top-0 h-full w-80 bg-slate-900/95 backdrop-blur-md border-l border-slate-700/50 shadow-2xl z-[1000] overflow-y-auto">
       {/* Header */}
@@ -100,6 +111,16 @@ export default function RegionPanel({ region, onClose }: Props) {
             {scoreNum}
           </div>
           <div className="text-xs text-slate-400 mt-1 uppercase tracking-wider">Sentiment Score</div>
+          {trend7d.length >= 2 && (
+            <div className="flex items-center justify-center gap-1.5 mt-2">
+              {trendDir === 'up' && <TrendingUp size={16} className="text-green-400" />}
+              {trendDir === 'down' && <TrendingDown size={16} className="text-red-400" />}
+              {trendDir === 'flat' && <Minus size={16} className="text-slate-400" />}
+              <span className={`text-xs font-semibold ${trendDir === 'up' ? 'text-green-400' : trendDir === 'down' ? 'text-red-400' : 'text-slate-400'}`}>
+                {trendDir === 'up' ? 'Improving' : trendDir === 'down' ? 'Declining' : 'Stable'} (7d)
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Donut Chart */}

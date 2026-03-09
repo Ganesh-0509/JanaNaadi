@@ -33,3 +33,18 @@ export async function getAreaPulse(area: string) {
   const { data } = await client.get(`/api/public/area-pulse?area=${encodeURIComponent(area)}`);
   return data;
 }
+
+export async function getKeywords(limit = 40, stateId?: number): Promise<{ keyword: string; count: number }[]> {
+  const params: Record<string, string | number> = { limit };
+  if (stateId !== undefined) params.state_id = stateId;
+  const { data } = await client.get('/api/public/keywords', { params });
+  return data;
+}
+
+export async function getHotspots(limit = 15): Promise<{
+  state_id: number; state: string; state_code: string;
+  urgency_score: number; avg_sentiment: number; volume: number;
+}[]> {
+  const { data } = await client.get('/api/public/hotspots', { params: { limit } });
+  return data;
+}

@@ -34,6 +34,9 @@ export function useHeatmapData() {
       const params = {
         topic: filters.topic || undefined,
         time_range: filters.timeRange,
+        source: filters.source || undefined,
+        language: filters.language || undefined,
+        sentiment: filters.sentiment || undefined,
       };
       let result: HeatmapPoint[] = [];
       switch (level) {
@@ -57,7 +60,7 @@ export function useHeatmapData() {
     } finally {
       setLoading(false);
     }
-  }, [level, parentId, filters.topic, filters.timeRange]);
+  }, [level, parentId, filters.topic, filters.timeRange, filters.source, filters.language, filters.sentiment]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 

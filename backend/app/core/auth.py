@@ -21,8 +21,9 @@ async def get_current_user(
                 detail="Invalid or expired token",
             )
         user = user_response.user
-        # Extract role from user metadata (default: analyst)
-        role = (user.user_metadata or {}).get("role", "analyst")
+        # Extract role from app_metadata (server-only, not user-editable).
+        # user_metadata is writable by the client and MUST NOT be trusted for RBAC.
+        role = (user.app_metadata or {}).get("role", "analyst")
         return {
             "id": user.id,
             "email": user.email,

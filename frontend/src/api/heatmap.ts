@@ -3,6 +3,9 @@ import client from './client';
 interface HeatmapParams {
   topic?: string;
   time_range?: string;
+  source?: string;
+  language?: string;
+  sentiment?: string;
 }
 
 export async function getHeatmapStates(params?: HeatmapParams) {
@@ -22,5 +25,10 @@ export async function getHeatmapConstituencies(districtId: number, params?: Heat
 
 export async function getHeatmapWards(constituencyId: number, params?: HeatmapParams) {
   const { data } = await client.get(`/api/heatmap/wards?constituency_id=${constituencyId}`, { params });
+  return data;
+}
+
+export async function getHeatmapHistory(date: string) {
+  const { data } = await client.get('/api/heatmap/history', { params: { date } });
   return data;
 }

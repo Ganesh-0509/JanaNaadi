@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { getNationalPulse, getStateRankings, getTrendingTopics, getRecentVoices, getAreaPulse } from '../api/public';
+import { getNationalPulse, getStateRankings, getTrendingTopics, getRecentVoices, getAreaPulse, getKeywords } from '../api/public';
 import SentimentGauge from '../components/SentimentGauge';
 import StatCard from '../components/StatCard';
 import TopicCard from '../components/TopicCard';
+import KeywordCloud from '../components/KeywordCloud';
 import { StatCardSkeleton, VoiceCardSkeleton, TopicCardSkeleton, TableRowSkeleton, CardSkeleton } from '../components/Skeleton';
 import { formatNumber, formatRelative } from '../utils/formatters';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Map, ArrowRight, Search, MessageSquare, Users, TrendingUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -60,10 +61,12 @@ interface AreaResult {
 
 export default function PublicDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [pulse, setPulse] = useState<Pulse | null>(null);
   const [states, setStates] = useState<StateRanking[]>([]);
   const [trending, setTrending] = useState<TrendingTopic[]>([]);
   const [voices, setVoices] = useState<Voice[]>([]);
+  const [keywords, setKeywords] = useState<{ keyword: string; count: number }[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Area lookup
@@ -74,16 +77,18 @@ export default function PublicDashboard() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [p, s, t, v] = await Promise.all([
+        const [p, s, t, v, kw] = await Promise.all([
           getNationalPulse(),
           getStateRankings(),
           getTrendingTopics(),
           getRecentVoices(12),
+          getKeywords(40),
         ]);
         setPulse(p);
         setStates(s);
         setTrending(t);
         setVoices(v);
+        setKeywords(kw);
       } catch (e) {
         console.error('Dashboard load error:', e);
       } finally {
@@ -293,13 +298,30 @@ export default function PublicDashboard() {
           <h2 className="text-lg font-bold mb-4">Trending Topics</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {trending.map((t) => (
-              <TopicCard key={t.topic} topic={t.topic} count={t.mention_count} sentiment={t.sentiment_trend > 0 ? 'positive' : t.sentiment_trend < 0 ? 'negative' : 'neutral'} />
+              <TopicCard
+                key={t.topic}
+                topic={t.topic}
+                count={t.mention_count}
+                sentiment={t.sentiment_trend > 0 ? 'positive' : t.sentiment_trend < 0 ? 'negative' : 'neutral'}
+                onClick={() => navigate(user ? `/search?q=${encodeURIComponent(t.topic)}` : `/pulse`)}
+              />
             ))}
           </div>
         </div>
       </div>
 
-      {/* 📢 LIVE VOICES FEED — unique public feature */}
+      {/* � TRENDING KEYWORDS CLOUD */}
+      {keywords.length > 0 && (
+        <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+            <span className="text-purple-400">🏷</span>
+            Trending Keywords (last 24h)
+          </h2>
+          <KeywordCloud keywords={keywords} />
+        </div>
+      )}
+
+      {/* �📢 LIVE VOICES FEED — unique public feature */}
       {!user && voices.length > 0 && (
         <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2">

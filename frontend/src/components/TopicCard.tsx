@@ -5,13 +5,19 @@ interface Props {
   count: number;
   sentiment?: string;
   icon?: string;
+  onClick?: () => void;
 }
 
-export default function TopicCard({ topic, count, sentiment, icon }: Props) {
+export default function TopicCard({ topic, count, sentiment, icon, onClick }: Props) {
   const color = sentiment ? sentimentColor(sentiment) : '#3b82f6';
 
   return (
-    <div className="bg-slate-800 rounded-xl p-4 border border-slate-700 hover:border-slate-600 transition-colors">
+    <div
+      onClick={onClick}
+      className={`bg-slate-800 rounded-xl p-4 border border-slate-700 transition-colors ${
+        onClick ? 'hover:border-blue-500/50 hover:bg-slate-700/60 cursor-pointer active:scale-95' : 'hover:border-slate-600'
+      }`}
+    >
       <div className="flex items-center gap-3 mb-2">
         <span className="text-xl">{icon || '📌'}</span>
         <h3 className="font-semibold text-sm">{topic}</h3>
@@ -27,7 +33,10 @@ export default function TopicCard({ topic, count, sentiment, icon }: Props) {
           </span>
         )}
       </div>
-      <div className="text-xs text-slate-400 mt-1">mentions</div>
+      <div className="flex items-center justify-between mt-1">
+        <div className="text-xs text-slate-400">mentions</div>
+        {onClick && <div className="text-xs text-blue-400 opacity-0 group-hover:opacity-100">View →</div>}
+      </div>
     </div>
   );
 }

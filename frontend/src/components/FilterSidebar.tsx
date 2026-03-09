@@ -6,7 +6,7 @@ const TOPICS = [
   'Corruption', 'Public Safety', 'Electricity', 'Sanitation',
   'Employment', 'Housing', 'Public Transport', 'Digital Services',
 ];
-const SOURCES = ['twitter', 'news', 'reddit', 'survey', 'csv'];
+const SOURCES = ['twitter', 'news', 'reddit', 'citizen', 'survey', 'csv', 'manual'];
 const LANGUAGES = [
   { code: 'en', name: 'English' },
   { code: 'hi', name: 'Hindi' },
@@ -20,13 +20,34 @@ const LANGUAGES = [
 ];
 const SENTIMENTS = ['positive', 'negative', 'neutral'];
 
-export default function FilterSidebar() {
+interface Props {
+  open?: boolean;
+}
+
+export default function FilterSidebar({ open = true }: Props) {
   const { filters, setFilters, resetFilters } = useFilters();
 
+  const activeCount = [
+    filters.topic,
+    filters.source,
+    filters.language,
+    filters.sentiment,
+    filters.timeRange !== '30d' ? filters.timeRange : null,
+  ].filter(Boolean).length;
+
+  if (!open) return null;
+
   return (
-    <div className="w-64 bg-slate-800 border-r border-slate-700 p-4 space-y-5 overflow-y-auto">
+    <div className="w-64 flex-shrink-0 bg-slate-800 border-r border-slate-700 p-4 space-y-5 overflow-y-auto">
       <div className="flex items-center justify-between">
-        <h3 className="font-bold text-sm">Filters</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="font-bold text-sm">Filters</h3>
+          {activeCount > 0 && (
+            <span className="bg-blue-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full leading-none">
+              {activeCount}
+            </span>
+          )}
+        </div>
         <button onClick={resetFilters} className="text-xs text-blue-400 hover:underline">
           Reset
         </button>

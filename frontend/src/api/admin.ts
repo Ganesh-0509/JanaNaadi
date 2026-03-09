@@ -65,3 +65,24 @@ export async function triggerAlertCheck() {
   const { data } = await client.post('/api/admin/check-alerts');
   return data;
 }
+
+// Geo hierarchy helpers — public (no auth needed)
+import publicClient from './client';
+
+export async function getDistricts(stateId?: number): Promise<{ id: number; name: string }[]> {
+  const params = stateId ? { state_id: stateId } : {};
+  const { data } = await publicClient.get('/api/public/geo/districts', { params });
+  return data || [];
+}
+
+export async function getConstituencies(districtId?: number): Promise<{ id: number; name: string; type: string }[]> {
+  const params = districtId ? { district_id: districtId } : {};
+  const { data } = await publicClient.get('/api/public/geo/constituencies', { params });
+  return data || [];
+}
+
+export async function getWards(constituencyId?: number): Promise<{ id: number; name: string }[]> {
+  const params = constituencyId ? { constituency_id: constituencyId } : {};
+  const { data } = await publicClient.get('/api/public/geo/wards', { params });
+  return data || [];
+}

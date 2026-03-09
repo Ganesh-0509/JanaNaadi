@@ -18,3 +18,17 @@ general_cache: TTLCache = TTLCache(maxsize=1024, ttl=300)
 def cache_key(*parts) -> str:
     """Build a hashable cache key from parts."""
     return ":".join(str(p) for p in parts)
+
+
+def invalidate_for_entry(state_id: int | None) -> None:
+    """Purge snapshot and heatmap cache entries after new data is ingested."""
+    # Clear all national snapshots (any period)
+    keys_to_delete = [k for k in list(snapshot_cache.keys()) if str(k).startswith("national:")]
+    # Clear state-specific snapshots
+    if state_id:
+        keys_to_delete += [k for k in list(snapshot_cache.keys()) if str(k).startswith(f"state:{state_id}:")]
+    for k in keys_to_delete:
+        snapshot_cache.pop(k, None)
+    # Invalidate heatmap and general caches entirely (small and fast to rebuild)
+    heatmap_cache.clear()
+    general_cache.pop("state_rankings_24h", None)

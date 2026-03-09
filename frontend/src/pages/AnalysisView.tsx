@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { getRegionAnalysis, searchEntries } from '../api/analysis';
+import { Sparkles, RefreshCw, Download, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { getRegionAnalysis, searchEntries, summarizeRegion, getForecast, type ForecastPoint } from '../api/analysis';
 import { useSentimentTrend } from '../hooks/useSentimentTrend';
 import SentimentGauge from '../components/SentimentGauge';
 import TrendChart from '../components/TrendChart';
@@ -45,22 +46,94 @@ export default function AnalysisView() {
   const [analysis, setAnalysis] = useState<any>(null);
   const [voices, setVoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [voicesPage, setVoicesPage] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [tab, setTab] = useState<'overview' | 'sources' | 'voices'>('overview');
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [summarizing, setSummarizing] = useState(false);
+  const [forecastData, setForecastData] = useState<ForecastPoint[]>([]);
+
+  const handleSummarize = async () => {
+    setSummarizing(true);
+    try {
+      const res = await summarizeRegion(scope, rawId);
+      setAiSummary(res.summary);
+    } catch (e) {
+      console.error('Summarize error:', e);
+    } finally {
+      setSummarizing(false);
+    }
+  };
+
+  const exportCSV = () => {
+    if (voices.length === 0) return;
+    const header = 'text,source,language,sentiment,topic,location,created_at';
+    const rows = voices.map((v: any) =>
+      [
+        `"${(v.text || '').replace(/"/g, '""')}"`,
+        v.source || '',
+        v.language || '',
+        v.sentiment_score ?? '',
+        v.topic || '',
+        v.location || '',
+        v.ingested_at || '',
+      ].join(',')
+    );
+    const csv = [header, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `voices_${scope}_${rawId}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const loadMoreVoices = async () => {
+    setLoadingMore(true);
+    const nextPage = voicesPage + 1;
+    try {
+      const voiceParams: Record<string, any> = isNumericId
+        ? { [`${scope}_id`]: numericId, limit: 50, offset: nextPage * 50 }
+        : { state: rawId, limit: 50, offset: nextPage * 50 };
+      if (filters.topic) voiceParams.topic = filters.topic;
+      if (filters.source) voiceParams.source = filters.source;
+      if (filters.language) voiceParams.language = filters.language;
+      const more = await searchEntries(voiceParams);
+      if (more.length < 50) setHasMore(false);
+      setVoices((prev) => [...prev, ...more]);
+      setVoicesPage(nextPage);
+    } catch (e) {
+      console.error('Load more error:', e);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const { data: trendData, loading: trendLoading } = useSentimentTrend(scope, numericId ?? 0);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
+      setVoicesPage(0);
+      setHasMore(true);
       try {
-        const [a, v] = await Promise.all([
+        const voiceParams: Record<string, any> = isNumericId
+          ? { [`${scope}_id`]: numericId, limit: 50 }
+          : { state: rawId, limit: 50 };
+        if (filters.topic) voiceParams.topic = filters.topic;
+        if (filters.source) voiceParams.source = filters.source;
+        if (filters.language) voiceParams.language = filters.language;
+
+        const [a, v, fc] = await Promise.all([
           getRegionAnalysis(scope, rawId),
-          searchEntries(isNumericId
-            ? { [`${scope}_id`]: numericId, limit: 50 }
-            : { state: rawId, limit: 50 }),
+          searchEntries(voiceParams),
+          getForecast(scope, rawId).catch(() => []),
         ]);
         setAnalysis(a);
         setVoices(v);
+        setForecastData(fc);
       } catch (e) {
         console.error('Analysis load error:', e);
       } finally {
@@ -68,7 +141,7 @@ export default function AnalysisView() {
       }
     };
     load();
-  }, [scope, rawId, filters.timeRange]);
+  }, [scope, rawId, filters.timeRange, filters.topic, filters.source, filters.language]);
 
   if (loading) {
     return (
@@ -104,10 +177,32 @@ export default function AnalysisView() {
       className="p-6 space-y-6"
     >
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold">{analysis.name}</h1>
-        <p className="text-sm text-slate-400 capitalize">{scope} Analysis</p>
+      <div className="flex items-start justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">{analysis.name}</h1>
+          <p className="text-sm text-slate-400 capitalize">{scope} Analysis</p>
+        </div>
+        <button
+          onClick={handleSummarize}
+          disabled={summarizing}
+          className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 rounded-xl text-sm font-medium transition-colors"
+        >
+          {summarizing ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
+          {summarizing ? 'Analyzing...' : 'Summarize Issues'}
+        </button>
       </div>
+
+      {/* AI Summary */}
+      {aiSummary && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-purple-500/10 border border-purple-500/30 rounded-2xl p-5"
+        >
+          <p className="text-xs font-semibold text-purple-400 uppercase tracking-wide mb-2">✨ AI Policy Summary</p>
+          <p className="text-slate-200 text-sm leading-relaxed">{aiSummary}</p>
+        </motion.div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -149,10 +244,35 @@ export default function AnalysisView() {
           {/* Trend Chart */}
           <div className="md:col-span-2 bg-slate-800 rounded-2xl p-6 border border-slate-700">
             <h3 className="font-bold mb-4">Sentiment Trend</h3>
+            {/* Forecast Insight Banner */}
+            {forecastData.length > 0 && (() => {
+              const last = forecastData[forecastData.length - 1];
+              const first = forecastData[0];
+              const delta = last.forecast_score - first.forecast_score;
+              const isRising = delta > 0.02;
+              const isFalling = delta < -0.02;
+              const dirColor = isRising ? 'text-emerald-400' : isFalling ? 'text-red-400' : 'text-yellow-400';
+              const dirBg = isRising ? 'bg-emerald-500/10 border-emerald-500/20' : isFalling ? 'bg-red-500/10 border-red-500/20' : 'bg-yellow-500/10 border-yellow-500/20';
+              const DirIcon = isRising ? TrendingUp : isFalling ? TrendingDown : Minus;
+              const label = isRising ? 'Rising' : isFalling ? 'Falling' : 'Stable';
+              return (
+                <div className={`flex items-center gap-4 rounded-xl border px-4 py-3 mb-4 text-sm ${dirBg}`}>
+                  <div className={`flex items-center gap-1.5 font-semibold ${dirColor}`}>
+                    <DirIcon size={16} />
+                    <span>{label} Mood</span>
+                  </div>
+                  <div className="text-slate-400 text-xs">
+                    Predicted score in 7 days: <span className={`font-bold ${dirColor}`}>{last.forecast_score.toFixed(3)}</span>
+                    <span className="ml-2 opacity-60">(range {last.lower.toFixed(2)} → {last.upper.toFixed(2)})</span>
+                  </div>
+                  <div className="ml-auto text-xs text-slate-500 hidden md:block">AI linear forecast · 30-day history</div>
+                </div>
+              );
+            })()}
             {trendLoading ? (
               <div className="text-slate-400 text-center py-10">Loading trend...</div>
             ) : (
-              <TrendChart data={trendData} />
+              <TrendChart data={trendData} forecastData={forecastData} />
             )}
           </div>
         </div>
@@ -262,8 +382,28 @@ export default function AnalysisView() {
 
       {tab === 'voices' && (
         <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
-          <h3 className="font-bold mb-4">Citizen Voices ({voices.length})</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold">Citizen Voices ({voices.length})</h3>
+            <button
+              onClick={exportCSV}
+              disabled={voices.length === 0}
+              className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 rounded-lg text-xs font-medium border border-slate-600"
+            >
+              <Download size={13} /> Export CSV
+            </button>
+          </div>
           <VoiceTable voices={voices} />
+          {hasMore && (
+            <div className="mt-4 text-center">
+              <button
+                onClick={loadMoreVoices}
+                disabled={loadingMore}
+                className="px-6 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 rounded-lg text-sm font-medium"
+              >
+                {loadingMore ? 'Loading...' : 'Load More'}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </motion.div>

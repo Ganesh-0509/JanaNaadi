@@ -1,11 +1,21 @@
 [
-  {"name": "NDTV - Top Stories", "url": "https://feeds.feedburner.com/ndtvnews-top-stories", "region": null, "language": "en"},
-  {"name": "NDTV - India", "url": "https://feeds.feedburner.com/ndtvnews-india-news", "region": null, "language": "en"},
-  {"name": "Times of India", "url": "https://timesofindia.indiatimes.com/rssfeedstopstories.cms", "region": null, "language": "en"},
-  {"name": "The Hindu", "url": "https://www.thehindu.com/news/national/feeder/default.rss", "region": null, "language": "en"},
-  {"name": "Indian Express", "url": "https://indianexpress.com/section/india/feed/", "region": null, "language": "en"},
+  {"name": "NDTV India", "url": "https://feeds.feedburner.com/ndtvnews-india-news", "region": null, "language": "en"},
+  {"name": "Times of India Top", "url": "https://timesofindia.indiatimes.com/rssfeedstopstories.cms", "region": null, "language": "en"},
+  {"name": "The Hindu National", "url": "https://www.thehindu.com/news/national/feeder/default.rss", "region": null, "language": "en"},
+  {"name": "Indian Express India", "url": "https://indianexpress.com/section/india/feed/", "region": null, "language": "en"},
+  {"name": "Hindustan Times India", "url": "https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml", "region": null, "language": "en"},
+  {"name": "The Wire", "url": "https://thewire.in/feed", "region": null, "language": "en"},
+  {"name": "Scroll.in India", "url": "https://scroll.in/feed", "region": null, "language": "en"},
   {"name": "The Hindu - Tamil Nadu", "url": "https://www.thehindu.com/news/states/tamil-nadu/feeder/default.rss", "region": "Tamil Nadu", "language": "en"},
   {"name": "The Hindu - Karnataka", "url": "https://www.thehindu.com/news/states/karnataka/feeder/default.rss", "region": "Karnataka", "language": "en"},
-  {"name": "NDTV - Delhi", "url": "https://feeds.feedburner.com/ndtvnews-delhi-news", "region": "Delhi", "language": "en"},
-  {"name": "Mumbai Mirror", "url": "https://mumbaimirror.indiatimes.com/rssfeedstopstories.cms", "region": "Maharashtra", "language": "en"}
+  {"name": "The Hindu - Kerala", "url": "https://www.thehindu.com/news/states/kerala/feeder/default.rss", "region": "Kerala", "language": "en"},
+  {"name": "The Hindu - Andhra Pradesh", "url": "https://www.thehindu.com/news/states/andhra-pradesh/feeder/default.rss", "region": "Andhra Pradesh", "language": "en"},
+  {"name": "Hindustan Times Delhi", "url": "https://www.hindustantimes.com/feeds/rss/delhi-news/rssfeed.xml", "region": "Delhi", "language": "en"},
+  {"name": "Hindustan Times Mumbai", "url": "https://www.hindustantimes.com/feeds/rss/mumbai-news/rssfeed.xml", "region": "Maharashtra", "language": "en"},
+  {"name": "Hindustan Times Lucknow", "url": "https://www.hindustantimes.com/feeds/rss/lucknow/rssfeed.xml", "region": "Uttar Pradesh", "language": "en"},
+  {"name": "Hindustan Times Kolkata", "url": "https://www.hindustantimes.com/feeds/rss/kolkata/rssfeed.xml", "region": "West Bengal", "language": "en"},
+  {"name": "Tribune Punjab", "url": "https://www.tribuneindia.com/rss/feed.xml", "region": "Punjab", "language": "en"},
+  {"name": "Deccan Herald Karnataka", "url": "https://www.deccanherald.com/rss", "region": "Karnataka", "language": "en"},
+  {"name": "The hans India Telangana", "url": "https://www.thehansindia.com/feeds/Telangana", "region": "Telangana", "language": "en"},
+  {"name": "Free Press Journal MP", "url": "https://www.freepressjournal.in/category/india/feed", "region": "Madhya Pradesh", "language": "en"}
 ]

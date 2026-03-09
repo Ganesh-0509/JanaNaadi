@@ -63,25 +63,32 @@ async def analyze_text(text: str) -> NLPAnalysisResult:
 
 
 async def batch_analyze(texts: list[str]) -> list[NLPAnalysisResult]:
-    """Analyze multiple texts sequentially (Gemini doesn't support true batch)."""
-    results = []
-    for text in texts:
+    """Analyze multiple texts concurrently (bounded to avoid rate limits)."""
+    import asyncio
+
+    _NEUTRAL_FALLBACK = NLPAnalysisResult(
+        sentiment="neutral",
+        sentiment_score=0.0,
+        confidence=0.0,
+        topics=["Other"],
+        keywords=[],
+        language="en",
+        language_name="English",
+        translation=None,
+        urgency=0.0,
+    )
+
+    async def _safe(text: str) -> NLPAnalysisResult:
         try:
-            r = await analyze_text(text)
-            results.append(r)
+            return await analyze_text(text)
         except Exception:
-            # Append a neutral fallback on failure
-            results.append(
-                NLPAnalysisResult(
-                    sentiment="neutral",
-                    sentiment_score=0.0,
-                    confidence=0.0,
-                    topics=["Other"],
-                    keywords=[],
-                    language="en",
-                    language_name="English",
-                    translation=None,
-                    urgency=0.0,
-                )
-            )
-    return results
+            return _NEUTRAL_FALLBACK
+
+    # Semaphore: max 5 concurrent LLM calls to respect API rate limits
+    sem = asyncio.Semaphore(5)
+
+    async def _guarded(text: str) -> NLPAnalysisResult:
+        async with sem:
+            return await _safe(text)
+
+    return list(await asyncio.gather(*(_guarded(t) for t in texts)))

@@ -20,10 +20,21 @@ def text_hash(text: str) -> str:
     return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
 
 
-def is_near_duplicate(text1: str, text2: str, threshold: float = 0.85) -> bool:
-    """Check if two texts are near-duplicates using Jaccard similarity."""
-    words1 = set(normalize_text(text1).split())
-    words2 = set(normalize_text(text2).split())
+def is_near_duplicate(
+    text1: str,
+    text2: str,
+    threshold: float = 0.85,
+    normalized: bool = False,
+) -> bool:
+    """Check if two texts are near-duplicates using Jaccard similarity.
+
+    Pass ``normalized=True`` when both inputs are already the output of
+    :func:`normalize_text` to avoid redundant re-processing.
+    """
+    t1 = text1 if normalized else normalize_text(text1)
+    t2 = text2 if normalized else normalize_text(text2)
+    words1 = set(t1.split())
+    words2 = set(t2.split())
     if not words1 or not words2:
         return False
     intersection = words1 & words2

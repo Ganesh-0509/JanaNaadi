@@ -14,6 +14,10 @@ from app.services.dedup_service import normalize_text, is_near_duplicate
 
 router = APIRouter(prefix="/api/ingest", tags=["ingest"])
 
+# Tracks the result of the last ingestion run for each source so the status
+# endpoint can report actual counts rather than just "triggered".
+_last_run_info: dict[str, dict] = {"twitter": {}, "news": {}}
+
 
 async def _process_and_store(
     text: str,
@@ -53,7 +57,7 @@ async def _process_and_store(
         .execute()
     )
     for row in recent.data or []:
-        if is_near_duplicate(cleaned, row["cleaned_text"]):
+        if is_near_duplicate(cleaned, row["cleaned_text"], normalized=True):
             return None  # Skip near-duplicate
 
     nlp = await score_sentiment(text)
@@ -88,6 +92,18 @@ async def _process_and_store(
         "processed_at": datetime.now(timezone.utc).isoformat(),
     }
     sb.table("sentiment_entries").insert(entry).execute()
+
+    # Invalidate cached snapshots so dashboards reflect the new entry
+    from app.core.cache import invalidate_for_entry
+    invalidate_for_entry(entry.get("state_id"))
+
+    # Broadcast to live-stream WebSocket clients
+    try:
+        from app.routers.ws import publish_voice_entry
+        publish_voice_entry(entry)
+    except Exception:
+        pass  # Non-critical — never fail ingestion because of WS
+
     return entry
 
 
@@ -110,6 +126,16 @@ async def ingest_csv(
     user: dict = Depends(require_admin),
 ):
     """Upload CSV survey data for batch processing."""
+    # Validate file type before reading content
+    allowed_types = {"text/csv", "application/csv", "text/plain", "application/octet-stream"}
+    filename = file.filename or ""
+    if not filename.lower().endswith(".csv"):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Only .csv files are allowed.")
+    if file.content_type and file.content_type not in allowed_types:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Only CSV files are allowed.")
+
     sb = get_supabase_admin()
     content = await file.read()
     text_content = content.decode("utf-8")
@@ -160,7 +186,9 @@ async def ingest_twitter(
     """Trigger Twitter ingestion job."""
     from app.ingesters.twitter_ingester import TwitterIngester
 
-    async def run_twitter():
+    from datetime import datetime, timezone
+
+    async def run_twitter_tracked():
         ingester = TwitterIngester()
         entries = await ingester.fetch()
         count = 0
@@ -177,8 +205,12 @@ async def ingest_twitter(
                     count += 1
             except Exception:
                 continue
+        _last_run_info["twitter"] = {
+            "ran_at": datetime.now(timezone.utc).isoformat(),
+            "count": count,
+        }
 
-    background_tasks.add_task(run_twitter)
+    background_tasks.add_task(run_twitter_tracked)
     return {"status": "triggered", "source": "twitter"}
 
 
@@ -190,7 +222,9 @@ async def ingest_news(
     """Trigger RSS news ingestion job."""
     from app.ingesters.news_ingester import NewsIngester
 
-    async def run_news():
+    from datetime import datetime, timezone
+
+    async def run_news_tracked():
         ingester = NewsIngester()
         entries = await ingester.fetch()
         count = 0
@@ -207,8 +241,12 @@ async def ingest_news(
                     count += 1
             except Exception:
                 continue
+        _last_run_info["news"] = {
+            "ran_at": datetime.now(timezone.utc).isoformat(),
+            "count": count,
+        }
 
-    background_tasks.add_task(run_news)
+    background_tasks.add_task(run_news_tracked)
     return {"status": "triggered", "source": "news"}
 
 
@@ -226,7 +264,14 @@ async def ingest_status(user: dict = Depends(require_admin)):
         .execute()
     )
 
+    tw = _last_run_info.get("twitter", {})
+    nw = _last_run_info.get("news", {})
+
     return IngestStatus(
+        twitter_last_run=tw.get("ran_at"),
+        news_last_run=nw.get("ran_at"),
+        twitter_last_count=tw.get("count"),
+        news_last_count=nw.get("count"),
         total_today=total_today.count or 0,
         queue_size=0,
     )
