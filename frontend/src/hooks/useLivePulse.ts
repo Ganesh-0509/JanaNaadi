@@ -51,8 +51,8 @@ export function useLivePulse() {
       if (pingTimer.current) clearInterval(pingTimer.current);
       if (unmountedRef.current) return;
       setStatus('disconnected');
-      // Reconnect after 5s
-      reconnectTimer.current = setTimeout(connect, 5_000);
+      // Reconnect after 10s (reduced from 5s to minimize console spam)
+      reconnectTimer.current = setTimeout(connect, 10_000);
     };
 
     ws.onerror = () => {

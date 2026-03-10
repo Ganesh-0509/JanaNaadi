@@ -50,273 +50,271 @@ export const OntologyPage: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">
-            Knowledge Graph
-          </h1>
-          <p className="text-slate-600">
-            AI-Powered Global Ontology Engine - Explore entities, relationships, and intelligence across domains
-          </p>
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-slate-100 mb-2">
+          Knowledge Graph
+        </h1>
+        <p className="text-slate-400">
+          AI-Powered Global Ontology Engine - Explore entities, relationships, and intelligence across domains
+        </p>
+      </div>
+
+      {/* Stats Cards */}
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-slate-800 p-4 rounded-lg border border-slate-700">
+            <div className="text-2xl font-bold text-blue-400">{stats.total_entities.toLocaleString()}</div>
+            <div className="text-sm text-slate-400">Total Entities</div>
+          </div>
+          <div className="bg-slate-800 p-4 rounded-lg border border-slate-700">
+            <div className="text-2xl font-bold text-purple-400">{stats.total_relationships.toLocaleString()}</div>
+            <div className="text-sm text-slate-400">Relationships</div>
+          </div>
+          <div className="bg-slate-800 p-4 rounded-lg border border-slate-700">
+            <div className="text-2xl font-bold text-green-400">{stats.total_mentions.toLocaleString()}</div>
+            <div className="text-sm text-slate-400">Mentions</div>
+          </div>
+          <div className="bg-slate-800 p-4 rounded-lg border border-slate-700">
+            <div className="text-2xl font-bold text-amber-400">
+              {stats.entities_by_type ? Object.keys(stats.entities_by_type).length : 0}
+            </div>
+            <div className="text-sm text-slate-400">Entity Types</div>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Filters Sidebar */}
+        <div className="lg:col-span-1 space-y-4">
+          <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
+            <h3 className="font-bold text-lg mb-4 text-slate-100">Filters</h3>
+
+            {/* Search */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Search Entity
+              </label>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by name..."
+                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-slate-400"
+              />
+            </div>
+
+            {/* Entity Type Filter */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Entity Type
+              </label>
+              <select
+                value={selectedEntityType}
+                onChange={(e) => setSelectedEntityType(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Types</option>
+                {ENTITY_TYPES.map(type => (
+                  <option key={type} value={type} className="capitalize">
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Domain Filter */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Intelligence Domain
+              </label>
+              <select
+                value={selectedDomain}
+                onChange={(e) => setSelectedDomain(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All Domains</option>
+                {DOMAINS.map(domain => (
+                  <option key={domain} value={domain} className="capitalize">
+                    {domain}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Min Mentions Slider */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Min Mentions: {minMentions}
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="50"
+                value={minMentions}
+                onChange={(e) => setMinMentions(parseInt(e.target.value))}
+                className="w-full"
+              />
+            </div>
+
+            {/* Reset Filters */}
+            <button
+              onClick={() => {
+                setSelectedEntityType('');
+                setSelectedDomain('');
+                setMinMentions(1);
+                setSearchQuery('');
+              }}
+              className="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium py-2 px-4 rounded-md transition"
+            >
+              Reset Filters
+            </button>
+          </div>
+
+          {/* Top Entities */}
+          {stats && stats.top_entities.length > 0 && (
+            <div className="bg-slate-800 p-6 rounded-lg border border-slate-700">
+              <h3 className="font-bold text-lg mb-4 text-slate-100">Top Entities</h3>
+              <div className="space-y-2">
+                {stats.top_entities.slice(0, 10).map((entity, idx) => (
+                  <div key={entity.id} className="flex items-center justify-between text-sm">
+                    <span className="text-slate-300 truncate flex-1">
+                      {idx + 1}. {entity.name}
+                    </span>
+                    <span className="text-slate-400 ml-2">{entity.mention_count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Stats Cards */}
-        {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
-              <div className="text-2xl font-bold text-blue-600">{stats.total_entities.toLocaleString()}</div>
-              <div className="text-sm text-slate-600">Total Entities</div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
-              <div className="text-2xl font-bold text-purple-600">{stats.total_relationships.toLocaleString()}</div>
-              <div className="text-sm text-slate-600">Relationships</div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
-              <div className="text-2xl font-bold text-green-600">{stats.total_mentions.toLocaleString()}</div>
-              <div className="text-sm text-slate-600">Mentions</div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
-              <div className="text-2xl font-bold text-amber-600">
-                {Object.keys(stats.entity_types).length}
+        {/* Graph Visualization */}
+        <div className="lg:col-span-3">
+          {graphLoading ? (
+            <div className="bg-slate-800 p-12 rounded-lg border border-slate-700 flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
+                <p className="text-slate-400">Loading knowledge graph...</p>
               </div>
-              <div className="text-sm text-slate-600">Entity Types</div>
             </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Filters Sidebar */}
-          <div className="lg:col-span-1 space-y-4">
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-              <h3 className="font-bold text-lg mb-4 text-slate-900">Filters</h3>
-
-              {/* Search */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Search Entity
-                </label>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by name..."
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+          ) : filteredNodes && filteredLinks ? (
+            <div className="bg-slate-800 p-4 rounded-lg border border-slate-700">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="text-sm text-slate-400">
+                  Showing {filteredNodes.length} entities, {filteredLinks.length} relationships
+                </div>
+                {selectedEntity && (
+                  <button
+                    onClick={() => {
+                      setSelectedEntity(null);
+                      setEntityDetails(null);
+                    }}
+                    className="text-sm text-blue-400 hover:text-blue-300"
+                  >
+                    Clear Selection
+                  </button>
+                )}
               </div>
+              <KnowledgeGraph
+                nodes={filteredNodes}
+                links={filteredLinks}
+                onNodeClick={handleNodeClick}
+              />
+            </div>
+          ) : (
+            <div className="bg-slate-800 p-12 rounded-lg border border-slate-700 text-center">
+              <p className="text-slate-400">No data available. Start ingesting domain-specific data to build the knowledge graph.</p>
+            </div>
+          )}
 
-              {/* Entity Type Filter */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Entity Type
-                </label>
-                <select
-                  value={selectedEntityType}
-                  onChange={(e) => setSelectedEntityType(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">All Types</option>
-                  {ENTITY_TYPES.map(type => (
-                    <option key={type} value={type} className="capitalize">
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Domain Filter */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Intelligence Domain
-                </label>
-                <select
-                  value={selectedDomain}
-                  onChange={(e) => setSelectedDomain(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">All Domains</option>
-                  {DOMAINS.map(domain => (
-                    <option key={domain} value={domain} className="capitalize">
-                      {domain}
-                    </option>
-                  ))}
-                </select>
+          {/* Entity Details Panel */}
+          {selectedEntity && entityDetails && (
+            <div className="mt-6 bg-slate-800 p-6 rounded-lg border border-slate-700">
+              <h3 className="text-2xl font-bold text-slate-100 mb-4">{selectedEntity.name}</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div>
+                  <div className="text-sm text-slate-400">Type</div>
+                  <div className="font-medium text-slate-200 capitalize">{selectedEntity.entity_type}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-slate-400">Mentions</div>
+                  <div className="font-medium text-slate-200">{selectedEntity.mention_count}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-slate-400">Sentiment</div>
+                  <div className={`font-medium ${
+                    selectedEntity.sentiment_score && selectedEntity.sentiment_score > 0 ? 'text-green-400' :
+                    selectedEntity.sentiment_score && selectedEntity.sentiment_score < 0 ? 'text-red-400' :
+                    'text-slate-400'
+                  }`}>
+                    {selectedEntity.sentiment_score?.toFixed(2) || 'N/A'}
+                  </div>
+                </div>
               </div>
 
-              {/* Min Mentions Slider */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Min Mentions: {minMentions}
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="50"
-                  value={minMentions}
-                  onChange={(e) => setMinMentions(parseInt(e.target.value))}
-                  className="w-full"
-                />
-              </div>
+              {selectedEntity.description && (
+                <div className="mb-6">
+                  <div className="text-sm text-slate-400 mb-1">Description</div>
+                  <p className="text-slate-300">{selectedEntity.description}</p>
+                </div>
+              )}
 
-              {/* Reset Filters */}
-              <button
-                onClick={() => {
-                  setSelectedEntityType('');
-                  setSelectedDomain('');
-                  setMinMentions(1);
-                  setSearchQuery('');
-                }}
-                className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-md transition"
-              >
-                Reset Filters
-              </button>
-            </div>
-
-            {/* Top Entities */}
-            {stats && stats.top_entities.length > 0 && (
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-                <h3 className="font-bold text-lg mb-4 text-slate-900">Top Entities</h3>
-                <div className="space-y-2">
-                  {stats.top_entities.slice(0, 10).map((entity, idx) => (
-                    <div key={entity.id} className="flex items-center justify-between text-sm">
-                      <span className="text-slate-700 truncate flex-1">
-                        {idx + 1}. {entity.name}
+              {selectedEntity.aliases && selectedEntity.aliases.length > 0 && (
+                <div className="mb-6">
+                  <div className="text-sm text-slate-400 mb-2">Also Known As</div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedEntity.aliases.map((alias, idx) => (
+                      <span key={idx} className="bg-slate-700 px-3 py-1 rounded-full text-sm text-slate-200">
+                        {alias}
                       </span>
-                      <span className="text-slate-500 ml-2">{entity.mention_count}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Graph Visualization */}
-          <div className="lg:col-span-3">
-            {graphLoading ? (
-              <div className="bg-white p-12 rounded-lg shadow-sm border border-slate-200 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                  <p className="text-slate-600">Loading knowledge graph...</p>
-                </div>
-              </div>
-            ) : filteredNodes && filteredLinks ? (
-              <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="text-sm text-slate-600">
-                    Showing {filteredNodes.length} entities, {filteredLinks.length} relationships
-                  </div>
-                  {selectedEntity && (
-                    <button
-                      onClick={() => {
-                        setSelectedEntity(null);
-                        setEntityDetails(null);
-                      }}
-                      className="text-sm text-blue-600 hover:text-blue-700"
-                    >
-                      Clear Selection
-                    </button>
-                  )}
-                </div>
-                <KnowledgeGraph
-                  nodes={filteredNodes}
-                  links={filteredLinks}
-                  onNodeClick={handleNodeClick}
-                />
-              </div>
-            ) : (
-              <div className="bg-white p-12 rounded-lg shadow-sm border border-slate-200 text-center">
-                <p className="text-slate-600">No data available. Start ingesting domain-specific data to build the knowledge graph.</p>
-              </div>
-            )}
-
-            {/* Entity Details Panel */}
-            {selectedEntity && entityDetails && (
-              <div className="mt-6 bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-                <h3 className="text-2xl font-bold text-slate-900 mb-4">{selectedEntity.name}</h3>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div>
-                    <div className="text-sm text-slate-600">Type</div>
-                    <div className="font-medium capitalize">{selectedEntity.entity_type}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-slate-600">Mentions</div>
-                    <div className="font-medium">{selectedEntity.mention_count}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-slate-600">Sentiment</div>
-                    <div className={`font-medium ${
-                      selectedEntity.sentiment_score && selectedEntity.sentiment_score > 0 ? 'text-green-600' :
-                      selectedEntity.sentiment_score && selectedEntity.sentiment_score < 0 ? 'text-red-600' :
-                      'text-slate-600'
-                    }`}>
-                      {selectedEntity.sentiment_score?.toFixed(2) || 'N/A'}
-                    </div>
+                    ))}
                   </div>
                 </div>
+              )}
 
-                {selectedEntity.description && (
-                  <div className="mb-6">
-                    <div className="text-sm text-slate-600 mb-1">Description</div>
-                    <p className="text-slate-800">{selectedEntity.description}</p>
+              {entityDetails.relationships && entityDetails.relationships.length > 0 && (
+                <div>
+                  <div className="text-sm text-slate-400 mb-3">
+                    Relationships ({entityDetails.relationships.length})
                   </div>
-                )}
-
-                {selectedEntity.aliases && selectedEntity.aliases.length > 0 && (
-                  <div className="mb-6">
-                    <div className="text-sm text-slate-600 mb-2">Also Known As</div>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedEntity.aliases.map((alias, idx) => (
-                        <span key={idx} className="bg-slate-100 px-3 py-1 rounded-full text-sm">
-                          {alias}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {entityDetails.relationships && entityDetails.relationships.length > 0 && (
-                  <div>
-                    <div className="text-sm text-slate-600 mb-3">
-                      Relationships ({entityDetails.relationships.length})
-                    </div>
-                    <div className="space-y-3">
-                      {entityDetails.relationships.slice(0, 10).map((rel: any, idx: number) => (
-                        <div key={idx} className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg">
-                          <div className="flex-1">
-                            <div className="font-medium text-slate-900">
-                              {rel.related_entity?.name || 'Unknown'}
-                            </div>
-                            <div className="text-sm text-slate-600 capitalize">
-                              {rel.relationship_type.replace('_', ' ')}
-                            </div>
-                            {rel.context && (
-                              <p className="text-xs text-slate-500 mt-1">{rel.context}</p>
-                            )}
+                  <div className="space-y-3">
+                    {entityDetails.relationships.slice(0, 10).map((rel: any, idx: number) => (
+                      <div key={idx} className="flex items-start gap-3 p-3 bg-slate-700 rounded-lg">
+                        <div className="flex-1">
+                          <div className="font-medium text-slate-100">
+                            {rel.related_entity?.name || 'Unknown'}
                           </div>
-                          <div className="text-right">
-                            <div className="text-xs text-slate-500">
-                              Strength: {(rel.strength * 100).toFixed(0)}%
-                            </div>
-                            {rel.sentiment && (
-                              <div className={`text-xs font-medium ${
-                                rel.sentiment === 'positive' ? 'text-green-600' :
-                                rel.sentiment === 'negative' ? 'text-red-600' :
-                                'text-slate-600'
-                              }`}>
-                                {rel.sentiment}
-                              </div>
-                            )}
+                          <div className="text-sm text-slate-400 capitalize">
+                            {rel.relationship_type.replace('_', ' ')}
                           </div>
+                          {rel.context && (
+                            <p className="text-xs text-slate-500 mt-1">{rel.context}</p>
+                          )}
                         </div>
-                      ))}
-                    </div>
+                        <div className="text-right">
+                          <div className="text-xs text-slate-500">
+                            Strength: {(rel.strength * 100).toFixed(0)}%
+                          </div>
+                          {rel.sentiment && (
+                            <div className={`text-xs font-medium ${
+                              rel.sentiment === 'positive' ? 'text-green-400' :
+                              rel.sentiment === 'negative' ? 'text-red-400' :
+                              'text-slate-400'
+                            }`}>
+                              {rel.sentiment}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                )}
-              </div>
-            )}
-          </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

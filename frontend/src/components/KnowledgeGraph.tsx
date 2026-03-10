@@ -111,7 +111,7 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
       .data(links)
       .join('text')
       .attr('font-size', 10)
-      .attr('fill', '#64748b')
+      .attr('fill', '#94a3b8')
       .attr('text-anchor', 'middle')
       .text(d => d.type.replace('_', ' '));
 
@@ -127,7 +127,7 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
     node.append('circle')
       .attr('r', d => 5 + Math.sqrt(d.mention_count || 1) * 2)
       .attr('fill', d => ENTITY_TYPE_COLORS[d.entity_type] || ENTITY_TYPE_COLORS.other)
-      .attr('stroke', '#fff')
+      .attr('stroke', '#1e293b')
       .attr('stroke-width', 2);
 
     // Node labels
@@ -137,7 +137,7 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
       .attr('text-anchor', 'middle')
       .attr('font-size', 11)
       .attr('font-weight', 'bold')
-      .attr('fill', '#1e293b')
+      .attr('fill', '#e2e8f0')
       .text(d => d.name.length > 20 ? d.name.substring(0, 20) + '...' : d.name);
 
     // Node interactions
@@ -202,13 +202,13 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
 
   return (
     <div className="relative">
-      <svg ref={svgRef} className="w-full border border-slate-200 rounded-lg bg-white" />
+      <svg ref={svgRef} className="w-full border border-slate-700 rounded-lg bg-slate-900" />
       
       {/* Hover tooltip */}
       {hoveredNode && (
-        <div className="absolute top-4 left-4 bg-white p-4 rounded-lg shadow-lg border border-slate-200 max-w-xs z-10">
-          <h4 className="font-bold text-lg text-slate-900">{hoveredNode.name}</h4>
-          <p className="text-sm text-slate-600 capitalize">{hoveredNode.entity_type}</p>
+        <div className="absolute top-4 left-4 bg-slate-800 p-4 rounded-lg shadow-lg border border-slate-700 max-w-xs z-10">
+          <h4 className="font-bold text-lg text-slate-100">{hoveredNode.name}</h4>
+          <p className="text-sm text-slate-300 capitalize">{hoveredNode.entity_type}</p>
           <div className="mt-2 space-y-1 text-sm">
             <p><strong>Mentions:</strong> {hoveredNode.mention_count}</p>
             {hoveredNode.sentiment_score !== undefined && (
@@ -230,11 +230,11 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
       )}
 
       {/* Legend */}
-      <div className="absolute bottom-4 right-4 bg-white p-4 rounded-lg shadow-lg border border-slate-200">
-        <h4 className="font-bold text-sm mb-2">Entity Types</h4>
+      <div className="absolute bottom-4 right-4 bg-slate-800 p-4 rounded-lg shadow-lg border border-slate-700">
+        <h4 className="font-bold text-sm mb-2 text-slate-100">Entity Types</h4>
         <div className="space-y-1">
           {Object.entries(ENTITY_TYPE_COLORS).map(([type, color]) => (
-            <div key={type} className="flex items-center gap-2 text-xs">
+            <div key={type} className="flex items-center gap-2 text-xs text-slate-300">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
               <span className="capitalize">{type}</span>
             </div>

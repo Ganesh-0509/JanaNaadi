@@ -1,8 +1,9 @@
 """AI Policy Brief endpoints — admin only."""
 
-from fastapi import APIRouter, Depends, Query, Path
+from fastapi import APIRouter, Depends, Query, Path, Request
 from app.core.auth import require_admin
 from app.core.supabase_client import get_supabase_admin
+from app.core.rate_limiter import limiter
 from app.services.brief_generator import generate_brief
 from app.models.schemas import BriefSummary, BriefDetail, BriefGenerateRequest
 
@@ -10,11 +11,16 @@ router = APIRouter(prefix="/api/briefs", tags=["briefs"])
 
 
 @router.post("/generate", response_model=BriefDetail)
+@limiter.limit("5/minute")  # Rate limit: Brief generation is very expensive
 async def generate_new_brief(
+    request: Request,
     req: BriefGenerateRequest,
     user: dict = Depends(require_admin),
 ):
-    """Generate a new AI policy brief."""
+    """Generate a new AI policy brief.
+    
+    Rate limited to 5 requests/minute - this is a very expensive AI operation.
+    """
     result = await generate_brief(req.scope_type, req.scope_id, req.period)
     return BriefDetail(**result)
 

@@ -1,8 +1,10 @@
 """Knowledge Graph & Multi-Domain Intelligence API."""
 
 import logging
-from fastapi import APIRouter, Query, HTTPException
+import asyncio
+from fastapi import APIRouter, Query, HTTPException, Request
 from app.core.supabase_client import get_supabase_admin
+from app.core.rate_limiter import limiter
 from app.models.entity_schemas import (
     Entity, EntityRelationship, KnowledgeGraphStats, 
     DomainIntelligenceScore, IntelligenceDomain
@@ -58,23 +60,43 @@ async def get_entity_relationships(entity_id: int, direction: str = Query("both"
     Args:
         direction: 'outgoing', 'incoming', or 'both'
     """
-    sb = get_supabase_admin()
+    import time
+    from httpx import ReadError, ConnectError, TimeoutException
     
     relationships = []
     
-    if direction in ["outgoing", "both"]:
-        outgoing = sb.table("entity_relationships")\
-            .select("*, source:source_entity_id(name, entity_type), target:target_entity_id(name, entity_type)")\
-            .eq("source_entity_id", entity_id)\
-            .execute()
-        relationships.extend(outgoing.data)
-    
-    if direction in ["incoming", "both"]:
-        incoming = sb.table("entity_relationships")\
-            .select("*, source:source_entity_id(name, entity_type), target:target_entity_id(name, entity_type)")\
-            .eq("target_entity_id", entity_id)\
-            .execute()
-        relationships.extend(incoming.data)
+    # Retry logic with exponential backoff
+    for attempt in range(3):
+        try:
+            sb = get_supabase_admin()
+            
+            if direction in ["outgoing", "both"]:
+                outgoing = sb.table("entity_relationships")\
+                    .select("*, source:source_entity_id(name, entity_type), target:target_entity_id(name, entity_type)")\
+                    .eq("source_entity_id", entity_id)\
+                    .execute()
+                relationships.extend(outgoing.data or [])
+            
+            if direction in ["incoming", "both"]:
+                incoming = sb.table("entity_relationships")\
+                    .select("*, source:source_entity_id(name, entity_type), target:target_entity_id(name, entity_type)")\
+                    .eq("target_entity_id", entity_id)\
+                    .execute()
+                relationships.extend(incoming.data or [])
+            
+            return relationships
+            
+        except (ReadError, ConnectError, TimeoutException, ConnectionError) as e:
+            if attempt < 2:  # Don't sleep on last attempt
+                await asyncio.sleep(0.5 * (attempt + 1))  # 0.5s, 1s
+                continue
+            # On final failure, return empty list instead of crashing
+            logger.warning(f"Failed to fetch relationships for entity {entity_id} after 3 attempts: {e}")
+            return []
+        except Exception as e:
+            # For other errors, return empty list to prevent crashes
+            logger.error(f"Unexpected error fetching relationships for entity {entity_id}: {e}")
+            return []
     
     return relationships
 
@@ -92,12 +114,17 @@ async def get_graph_stats():
     rels_count = sb.table("entity_relationships").select("*", count="exact").execute()
     total_relationships = rels_count.count or 0
     
-    # Entities by type
+    # Count mentions
+    mentions_count = sb.table("entity_mentions").select("*", count="exact").execute()
+    total_mentions = mentions_count.count or 0
+    
+    # Entities by type - simple query instead of RPC
     entities_by_type = {}
-    types_result = sb.rpc("count_entities_by_type").execute()
-    if types_result.data:
-        for row in types_result.data:
-            entities_by_type[row["entity_type"]] = row["count"]
+    all_entities = sb.table("entities").select("entity_type").execute()
+    if all_entities.data:
+        for entity in all_entities.data:
+            entity_type = entity.get("entity_type", "other")
+            entities_by_type[entity_type] = entities_by_type.get(entity_type, 0) + 1
     
     # Top entities
     top_entities_result = sb.table("entities")\
@@ -116,20 +143,13 @@ async def get_graph_stats():
         for e in top_entities_result.data
     ]
     
-    # Latest domain scores
-    domain_scores_result = sb.table("domain_intelligence")\
-        .select("*")\
-        .order("computed_at", desc=True)\
-        .limit(6)\
-        .execute()
-    
     return {
         "total_entities": total_entities,
         "total_relationships": total_relationships,
+        "total_mentions": total_mentions,
         "entities_by_type": entities_by_type,
-        "relationships_by_type": {},  # TODO: implement
-        "top_entities": top_entities,
-        "domain_scores": domain_scores_result.data
+        "relationship_types": {},  # TODO: implement
+        "top_entities": top_entities
     }
 
 
@@ -251,8 +271,12 @@ async def compute_domain_intelligence(
 
 
 @router.post("/extract/{entry_id}")
-async def extract_entities_from_entry(entry_id: int):
-    """Manually trigger entity extraction for a specific sentiment entry."""
+@limiter.limit("20/minute")  # Rate limit: single entry extraction
+async def extract_entities_from_entry(request: Request, entry_id: str):
+    """Manually trigger entity extraction for a specific sentiment entry.
+    
+    Rate limited to 20 requests/minute to prevent API quota exhaustion.
+    """
     sb = get_supabase_admin()
     
     # Get the entry
@@ -271,3 +295,85 @@ async def extract_entities_from_entry(entry_id: int):
     )
     
     return result
+
+
+@router.post("/extract-batch")
+@limiter.limit("10/minute")  # Rate limit: prevents spam, saves API costs
+async def extract_entities_batch(
+    request: Request,
+    limit: int = Query(25, le=100, description="Number of entries to process"),
+    domain: str | None = Query(None, description="Filter by domain"),
+):
+    """Extract entities from recent sentiment entries in batch.
+    
+    This populates the knowledge graph by processing recent entries.
+    Useful for initial setup or catching up on unprocessed data.
+    
+    Note: Reduced limits (25-100) to prevent connection issues.
+    Rate limited to 10 requests/minute to prevent API quota exhaustion.
+    """
+    sb = get_supabase_admin()
+    
+    # Get recent entries
+    query = sb.table("sentiment_entries")\
+        .select("id, cleaned_text, sentiment, domain")\
+        .order("ingested_at", desc=True)\
+        .limit(limit)
+    
+    if domain:
+        query = query.eq("domain", domain)
+    
+    entries = query.execute()
+    
+    if not entries.data:
+        return {"message": "No entries found", "processed": 0}
+    
+    logger.info(f"Processing {len(entries.data)} entries for entity extraction")
+    
+    processed = 0
+    total_entities = 0
+    total_relationships = 0
+    errors = 0
+    
+    for i, entry in enumerate(entries.data):
+        try:
+            # Check if already processed
+            existing_mentions = sb.table("entity_mentions")\
+                .select("id")\
+                .eq("entry_id", entry["id"])\
+                .limit(1)\
+                .execute()
+            
+            if existing_mentions.data:
+                logger.debug(f"Entry {entry['id']} already processed, skipping")
+                continue
+            
+            # Extract entities
+            result = await process_entry_for_entities(
+                entry_id=entry["id"],
+                text=entry["cleaned_text"],
+                sentiment=entry.get("sentiment")
+            )
+            
+            if result:
+                processed += 1
+                total_entities += result.get("entities_stored", 0)
+                total_relationships += result.get("relationships_stored", 0)
+            
+            # Add delay between entries to prevent connection issues
+            if i < len(entries.data) - 1:  # Not last entry
+                await asyncio.sleep(0.3)
+            
+        except Exception as e:
+            logger.error(f"Failed to process entry {entry['id']}: {e}")
+            errors += 1
+            continue
+    
+    return {
+        "message": f"Batch extraction complete",
+        "entries_processed": processed,
+        "entries_skipped": len(entries.data) - processed - errors,
+        "errors": errors,
+        "total_entities_created": total_entities,
+        "total_relationships_created": total_relationships
+    }

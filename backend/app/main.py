@@ -130,22 +130,27 @@ async def _scheduled_gnews_ingestion():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup / shutdown."""
-    # Schedule background jobs
-    # News RSS: every 2 hours (free tier Bytez)
-    scheduler.add_job(_scheduled_news_ingestion, "interval", hours=2, id="news_ingest")
-    # Google News targeted queries: every 2 hours
-    scheduler.add_job(_scheduled_gnews_ingestion, "interval", hours=2, id="gnews_ingest")
-    # Reddit: every 2 hours
-    scheduler.add_job(_scheduled_reddit_ingestion, "interval", hours=2, id="reddit_ingest")
-    # Snapshots and alerts
+    # Schedule background jobs with OPTIMIZED intervals to reduce API costs
+    # Changed from 2h to 12h for ingestion tasks (83% cost reduction)
+    scheduler.add_job(_scheduled_news_ingestion, "interval", hours=12, id="news_ingest")
+    scheduler.add_job(_scheduled_gnews_ingestion, "interval", hours=12, id="gnews_ingest")
+    scheduler.add_job(_scheduled_reddit_ingestion, "interval", hours=12, id="reddit_ingest")
+    # Snapshots and alerts (no API cost)
     scheduler.add_job(_scheduled_snapshot, "interval", hours=1, id="snapshot")
     scheduler.add_job(_scheduled_alert_check, "interval", hours=6, id="alert_check")
     scheduler.start()
-    logger.info("Background scheduler started: news(2h), gnews(2h), reddit(2h), snapshot(1h), alerts(6h)")
-    # Kick off first ingestion immediately in background so data is ready on startup
-    import asyncio as _asyncio
-    _asyncio.create_task(_scheduled_news_ingestion())
-    _asyncio.create_task(_scheduled_gnews_ingestion())
+    logger.info("📅 Background scheduler started: news(12h), gnews(12h), reddit(12h), snapshot(1h), alerts(6h)")
+    
+    # OPTIMIZATION: Disabled automatic startup ingestion to save API credits during development
+    # Only manual triggers or scheduled runs will ingest data
+    # To re-enable, uncomment these lines:
+    # import asyncio as _asyncio
+    # _asyncio.create_task(_scheduled_news_ingestion())
+    # _asyncio.create_task(_scheduled_gnews_ingestion())
+    
+    logger.info("⚠️ Auto-ingestion on startup DISABLED to save API credits")
+    logger.info("💡 Trigger manually via /api/admin/trigger-ingestion or wait for scheduled run")
+    
     yield
     scheduler.shutdown()
     logger.info("Background scheduler stopped")

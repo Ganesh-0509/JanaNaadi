@@ -44,7 +44,7 @@ export interface KnowledgeGraphStats {
   total_entities: number;
   total_relationships: number;
   total_mentions: number;
-  entity_types: Record<string, number>;
+  entities_by_type: Record<string, number>;
   relationship_types: Record<string, number>;
   top_entities: Array<{ id: number; name: string; mention_count: number }>;
 }
@@ -82,7 +82,7 @@ export const getEntities = async (params?: {
   limit?: number;
   offset?: number;
 }): Promise<Entity[]> => {
-  const response = await apiClient.get('/ontology/entities', { params });
+  const response = await apiClient.get('/api/ontology/entities', { params });
   return response.data;
 };
 
@@ -90,7 +90,7 @@ export const getEntities = async (params?: {
  * Get entity by ID
  */
 export const getEntity = async (id: number): Promise<Entity> => {
-  const response = await apiClient.get(`/ontology/entities/${id}`);
+  const response = await apiClient.get(`/api/ontology/entities/${id}`);
   return response.data;
 };
 
@@ -98,7 +98,7 @@ export const getEntity = async (id: number): Promise<Entity> => {
  * Get entity with all its relationships
  */
 export const getEntityRelationships = async (id: number): Promise<EntityWithRelationships> => {
-  const response = await apiClient.get(`/ontology/entities/${id}/relationships`);
+  const response = await apiClient.get(`/api/ontology/entities/${id}/relationships`);
   return response.data;
 };
 
@@ -106,7 +106,7 @@ export const getEntityRelationships = async (id: number): Promise<EntityWithRela
  * Get knowledge graph statistics
  */
 export const getGraphStats = async (): Promise<KnowledgeGraphStats> => {
-  const response = await apiClient.get('/ontology/graph/stats');
+  const response = await apiClient.get('/api/ontology/graph/stats');
   return response.data;
 };
 
@@ -118,7 +118,7 @@ export const getDomainIntelligence = async (params?: {
   scope?: string;
   scope_id?: number;
 }): Promise<DomainIntelligence[]> => {
-  const response = await apiClient.get('/ontology/domain/intelligence', { params });
+  const response = await apiClient.get('/api/ontology/domain/intelligence', { params });
   return response.data;
 };
 
@@ -130,7 +130,7 @@ export const computeDomainIntelligence = async (
   scope: string = 'national',
   scope_id?: number
 ): Promise<DomainIntelligence> => {
-  const response = await apiClient.post(`/ontology/domain/${domain}/compute`, null, {
+  const response = await apiClient.post(`/api/ontology/domain/${domain}/compute`, null, {
     params: { scope, scope_id }
   });
   return response.data;
@@ -144,7 +144,7 @@ export const extractEntitiesFromEntry = async (entryId: string): Promise<{
   relationships: EntityRelationship[];
   message: string;
 }> => {
-  const response = await apiClient.post(`/ontology/extract/${entryId}`);
+  const response = await apiClient.post(`/api/ontology/extract/${entryId}`);
   return response.data;
 };
 
@@ -169,11 +169,23 @@ export const getGraphData = async (params?: {
 }> => {
   const entities = await getEntities({ ...params, limit: params?.limit || 100 });
   
-  // Fetch relationships for all entities
-  const relationshipsPromises = entities.map(e => 
-    getEntityRelationships(e.id).catch(() => ({ ...e, relationships: [] }))
-  );
-  const entitiesWithRels = await Promise.all(relationshipsPromises);
+  // Fetch relationships in batches to avoid overwhelming the connection pool
+  const BATCH_SIZE = 10;
+  const entitiesWithRels = [];
+  
+  for (let i = 0; i < entities.length; i += BATCH_SIZE) {
+    const batch = entities.slice(i, i + BATCH_SIZE);
+    const batchPromises = batch.map(e => 
+      getEntityRelationships(e.id).catch(() => ({ ...e, relationships: [] }))
+    );
+    const batchResults = await Promise.all(batchPromises);
+    entitiesWithRels.push(...batchResults);
+    
+    // Small delay between batches to prevent socket exhaustion
+    if (i + BATCH_SIZE < entities.length) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  }
   
   // Build nodes
   const nodes = entities.map(entity => ({

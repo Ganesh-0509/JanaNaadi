@@ -1,8 +1,9 @@
 """Alert management endpoints — admin only."""
 
-from fastapi import APIRouter, Depends, Query, Path, HTTPException
+from fastapi import APIRouter, Depends, Query, Path, HTTPException, Request
 from app.core.auth import require_admin
 from app.core.supabase_client import get_supabase_admin
+from app.core.rate_limiter import limiter
 from app.models.schemas import AlertOut
 from app.services.gemini_service import generate_action_recommendations
 
@@ -55,13 +56,17 @@ async def mark_alert_resolved(
 
 
 @router.post("/{alert_id}/recommend")
+@limiter.limit("10/minute")  # Rate limit: AI recommendations are expensive
 async def get_recommendations(
+    request: Request,
     alert_id: str = Path(...),
     user: dict = Depends(require_admin),
 ):
     """
     Generate AI-powered government action recommendations for an alert.
     Uses Gemini to produce structured, department-specific action plans.
+    
+    Rate limited to 10 requests/minute to prevent API quota exhaustion.
     """
     sb = get_supabase_admin()
 

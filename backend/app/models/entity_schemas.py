@@ -93,7 +93,7 @@ class KnowledgeGraphStats(BaseModel):
     """Statistics about the knowledge graph."""
     total_entities: int
     total_relationships: int
+    total_mentions: int
     entities_by_type: dict[str, int]
-    relationships_by_type: dict[str, int]
+    relationship_types: dict[str, int]  # Renamed from relationships_by_type
     top_entities: list[dict]  # [{name, type, mention_count, sentiment}]
-    domain_scores: list[DomainIntelligenceScore]

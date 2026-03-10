@@ -21,23 +21,56 @@ _entry_queue: asyncio.Queue = asyncio.Queue(maxsize=500)
 # In-memory name caches (loaded once, reused for all WS pushes)
 _state_names: dict[int, str] = {}
 _topic_names: dict[int, str] = {}
+_cache_load_attempts: int = 0
+_cache_load_failed: bool = False
 
 
 def _ensure_caches() -> None:
-    """Populate state and topic name caches lazily (sync — called from sync context)."""
-    global _state_names, _topic_names
+    """Populate state and topic name caches lazily with retry logic."""
+    global _state_names, _topic_names, _cache_load_attempts, _cache_load_failed
+    
+    # If caches are already loaded, return
     if _state_names and _topic_names:
         return
+    
+    # If we've failed too many times, skip to avoid spam
+    if _cache_load_failed and _cache_load_attempts > 10:
+        return
+    
+    _cache_load_attempts += 1
+    
     try:
         sb = get_supabase_admin()
+        
+        # Load state names if not cached
         if not _state_names:
-            rows = sb.table("states").select("id, name").execute()
-            _state_names = {r["id"]: r["name"] for r in rows.data or []}
+            try:
+                rows = sb.table("states").select("id, name").execute()
+                _state_names = {r["id"]: r["name"] for r in rows.data or []}
+                logger.info(f"✅ WS cache: Loaded {len(_state_names)} states")
+            except Exception as e:
+                logger.debug(f"Failed to load states cache: {e}")
+        
+        # Load topic names if not cached
         if not _topic_names:
-            rows = sb.table("topic_taxonomy").select("id, name").execute()
-            _topic_names = {r["id"]: r["name"] for r in rows.data or []}
+            try:
+                rows = sb.table("topic_taxonomy").select("id, name").execute()
+                _topic_names = {r["id"]: r["name"] for r in rows.data or []}
+                logger.info(f"✅ WS cache: Loaded {len(_topic_names)} topics")
+            except Exception as e:
+                logger.debug(f"Failed to load topics cache: {e}")
+        
+        # If we successfully loaded something, reset failure flag
+        if _state_names or _topic_names:
+            _cache_load_failed = False
+            
     except Exception as e:
-        logger.warning(f"WS cache load failed: {e}")
+        _cache_load_failed = True
+        # Only log warning every 5 attempts to avoid spam
+        if _cache_load_attempts % 5 == 0:
+            logger.warning(f"WS cache load failed (attempt {_cache_load_attempts}): {type(e).__name__}")
+        else:
+            logger.debug(f"WS cache load failed: {e}")
 
 
 def publish_voice_entry(entry: dict) -> None:

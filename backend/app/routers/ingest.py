@@ -3,6 +3,7 @@
 import asyncio
 import csv
 import io
+import logging
 from uuid import uuid4
 from fastapi import APIRouter, Depends, UploadFile, File, BackgroundTasks
 from app.core.auth import require_admin
@@ -13,7 +14,26 @@ from app.services.geo_engine import geolocate
 from app.services.topic_engine import match_topic
 from app.services.dedup_service import normalize_text, is_near_duplicate
 
+logger = logging.getLogger("jananaadi.ingest")
 router = APIRouter(prefix="/api/ingest", tags=["ingest"])
+
+
+def _retry_supabase_query(query_fn, max_retries=3):
+    """Retry Supabase queries on transient connection errors (HTTP/2 connection termination)."""
+    import time
+    from httpx import RemoteProtocolError
+    
+    for attempt in range(max_retries):
+        try:
+            return query_fn()
+        except RemoteProtocolError as e:
+            if attempt < max_retries - 1:
+                wait_time = 0.1 * (2 ** attempt)  # Exponential backoff: 0.1s, 0.2s, 0.4s
+                logger.warning(f"Supabase connection error (attempt {attempt + 1}/{max_retries}), retrying in {wait_time}s...")
+                time.sleep(wait_time)
+            else:
+                logger.error(f"Supabase connection failed after {max_retries} attempts")
+                raise
 
 # Tracks the result of the last ingestion run for each source so the status
 # endpoint can report actual counts rather than just "triggered".
@@ -331,25 +351,25 @@ async def ingest_gnews(
 
 @router.get("/status", response_model=IngestStatus)
 async def ingest_status(user: dict = Depends(require_admin)):
-    """Get ingestion status overview."""
+    """Get ingestion status overview with retry logic for transient connection errors."""
     sb = get_supabase_admin()
     from datetime import datetime, timedelta, timezone
 
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
 
-    # Total entries today
-    total_today_res = (
-        sb.table("sentiment_entries")
+    # Total entries today - wrapped in retry
+    total_today_res = _retry_supabase_query(
+        lambda: sb.table("sentiment_entries")
         .select("id", count="exact")
         .gte("ingested_at", today_start.isoformat())
         .execute()
     )
 
-    # Per-source counts from DB today (reflects scheduler + manual)
+    # Per-source counts from DB today (reflects scheduler + manual) - wrapped in retry
     source_counts: dict[str, int] = {}
     for src in ("twitter", "news", "reddit", "csv", "manual"):
-        res = (
-            sb.table("sentiment_entries")
+        res = _retry_supabase_query(
+            lambda src=src: sb.table("sentiment_entries")
             .select("id", count="exact")
             .eq("source", src)
             .gte("ingested_at", today_start.isoformat())

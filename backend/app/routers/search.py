@@ -1,7 +1,8 @@
 """Search endpoints."""
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Request
 from app.core.supabase_client import get_supabase_admin
+from app.core.rate_limiter import limiter
 from app.models.schemas import SentimentEntryBrief
 from app.services.bytez_service import call_bytez_model
 
@@ -104,13 +105,17 @@ async def search_entries(
 
 
 @router.post("/summarize")
+@limiter.limit("15/minute")  # Rate limit: AI summarization is expensive
 async def summarize_search(
+    request: Request,
     q: str = Query("", description="Search query"),
     limit: int = Query(100, le=200, description="Number of recent entries to analyze"),
 ):
     """
     Generate an AI summary of sentiment entries matching the search query.
     Returns key patterns, trends, and sentiment overview from the voices.
+    
+    Rate limited to 15 requests/minute to prevent API quota exhaustion.
     """
     sb = get_supabase_admin()
     
@@ -173,7 +178,8 @@ Format as JSON:
 }}"""
 
     try:
-        result_text = await call_bytez_model(prompt, max_tokens=400)
+        # OPTIMIZATION: Reduced token limit 400→300 (25% savings)
+        result_text = await call_bytez_model(prompt, max_tokens=300)
         import json
         ai_result = json.loads(result_text)
     except Exception:
