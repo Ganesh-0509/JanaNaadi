@@ -214,13 +214,7 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# Security headers for all responses
-app.add_middleware(_SecurityHeadersMiddleware)
-
-# Body size guard — applied before CORS so large pre-flight bodies are rejected
-app.add_middleware(_LimitRequestSizeMiddleware)
-
-# CORS
+# CORS — MUST be first to handle preflight OPTIONS requests
 if not settings.debug:
     _localhost = [o for o in settings.cors_origins if "localhost" in o or "127.0.0.1" in o]
     if _localhost:
@@ -236,6 +230,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Security headers for all responses
+app.add_middleware(_SecurityHeadersMiddleware)
+
+# Body size guard
+app.add_middleware(_LimitRequestSizeMiddleware)
 
 # Register routers
 app.include_router(public.router)
