@@ -31,7 +31,12 @@ class Settings(BaseSettings):
     debug: bool = False
     # Override via CORS_ORIGINS env var (comma-separated or JSON array).
     # In production (Render), set CORS_ORIGINS=https://your-frontend.onrender.com
-    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"]
+    cors_origins: list[str] = [
+        "http://localhost:5173", 
+        "http://localhost:5174", 
+        "http://localhost:3000",
+        "https://jana-naadi.vercel.app"
+    ]
 
     @field_validator("cors_origins", mode="before")
     @classmethod

@@ -19,7 +19,7 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: CORS_ORIGINS
-        value: https://jananaadi-web.onrender.com
+        value: https://jana-naadi.vercel.app
     healthCheckPath: /health
     scaling:
       minInstances: 1
