@@ -14,7 +14,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from app.core.settings import get_settings
 from app.core.rate_limiter import limiter
-from app.routers import public, heatmap, analysis, trends, search, alerts, briefs, ingest, admin
+from app.routers import public, heatmap, analysis, trends, search, alerts, briefs, ingest, admin, ontology
 from app.routers import ws as ws_router
 
 logger = logging.getLogger("jananaadi.scheduler")
@@ -26,7 +26,8 @@ async def _scheduled_news_ingestion():
     """Background job: fetch and process RSS news feeds."""
     try:
         from app.ingesters.news_ingester import NewsIngester
-        from app.routers.ingest import _process_and_store
+        from app.routers.ingest import _process_and_store, _last_run_info
+        from datetime import datetime, timezone
         ingester = NewsIngester()
         entries = await ingester.fetch()
         count = 0
@@ -42,6 +43,8 @@ async def _scheduled_news_ingestion():
                     count += 1
             except Exception:
                 continue
+            await asyncio.sleep(0)  # yield between entries so other requests aren't blocked
+        _last_run_info["news"] = {"ran_at": datetime.now(timezone.utc).isoformat(), "count": count}
         logger.info(f"Scheduled news ingestion: {count} new entries")
     except Exception as e:
         logger.error(f"Scheduled news ingestion failed: {e}")
@@ -67,15 +70,82 @@ async def _scheduled_alert_check():
         logger.error(f"Scheduled alert check failed: {e}")
 
 
+async def _scheduled_reddit_ingestion():
+    """Background job: fetch posts from India-related subreddits."""
+    try:
+        from app.ingesters.reddit_ingester import RedditIngester
+        from app.routers.ingest import _process_and_store, _last_run_info
+        from datetime import datetime, timezone
+        ingester = RedditIngester()
+        entries = await ingester.fetch()
+        count = 0
+        for entry in entries:
+            try:
+                result = await _process_and_store(
+                    entry["text"], "reddit",
+                    location_hint=entry.get("location"),
+                    source_id=entry.get("source_id"),
+                    source_url=entry.get("source_url"),
+                )
+                if result:
+                    count += 1
+            except Exception:
+                continue
+            await asyncio.sleep(0)  # yield between entries
+        _last_run_info["reddit"] = {"ran_at": datetime.now(timezone.utc).isoformat(), "count": count}
+        logger.info(f"Scheduled Reddit ingestion: {count} new entries")
+    except Exception as e:
+        logger.error(f"Scheduled Reddit ingestion failed: {e}")
+
+
+async def _scheduled_gnews_ingestion():
+    """Background job: fetch targeted Google News RSS articles."""
+    try:
+        from app.ingesters.gnews_ingester import GNewsIngester
+        from app.routers.ingest import _process_and_store, _last_run_info
+        from datetime import datetime, timezone
+        ingester = GNewsIngester()
+        entries = await ingester.fetch()
+        count = 0
+        for entry in entries:
+            try:
+                result = await _process_and_store(
+                    entry["text"], "news",
+                    location_hint=entry.get("location"),
+                    source_id=entry.get("source_id"),
+                    source_url=entry.get("source_url"),
+                    published_at=entry.get("published_at"),
+                )
+                if result:
+                    count += 1
+            except Exception:
+                continue
+            await asyncio.sleep(0)  # yield between entries
+        _last_run_info["gnews"] = {"ran_at": datetime.now(timezone.utc).isoformat(), "count": count}
+        logger.info(f"Scheduled GNews ingestion: {count} new entries")
+    except Exception as e:
+        logger.error(f"Scheduled GNews ingestion failed: {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup / shutdown."""
     # Schedule background jobs
+    # News RSS: every 2 hours (free tier Bytez)
     scheduler.add_job(_scheduled_news_ingestion, "interval", hours=2, id="news_ingest")
+    # Google News targeted queries: every 2 hours
+    scheduler.add_job(_scheduled_gnews_ingestion, "interval", hours=2, id="gnews_ingest")
+    # Reddit: every 2 hours
+    scheduler.add_job(_scheduled_reddit_ingestion, "interval", hours=2, id="reddit_ingest")
+    # Snapshots and alerts
     scheduler.add_job(_scheduled_snapshot, "interval", hours=1, id="snapshot")
     scheduler.add_job(_scheduled_alert_check, "interval", hours=6, id="alert_check")
     scheduler.start()
-    logger.info("Background scheduler started: news(2h), snapshot(1h), alerts(6h)")
+    logger.info("Background scheduler started: news(2h), gnews(2h), reddit(2h), snapshot(1h), alerts(6h)")
+    # Kick off first ingestion immediately in background so data is ready on startup
+    import asyncio as _asyncio
+    _asyncio.create_task(_scheduled_news_ingestion())
+    _asyncio.create_task(_scheduled_gnews_ingestion())
     yield
     scheduler.shutdown()
     logger.info("Background scheduler stopped")
@@ -98,6 +168,36 @@ class _LimitRequestSizeMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
 
 
+class _SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Add security headers to all responses."""
+    async def dispatch(self, request: StarletteRequest, call_next):
+        response = await call_next(request)
+        # Content Security Policy - restrict sources for scripts, styles, etc.
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "  # React requires inline scripts
+            "style-src 'self' 'unsafe-inline'; "  # Tailwind uses inline styles
+            "img-src 'self' data: https:; "  # Allow images from https sources
+            "font-src 'self' data:; "
+            "connect-src 'self' ws: wss: https:; "  # Allow WebSocket and API calls
+            "frame-ancestors 'none'; "  # Prevent clickjacking (same as X-Frame-Options)
+        )
+        # Prevent MIME type sniffing
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        # Prevent clickjacking
+        response.headers["X-Frame-Options"] = "DENY"
+        # XSS protection (legacy but still useful for older browsers)
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        # Strict Transport Security - force HTTPS (only in production)
+        if not settings.debug:
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        # Referrer policy - don't leak referrer to external sites
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        # Permissions policy - restrict access to browser features
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        return response
+
+
 app = FastAPI(
     title="JanaNaadi API",
     description="India's Real-Time Public Sentiment Intelligence Platform",
@@ -108,6 +208,9 @@ app = FastAPI(
 # Rate limiting
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Security headers for all responses
+app.add_middleware(_SecurityHeadersMiddleware)
 
 # Body size guard — applied before CORS so large pre-flight bodies are rejected
 app.add_middleware(_LimitRequestSizeMiddleware)
@@ -139,6 +242,7 @@ app.include_router(alerts.router)
 app.include_router(briefs.router)
 app.include_router(ingest.router)
 app.include_router(admin.router)
+app.include_router(ontology.router)
 app.include_router(ws_router.router)
 
 

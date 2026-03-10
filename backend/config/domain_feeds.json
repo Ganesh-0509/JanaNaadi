@@ -1,0 +1,44 @@
+{
+  "defense": [
+    "https://pib.gov.in/RssMain.aspx?ModId=9&Lang=1&Regid=3",
+    "https://mod.gov.in/rss/press-releases",
+    "https://indianarmy.nic.in/rss/press-releases.xml",
+    "https://www.thehindu.com/news/national/feeder/default.rss",
+    "https://economictimes.indiatimes.com/news/defence/rssfeeds/48883182.cms",
+    "https://www.ndtv.com/india/rss/defence",
+    "https://www.deccanherald.com/rss/national-defence.rss"
+  ],
+  "climate": [
+    "https://www.thehindu.com/sci-tech/energy-and-environment/feeder/default.rss",
+    "https://indianexpress.com/section/india/environment/feed/",
+    "https://www.downtoearth.org.in/rss",
+    "https://www.ndtv.com/environment/rss",
+    "https://timesofindia.indiatimes.com/rssfeeds/2647163.cms",
+    "https://www.hindustantimes.com/rss/environment/rssfeed.xml",
+    "https://www.news18.com/rss/environment.xml"
+  ],
+  "technology": [
+    "https://pib.gov.in/RssMain.aspx?ModId=9&Lang=1&Regid=4",
+    "https://www.thehindu.com/sci-tech/technology/feeder/default.rss",
+    "https://economictimes.indiatimes.com/tech/rssfeeds/13357270.cms",
+    "https://www.ndtv.com/convergence/ndtv/rss/technology.xml",
+    "https://indianexpress.com/section/technology/feed/",
+    "https://www.news18.com/rss/tech.xml"
+  ],
+  "economics": [
+    "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
+    "https://www.thehindubusinessline.com/economy/feed/",
+    "https://indianexpress.com/section/business/economy/feed/",
+    "https://www.livemint.com/rss/economy",
+    "https://www.business-standard.com/rss/economy-policy-102.rss",
+    "https://www.moneycontrol.com/rss/economy.xml"
+  ],
+  "geopolitics": [
+    "https://pib.gov.in/RssMain.aspx?ModId=9&Lang=1&Regid=2",
+    "https://www.thehindu.com/news/international/feeder/default.rss",
+    "https://indianexpress.com/section/world/feed/",
+    "https://economictimes.indiatimes.com/news/politics-and-nation/rssfeeds/1052732854.cms",
+    "https://www.ndtv.com/world-news/rss",
+    "https://timesofindia.indiatimes.com/world/rssfeeds/-2128936835.cms"
+  ]
+}

@@ -1,71 +1,126 @@
 # JanaNaadi — India's Real-Time Public Sentiment Intelligence Platform
+## AI-Powered Global Ontology Engine
 
 > **"JanaNaadi"** = "Pulse of the People" (Jana = People, Naadi = Pulse)
 
 ## Overview
 
-JanaNaadi is an AI-powered multilingual sentiment intelligence platform that aggregates citizen voice from social media, news, and surveys — and maps it to India's democratic geography (booth → ward → constituency → district → state) with real-time heatmaps, trend detection, and auto-generated policy briefs for governance leaders.
+JanaNaadi is an AI-powered multilingual sentiment intelligence platform that combines:
+- **Sentiment Intelligence**: Aggregates citizen voices from social media, news, and surveys
+- **Knowledge Graph**: Extracts entities and relationships using AI (Problem Statement #1)
+- **Geographic Mapping**: Maps to India's democratic geography (booth → ward → constituency → district → state)
+- **Multi-Domain Intelligence**: Tracks 6 strategic domains (geopolitics, economics, defense, climate, technology, society)
+- **Real-time Analytics**: Heatmaps, trend detection, and auto-generated policy briefs
+
+**Built for India Innovates 2026 — Digital Democracy Track**
 
 ## Tech Stack
 
-- **Backend:** FastAPI (Python), Supabase (PostgreSQL), Google Gemini 2.0 Flash, scikit-learn
-- **Frontend:** React 18 + TypeScript, Vite, Leaflet.js, Recharts, Tailwind CSS
-- **NLP:** Gemini API (multilingual sentiment + topic extraction + translation), ML fallback classifier
+- **Backend:** FastAPI (Python), Supabase (PostgreSQL), Bytez AI (Gemini 2.5 Flash)
+- **Frontend:** React 18 + TypeScript, Vite, D3.js, Leaflet.js, Recharts, Tailwind CSS
+- **NLP:** Bytez API (multilingual sentiment + entity extraction + translation)
+- **Knowledge Graph:** PostgreSQL with entities, relationships, and domain intelligence
+- **Real-time:** APScheduler (auto-ingestion), WebSocket (live updates)
 
 ## Quick Start
 
-### Backend
+### 1. Database Setup (Supabase)
+```bash
+# Run the complete schema in Supabase SQL Editor
+# File: backend/COMPLETE_DATABASE_SCHEMA.sql
+# This creates all 12 tables, indexes, triggers, and functions
+```
+
+### 2. Backend Setup
 ```bash
 cd backend
 pip install -r requirements.txt
-cp .env.example .env  # Fill in your keys
+cp .env.example .env  # Fill in your Supabase & Bytez API keys
 uvicorn app.main:app --reload --port 8000
 ```
 
-### Frontend
+### 3. Frontend Setup
 ```bash
 cd frontend
 npm install
-cp .env.example .env  # Fill in your keys
+cp .env.example .env  # Fill in your Supabase URL and anon key
 npm run dev
 ```
+
+### 4. Access the Application
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
+- **Knowledge Graph**: http://localhost:5173/ontology (requires login)
 
 ## Project Structure
 
 ```
-jananaadi/
-├── backend/          # FastAPI API server
+JanaNaadi/
+├── backend/                    # FastAPI API server
 │   ├── app/
-│   │   ├── core/     # Settings, auth, DB client, cache
-│   │   ├── routers/  # API endpoint handlers
-│   │   ├── services/ # Business logic (NLP, alerts, briefs)
-│   │   ├── ingesters/# Data source connectors
-│   │   ├── ml/       # Fallback ML sentiment model
-│   │   ├── models/   # Pydantic schemas
-│   │   └── data/     # Static data files
-│   └── config/       # External config (RSS feeds, keywords)
-├── frontend/         # React + TypeScript dashboard
+│   │   ├── core/              # Settings, auth, DB client, cache
+│   │   ├── routers/           # API endpoint handlers
+│   │   │   ├── public.py      # Public sentiment APIs
+│   │   │   ├── ontology.py    # Knowledge graph APIs ✨
+│   │   │   ├── analysis.py    # Analysis & summaries
+│   │   │   └── ...
+│   │   ├── services/          # Business logic
+│   │   │   ├── entity_service.py   # AI entity extraction ✨
+│   │   │   ├── nlp_service.py      # Sentiment analysis
+│   │   │   └── ...
+│   │   ├── ingesters/         # Data source connectors
+│   │   │   ├── domain_ingester.py  # Multi-domain RSS ✨
+│   │   │   └── ...
+│   │   ├── models/            # Pydantic schemas
+│   │   │   ├── entity_schemas.py   # Entity models ✨
+│   │   │   └── schemas.py
+│   │   └── data/              # Static data files
+│   ├── config/
+│   │   ├── domain_feeds.json       # 32 domain RSS feeds ✨
+│   │   └── rss_feeds.json          # General news feeds
+│   ├── COMPLETE_DATABASE_SCHEMA.sql # Single-file deployment ✨
+│   └── requirements.txt
+├── frontend/                   # React + TypeScript dashboard
 │   └── src/
-│       ├── pages/    # Route-level page components
-│       ├── components/# Reusable UI components
-│       ├── api/      # API client layer
-│       ├── hooks/    # Custom React hooks
-│       ├── context/  # React Context providers
-│       └── utils/    # Helpers and formatters
-└── data/             # Seed data generation scripts
+│       ├── pages/
+│       │   ├── OntologyPage.tsx    # Knowledge graph UI ✨
+│       │   └── ...
+│       ├── components/
+│       │   ├── KnowledgeGraph.tsx  # D3.js visualization ✨
+│       │   └── ...
+│       ├── api/
+│       │   ├── ontology.ts         # Ontology APIs ✨
+│       │   └── ...
+│       └── hooks/
+│           ├── useKnowledgeGraph.ts # Graph hooks ✨
+│           └── ...
+├── ONTOLOGY_README.md         # Technical docs ✨
+├── PS1_ALIGNMENT_CHECK.md     # Hackathon alignment ✨
+└── README.md                  # This file
 ```
+**✨ = New for Global Ontology Engine (PS#1)**
 
 ## Environment Variables
 
 ### Backend (.env)
-```
+```env
+# Supabase Configuration
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_KEY=your-anon-key
 SUPABASE_SERVICE_KEY=your-service-role-key
+
+# Bytez AI (Primary - for NLP & Entity Extraction)
+BYTEZ_API_KEY=your-bytez-api-key
+BYTEZ_MODEL=google/gemini-2.5-flash
+
+# Gemini (Fallback)
 GEMINI_API_KEY=your-gemini-api-key
-TWITTER_BEARER_TOKEN=your-twitter-token (optional)
-REDDIT_CLIENT_ID=your-reddit-id (optional)
-REDDIT_CLIENT_SECRET=your-reddit-secret (optional)
+
+# Optional Data Sources
+TWITTER_BEARER_TOKEN=your-twitter-token
+REDDIT_CLIENT_ID=your-reddit-id
+REDDIT_CLIENT_SECRET=your-reddit-secret
 ```
 
 ### Frontend (.env)

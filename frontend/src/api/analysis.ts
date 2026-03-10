@@ -35,6 +35,18 @@ export async function searchEntries(params: Record<string, string | number | und
   return data;
 }
 
+export async function summarizeSearch(query: string, limit = 100) {
+  const { data } = await client.post('/api/search/summarize', null, { params: { q: query, limit } });
+  return data as {
+    summary: string;
+    key_themes: string[];
+    sentiment_analysis: string;
+    sentiment_overview: string;
+    entry_count: number;
+    sentiment_distribution: { positive: number; neutral: number; negative: number };
+  };
+}
+
 export interface ForecastPoint {
   date: string;
   forecast_score: number;

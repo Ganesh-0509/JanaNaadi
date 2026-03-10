@@ -1,5 +1,6 @@
 """Data ingestion endpoints — admin only."""
 
+import asyncio
 import csv
 import io
 from uuid import uuid4
@@ -16,7 +17,12 @@ router = APIRouter(prefix="/api/ingest", tags=["ingest"])
 
 # Tracks the result of the last ingestion run for each source so the status
 # endpoint can report actual counts rather than just "triggered".
-_last_run_info: dict[str, dict] = {"twitter": {}, "news": {}}
+_last_run_info: dict[str, dict] = {
+    "twitter": {},
+    "news": {},
+    "reddit": {},
+    "gnews": {},
+}
 
 
 async def _process_and_store(
@@ -26,35 +32,36 @@ async def _process_and_store(
     source_id: str | None = None,
     source_url: str | None = None,
     published_at: str | None = None,
+    domain: str | None = None,  # NEW: intelligence domain tag
 ):
     """Process a single text entry through the NLP pipeline and store it."""
-    from app.services.dedup_service import text_hash
     from datetime import datetime, timezone
 
     sb = get_supabase_admin()
+    loop = asyncio.get_event_loop()
 
-    # Dedup: skip if exact duplicate exists
-    entry_hash = text_hash(text)
-    existing = (
-        sb.table("sentiment_entries")
-        .select("id")
-        .eq("cleaned_text", normalize_text(text))
-        .eq("source", source)
-        .limit(1)
-        .execute()
+    # Fast-path dedup: if we have a source_id, check it first (O(1) indexed lookup)
+    if source_id:
+        sid_check = await loop.run_in_executor(
+            None,
+            lambda: sb.table("sentiment_entries").select("id").eq("source_id", source_id).eq("source", source).limit(1).execute(),
+        )
+        if sid_check.data:
+            return None  # Already ingested this exact item
+
+    # Exact text dedup: same cleaned text + same source
+    cleaned = normalize_text(text)
+    existing = await loop.run_in_executor(
+        None,
+        lambda: sb.table("sentiment_entries").select("id").eq("cleaned_text", cleaned).eq("source", source).limit(1).execute(),
     )
     if existing.data:
-        return None  # Skip duplicate
+        return None  # Skip exact duplicate
 
-    # Near-duplicate check: compare against recent entries from same source
-    cleaned = normalize_text(text)
-    recent = (
-        sb.table("sentiment_entries")
-        .select("cleaned_text")
-        .eq("source", source)
-        .order("published_at", desc=True)
-        .limit(50)
-        .execute()
+    # Near-duplicate check against the 100 most recent entries from same source
+    recent = await loop.run_in_executor(
+        None,
+        lambda: sb.table("sentiment_entries").select("cleaned_text").eq("source", source).order("published_at", desc=True).limit(100).execute(),
     )
     for row in recent.data or []:
         if is_near_duplicate(cleaned, row["cleaned_text"], normalized=True):
@@ -82,6 +89,7 @@ async def _process_and_store(
         "confidence": nlp.confidence,
         "primary_topic_id": topic_id,
         "extracted_keywords": nlp.keywords,
+        "domain": domain,  # NEW: intelligence domain
         "state_id": geo.get("state_id"),
         "district_id": geo.get("district_id"),
         "constituency_id": geo.get("constituency_id"),
@@ -91,7 +99,7 @@ async def _process_and_store(
         "published_at": published_at or datetime.now(timezone.utc).isoformat(),
         "processed_at": datetime.now(timezone.utc).isoformat(),
     }
-    sb.table("sentiment_entries").insert(entry).execute()
+    await loop.run_in_executor(None, lambda: sb.table("sentiment_entries").insert(entry).execute())
 
     # Invalidate cached snapshots so dashboards reflect the new entry
     from app.core.cache import invalidate_for_entry
@@ -250,6 +258,77 @@ async def ingest_news(
     return {"status": "triggered", "source": "news"}
 
 
+@router.post("/reddit")
+async def ingest_reddit(
+    background_tasks: BackgroundTasks,
+    user: dict = Depends(require_admin),
+):
+    """Trigger Reddit ingestion job."""
+    from app.ingesters.reddit_ingester import RedditIngester
+    from datetime import datetime, timezone
+
+    async def run_reddit_tracked():
+        ingester = RedditIngester()
+        entries = await ingester.fetch()
+        count = 0
+        for entry in entries:
+            try:
+                result = await _process_and_store(
+                    entry["text"],
+                    "reddit",
+                    location_hint=entry.get("location"),
+                    source_id=entry.get("source_id"),
+                    source_url=entry.get("source_url"),
+                )
+                if result:
+                    count += 1
+            except Exception:
+                continue
+        _last_run_info["reddit"] = {
+            "ran_at": datetime.now(timezone.utc).isoformat(),
+            "count": count,
+        }
+
+    background_tasks.add_task(run_reddit_tracked)
+    return {"status": "triggered", "source": "reddit"}
+
+
+@router.post("/gnews")
+async def ingest_gnews(
+    background_tasks: BackgroundTasks,
+    user: dict = Depends(require_admin),
+):
+    """Trigger Google News RSS ingestion job."""
+    from app.ingesters.gnews_ingester import GNewsIngester
+    from datetime import datetime, timezone
+
+    async def run_gnews_tracked():
+        ingester = GNewsIngester()
+        entries = await ingester.fetch()
+        count = 0
+        for entry in entries:
+            try:
+                result = await _process_and_store(
+                    entry["text"],
+                    "news",
+                    location_hint=entry.get("location"),
+                    source_id=entry.get("source_id"),
+                    source_url=entry.get("source_url"),
+                    published_at=entry.get("published_at"),
+                )
+                if result:
+                    count += 1
+            except Exception:
+                continue
+        _last_run_info["gnews"] = {
+            "ran_at": datetime.now(timezone.utc).isoformat(),
+            "count": count,
+        }
+
+    background_tasks.add_task(run_gnews_tracked)
+    return {"status": "triggered", "source": "gnews"}
+
+
 @router.get("/status", response_model=IngestStatus)
 async def ingest_status(user: dict = Depends(require_admin)):
     """Get ingestion status overview."""
@@ -257,21 +336,42 @@ async def ingest_status(user: dict = Depends(require_admin)):
     from datetime import datetime, timedelta, timezone
 
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-    total_today = (
+
+    # Total entries today
+    total_today_res = (
         sb.table("sentiment_entries")
         .select("id", count="exact")
         .gte("ingested_at", today_start.isoformat())
         .execute()
     )
 
+    # Per-source counts from DB today (reflects scheduler + manual)
+    source_counts: dict[str, int] = {}
+    for src in ("twitter", "news", "reddit", "csv", "manual"):
+        res = (
+            sb.table("sentiment_entries")
+            .select("id", count="exact")
+            .eq("source", src)
+            .gte("ingested_at", today_start.isoformat())
+            .execute()
+        )
+        source_counts[src] = res.count or 0
+
     tw = _last_run_info.get("twitter", {})
     nw = _last_run_info.get("news", {})
+    rd = _last_run_info.get("reddit", {})
+    gn = _last_run_info.get("gnews", {})
 
     return IngestStatus(
         twitter_last_run=tw.get("ran_at"),
         news_last_run=nw.get("ran_at"),
+        reddit_last_run=rd.get("ran_at"),
+        gnews_last_run=gn.get("ran_at"),
         twitter_last_count=tw.get("count"),
         news_last_count=nw.get("count"),
-        total_today=total_today.count or 0,
+        reddit_last_count=rd.get("count"),
+        gnews_last_count=gn.get("count"),
+        total_today=total_today_res.count or 0,
         queue_size=0,
+        source_counts=source_counts,
     )

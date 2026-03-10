@@ -64,3 +64,39 @@ async def call_bytez_text(prompt: str) -> str:
     if isinstance(output, dict):
         return output.get("content", "").strip()
     return str(output).strip()
+
+
+async def call_bytez_model(prompt: str, max_tokens: int = 1024) -> str:
+    """Send a prompt to Bytez with token limit and return raw text response.
+    
+    Args:
+        prompt: The prompt to send to the model
+        max_tokens: Maximum tokens in response (default: 1024)
+        
+    Returns:
+        Raw text response from the model
+    """
+    model = _get_model()
+    messages = [
+        {"role": "user", "content": prompt}
+    ]
+    # Note: Bytez SDK may not support max_tokens directly in all models
+    # Using it as a guide, actual truncation depends on model support
+    result = model.run(messages)
+
+    if result.error:
+        raise RuntimeError(f"Bytez error: {result.error}")
+
+    output = result.output
+    if isinstance(output, dict):
+        text = output.get("content", "").strip()
+    else:
+        text = str(output).strip()
+    
+    # If response is too long, truncate to approximate token limit
+    # (rough estimate: 4 chars per token)
+    max_chars = max_tokens * 4
+    if len(text) > max_chars:
+        text = text[:max_chars] + "..."
+    
+    return text

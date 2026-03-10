@@ -100,7 +100,7 @@ export default function StreamPage() {
               ? 'Connecting to live feed…'
               : 'Disconnected — retrying in 5s'}
           </p>
-          <p className="text-xs text-slate-600">Entries will appear here as they are ingested via the admin panel</p>
+          <p className="text-xs text-slate-600">News, Reddit &amp; citizen voices stream here automatically every 2 hours</p>
         </div>
       )}
 

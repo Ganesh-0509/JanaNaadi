@@ -60,6 +60,7 @@ class SentimentEntryOut(BaseModel):
     confidence: float
     primary_topic_id: int | None = None
     extracted_keywords: list[str] | None = None
+    domain: str | None = None  # geopolitics, economics, defense, climate, technology, society, general
     state_id: int | None = None
     district_id: int | None = None
     constituency_id: int | None = None
@@ -77,6 +78,9 @@ class SentimentEntryBrief(BaseModel):
     sentiment_score: float
     topic: str | None = None
     location: str | None = None
+    domain: str | None = None  # intelligence domain
+    source: str | None = None
+    source_url: str | None = None
     date: datetime | None = None
 
 
@@ -224,10 +228,16 @@ class BriefGenerateRequest(BaseModel):
 class IngestStatus(BaseModel):
     twitter_last_run: datetime | None = None
     news_last_run: datetime | None = None
+    reddit_last_run: datetime | None = None
+    gnews_last_run: datetime | None = None
     twitter_last_count: int | None = None
     news_last_count: int | None = None
+    reddit_last_count: int | None = None
+    gnews_last_count: int | None = None
     total_today: int = 0
     queue_size: int = 0
+    # Per-source totals from DB (reflects scheduler + manual runs)
+    source_counts: dict = {}
 
 
 class ManualEntryRequest(BaseModel):

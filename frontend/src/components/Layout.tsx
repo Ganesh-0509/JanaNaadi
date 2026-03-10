@@ -4,13 +4,14 @@ import { useAlerts } from '../hooks/useAlerts';
 import { useState } from 'react';
 import {
   Map, BarChart3, Bell, FileText, Database, LogOut, Users, Menu, X,
-  Flame, Radio, Search, LayoutDashboard,
+  Flame, Radio, Search, LayoutDashboard, Network,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { to: '/pulse', label: 'Community Pulse', icon: Users, public: true },
   { to: '/hotspots', label: 'Hotspots', icon: Flame, public: true },
   { to: '/gov', label: 'Gov Intelligence', icon: LayoutDashboard, public: false },
+  { to: '/ontology', label: 'Knowledge Graph', icon: Network, public: false },
   { to: '/map', label: 'Heatmap', icon: Map, public: false },
   { to: '/compare', label: 'Compare States', icon: BarChart3, public: false },
   { to: '/stream', label: 'Live Stream', icon: Radio, public: false },
@@ -122,8 +123,26 @@ export default function Layout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto md:ml-0">
-        <Outlet />
+      <main className="flex-1 overflow-auto md:ml-0 flex flex-col">
+        <div className="flex-1">
+          <Outlet />
+        </div>
+        
+        {/* Footer */}
+        <footer className="bg-slate-800/50 border-t border-slate-700 px-6 py-4 text-center text-sm text-slate-400">
+          <div className="max-w-4xl mx-auto space-y-2">
+            <p>
+              News content sourced from RSS feeds. Sentiment analysis by JanaNaadi. 
+              Original sources linked where available.{' '}
+              <Link to="/about" className="text-blue-400 hover:text-blue-300 underline">
+                View all data sources & attribution
+              </Link>
+            </p>
+            <p className="text-xs text-slate-500">
+              © 2025 JanaNaadi • Government of India — Citizen Intelligence Platform
+            </p>
+          </div>
+        </footer>
       </main>
     </div>
   );

@@ -47,6 +47,8 @@ def publish_voice_entry(entry: dict) -> None:
     topic_id = entry.get("primary_topic_id")
     payload = {
         "type": "entry",
+        "source_id": entry.get("source_id"),
+        "entry_id": entry.get("id"),
         "text": (entry.get("original_text") or "")[:280],
         "sentiment": entry.get("sentiment", "neutral"),
         "sentiment_score": entry.get("sentiment_score", 0),
@@ -153,7 +155,7 @@ async def websocket_live(websocket: WebSocket):
             sb = get_supabase_admin()
             result = (
                 sb.table("sentiment_entries")
-                .select("original_text, sentiment, sentiment_score, primary_topic_id, state_id, source, language")
+                .select("id, source_id, original_text, sentiment, sentiment_score, primary_topic_id, state_id, source, language")
                 .order("ingested_at", desc=True)
                 .limit(20)
                 .execute()
@@ -164,6 +166,8 @@ async def websocket_live(websocket: WebSocket):
                 topic_id = row.get("primary_topic_id")
                 hist = {
                     "type": "entry",
+                    "source_id": row.get("source_id"),
+                    "entry_id": row.get("id"),
                     "text": (row.get("original_text") or "")[:280],
                     "sentiment": row.get("sentiment", "neutral"),
                     "sentiment_score": row.get("sentiment_score") or 0,

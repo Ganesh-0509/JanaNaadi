@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, SlidersHorizontal, X, Loader2 } from 'lucide-react';
-import { searchEntries } from '../api/analysis';
+import { Search, SlidersHorizontal, X, Loader2, Sparkles } from 'lucide-react';
+import { searchEntries, summarizeSearch } from '../api/analysis';
 import { formatRelative } from '../utils/formatters';
 import { useSearchParams } from 'react-router-dom';
 
@@ -13,8 +13,18 @@ interface Entry {
   topic: string | null;
   state: string | null;
   source: string | null;
+  source_url: string | null;
   language: string | null;
   ingested_at: string | null;
+}
+
+interface Summary {
+  summary: string;
+  key_themes: string[];
+  sentiment_analysis: string;
+  sentiment_overview: string;
+  entry_count: number;
+  sentiment_distribution: { positive: number; neutral: number; negative: number };
 }
 
 const SENTIMENT_BORDER: Record<string, string> = {
@@ -42,6 +52,21 @@ export default function SearchPage() {
   const [hasMore, setHasMore] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [summarizing, setSummarizing] = useState(false);
+
+  const doSummarize = async () => {
+    if (!query.trim()) return;
+    setSummarizing(true);
+    try {
+      const result = await summarizeSearch(query.trim(), 100);
+      setSummary(result);
+    } catch (e) {
+      console.error('Summarize error:', e);
+    } finally {
+      setSummarizing(false);
+    }
+  };
 
   const doSearch = useCallback(async (reset = true) => {
     setLoading(true);
@@ -160,7 +185,69 @@ export default function SearchPage() {
           {loading ? <Loader2 size={15} className="animate-spin" /> : <Search size={15} />}
           Search
         </button>
+
+        {query.trim() && results.length > 0 && (
+          <button
+            onClick={doSummarize}
+            disabled={summarizing}
+            className="flex items-center gap-2 px-5 py-3 bg-purple-500 hover:bg-purple-600 disabled:opacity-50 rounded-xl text-sm font-medium"
+          >
+            {summarizing ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
+            AI Summary
+          </button>
+        )}
       </div>
+
+      {/* AI Summary Card */}
+      {summary && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-br from-purple-900/40 to-slate-800 rounded-xl border border-purple-500/30 p-5"
+        >
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Sparkles size={16} className="text-purple-400" />
+              <h3 className="font-bold text-purple-200">AI Summary</h3>
+            </div>
+            <button onClick={() => setSummary(null)} className="text-slate-500 hover:text-white">
+              <X size={16} />
+            </button>
+          </div>
+          <p className="text-sm text-slate-200 leading-relaxed mb-3">{summary.summary}</p>
+          {summary.key_themes.length > 0 && (
+            <div className="mb-3">
+              <p className="text-xs text-slate-400 mb-1.5">Key Themes</p>
+              <div className="flex flex-wrap gap-2">
+                {summary.key_themes.map((theme, i) => (
+                  <span key={i} className="px-2.5 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs">
+                    {theme}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {summary.sentiment_analysis && (
+            <div className="mb-3">
+              <p className="text-xs text-slate-400 mb-1">Sentiment Analysis</p>
+              <p className="text-xs text-slate-300">{summary.sentiment_analysis}</p>
+            </div>
+          )}
+          <div className="flex items-center gap-4 text-xs text-slate-400">
+            <span>{summary.entry_count} voices analyzed</span>
+            <span className={`font-medium ${
+              summary.sentiment_overview === 'positive' ? 'text-emerald-400' :
+              summary.sentiment_overview === 'negative' ? 'text-red-400' :
+              'text-yellow-400'
+            }`}>
+              Overall: {summary.sentiment_overview}
+            </span>
+            <span>
+              {summary.sentiment_distribution.positive}+ / {summary.sentiment_distribution.neutral}~ / {summary.sentiment_distribution.negative}−
+            </span>
+          </div>
+        </motion.div>
+      )}
 
       {/* Filters panel */}
       {showFilters && (
@@ -276,7 +363,19 @@ export default function SearchPage() {
                 <span className="px-2 py-0.5 rounded-full bg-slate-700 text-slate-400">{entry.state}</span>
               )}
               {entry.source && (
-                <span className="px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 capitalize">{entry.source}</span>
+                entry.source_url ? (
+                  <a
+                    href={entry.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 capitalize hover:bg-purple-500/25 transition-colors"
+                    title="View original source"
+                  >
+                    {entry.source} ↗
+                  </a>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 capitalize">{entry.source}</span>
+                )
               )}
               {entry.language && (
                 <span className="px-2 py-0.5 rounded-full bg-slate-700/60 text-slate-500 uppercase">{entry.language}</span>

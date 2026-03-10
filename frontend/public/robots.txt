@@ -1,0 +1,22 @@
+# JanaNaadi - Robots.txt
+# Allow search engines to index public pages only
+
+User-agent: *
+Allow: /
+Allow: /pulse
+Allow: /hotspots
+Allow: /about
+
+# Disallow authenticated and admin areas
+Disallow: /login
+Disallow: /admin/
+Disallow: /gov
+Disallow: /map
+Disallow: /compare
+Disallow: /stream
+Disallow: /search
+Disallow: /alerts
+Disallow: /briefs
+
+# Rate limit crawlers
+Crawl-delay: 10

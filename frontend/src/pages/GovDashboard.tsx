@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
@@ -9,6 +9,9 @@ import {
 import { getNationalPulse, getHotspots, getTrendingTopics } from '../api/public';
 import { getForecast } from '../api/analysis';
 import { formatNumber } from '../utils/formatters';
+import { DomainIntelligenceGrid } from '../components/DomainIntelligenceCard';
+import { useDomainIntelligence } from '../hooks/useKnowledgeGraph';
+import { useNavigate } from 'react-router-dom';
 
 interface Pulse {
   total_entries_24h: number;
@@ -50,6 +53,10 @@ export default function GovDashboard() {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [forecast, setForecast] = useState<Array<{ forecast_score: number }>>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  
+  // Fetch domain intelligence data
+  const { data: domainIntelligence, isLoading: domainLoading } = useDomainIntelligence({ scope: 'national' });
 
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const timeStr = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
@@ -68,15 +75,35 @@ export default function GovDashboard() {
     }).finally(() => setLoading(false));
   }, []);
 
-  const criticalCount = hotspots.filter(h => h.urgency_score >= 0.7).length;
-  const highCount = hotspots.filter(h => h.urgency_score >= 0.4 && h.urgency_score < 0.7).length;
-  const mood = pulse ? moodConfig(pulse.avg_sentiment) : null;
-  const forecastDelta = forecast.length >= 2
-    ? forecast[forecast.length - 1].forecast_score - forecast[0].forecast_score
-    : 0;
-  const forecastLabel = forecastDelta > 0.03 ? '↑ Rising' : forecastDelta < -0.03 ? '↓ Falling' : '→ Stable';
-  const forecastColor = forecastDelta > 0.03 ? 'text-emerald-400' : forecastDelta < -0.03 ? 'text-red-400' : 'text-yellow-400';
-  const totalLanguages = pulse ? Object.keys(pulse.language_breakdown ?? {}).length : 0;
+  // Memoized computed values for performance
+  const criticalCount = useMemo(() => 
+    hotspots.filter(h => h.urgency_score >= 0.7).length, 
+    [hotspots]
+  );
+  
+  const highCount = useMemo(() => 
+    hotspots.filter(h => h.urgency_score >= 0.4 && h.urgency_score < 0.7).length,
+    [hotspots]
+  );
+  
+  const mood = useMemo(() => 
+    pulse ? moodConfig(pulse.avg_sentiment) : null,
+    [pulse]
+  );
+  
+  const { forecastDelta, forecastLabel, forecastColor } = useMemo(() => {
+    const delta = forecast.length >= 2
+      ? forecast[forecast.length - 1].forecast_score - forecast[0].forecast_score
+      : 0;
+    const label = delta > 0.03 ? '↑ Rising' : delta < -0.03 ? '↓ Falling' : '→ Stable';
+    const color = delta > 0.03 ? 'text-emerald-400' : delta < -0.03 ? 'text-red-400' : 'text-yellow-400';
+    return { forecastDelta: delta, forecastLabel: label, forecastColor: color };
+  }, [forecast]);
+  
+  const totalLanguages = useMemo(() => 
+    pulse ? Object.keys(pulse.language_breakdown ?? {}).length : 0,
+    [pulse]
+  );
 
   if (loading) {
     return (
@@ -250,11 +277,15 @@ export default function GovDashboard() {
                 ? Math.round((t.mention_count / topics[0].mention_count) * 100)
                 : 0;
               return (
-                <div key={t.topic} className={`flex items-center gap-3 rounded-xl px-4 py-2.5 border ${
-                  isNeg ? 'bg-red-500/5 border-red-500/20' :
-                  isPos ? 'bg-emerald-500/5 border-emerald-500/20' :
-                  'bg-slate-700/30 border-slate-700'
-                }`}>
+                <Link
+                  key={t.topic}
+                  to={`/search?q=${encodeURIComponent(t.topic)}`}
+                  className={`flex items-center gap-3 rounded-xl px-4 py-2.5 border transition-all hover:scale-[1.02] ${
+                    isNeg ? 'bg-red-500/5 border-red-500/20 hover:bg-red-500/10' :
+                    isPos ? 'bg-emerald-500/5 border-emerald-500/20 hover:bg-emerald-500/10' :
+                    'bg-slate-700/30 border-slate-700 hover:bg-slate-700/50'
+                  }`}
+                >
                   <span className="text-xs text-slate-500 w-4 font-bold">{i + 1}</span>
                   <span className="flex-1 text-sm font-medium truncate">{t.topic}</span>
                   <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden hidden md:block">
@@ -267,7 +298,7 @@ export default function GovDashboard() {
                   <span className={`text-xs font-semibold w-20 text-right ${isNeg ? 'text-red-400' : isPos ? 'text-emerald-400' : 'text-slate-400'}`}>
                     {isNeg ? '⚠ Concern' : isPos ? '✓ Support' : '~ Neutral'}
                   </span>
-                </div>
+                </Link>
               );
             })}
           </div>
@@ -323,6 +354,27 @@ export default function GovDashboard() {
           </div>
         </div>
       )}
+
+      {/* ═══ MULTI-DOMAIN INTELLIGENCE ═══ */}
+      <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="font-bold flex items-center gap-2 text-lg">
+              <Globe size={20} className="text-blue-400" />
+              Multi-Domain Intelligence Scores
+            </h2>
+            <p className="text-xs text-slate-400 mt-1">AI-powered risk assessment across strategic domains</p>
+          </div>
+          <Link to="/ontology" className="text-xs text-blue-400 hover:underline flex items-center gap-1">
+            View Knowledge Graph <ArrowRight size={11} />
+          </Link>
+        </div>
+        <DomainIntelligenceGrid
+          intelligences={domainIntelligence || []}
+          loading={domainLoading}
+          onDomainClick={(domain) => navigate(`/ontology?domain=${domain}`)}
+        />
+      </div>
 
       {/* ═══ QUICK ACTIONS ═══ */}
       <div className="bg-gradient-to-br from-blue-950/50 to-slate-800 rounded-2xl p-6 border border-blue-500/20">

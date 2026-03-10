@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 
 export interface LiveEntry {
   id: string; // local UUID for React key
+  source_id: string | null;
+  entry_id: string | null;
   text: string;
   sentiment: string;
   sentiment_score: number;
@@ -24,6 +26,8 @@ export function useLiveStream(maxEntries = 60) {
   const pingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const unmountedRef = useRef(false);
   const idCounter = useRef(0);
+  // Fingerprint set for dedup: entry_id → truthy, or source_id → truthy, or text-prefix
+  const seenRef = useRef<Set<string>>(new Set());
 
   const connect = useCallback(() => {
     if (unmountedRef.current) return;
@@ -33,6 +37,7 @@ export function useLiveStream(maxEntries = 60) {
       : `${protocol}://${window.location.hostname}:8000`;
 
     setStatus('connecting');
+    seenRef.current = new Set(); // Reset dedup state on each new connection
     const ws = new WebSocket(`${host}/ws/live`);
     wsRef.current = ws;
 
@@ -48,9 +53,28 @@ export function useLiveStream(maxEntries = 60) {
       try {
         const msg = JSON.parse(event.data);
         if (msg.type !== 'entry') return;
+
+        // Build a stable fingerprint — prefer DB entry_id, then source_id, fallback to text prefix
+        const fp: string =
+          msg.entry_id
+            ? `eid:${msg.entry_id}`
+            : msg.source_id
+            ? `sid:${msg.source_id}`
+            : `txt:${(msg.text || '').slice(0, 80)}`;
+
+        if (seenRef.current.has(fp)) return; // Already displayed — skip duplicate
+        seenRef.current.add(fp);
+        // Prevent the seen-set from growing unbounded
+        if (seenRef.current.size > maxEntries * 3) {
+          const oldest = [...seenRef.current].slice(0, maxEntries);
+          seenRef.current = new Set(oldest);
+        }
+
         idCounter.current += 1;
         const entry: LiveEntry = {
           id: `e-${Date.now()}-${idCounter.current}`,
+          source_id: msg.source_id ?? null,
+          entry_id: msg.entry_id ?? null,
           text: msg.text || '',
           sentiment: msg.sentiment || 'neutral',
           sentiment_score: msg.sentiment_score ?? 0,
