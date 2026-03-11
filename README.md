@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/badge/Languages-9+_Indian-8E24AA?style=flat-square" />
   <img src="https://img.shields.io/badge/AI-Gemini_2.5_Flash-4285F4?style=flat-square" />
 </p>
-
+<h2><a href="https://jana-naadi.vercel.app/">Deployed Link</a></h2>
 <h1 align="center">🫀 JanaNaadi</h1>
 
 <h3 align="center"><em>India's Real-Time Public Sentiment & Strategic Intelligence Platform</em></h3>
