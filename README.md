@@ -6,9 +6,8 @@
   <img src="https://img.shields.io/badge/Built_For-India_🇮🇳-FF9933?style=flat-square" />
   <img src="https://img.shields.io/badge/Languages-9+_Indian-8E24AA?style=flat-square" />
   <img src="https://img.shields.io/badge/AI-Gemini_2.5_Flash-4285F4?style=flat-square" />
-</p>
 <a href="https://jana-naadi.vercel.app/">
-  <img src="https://img.shields.io/badge/Deployed_Link-black?style=flat-square&logo=vercel" />
+  <img src="https://img.shields.io/badge/Deployed_Link-neon?style=flat-square&logo=vercel" />
 </a>
 <h1 align="center">🫀 JanaNaadi</h1>
 
