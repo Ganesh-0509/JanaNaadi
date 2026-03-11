@@ -3,6 +3,21 @@
 
 > **"JanaNaadi"** = "Pulse of the People" (Jana = People, Naadi = Pulse)
 
+---
+
+## 🎯 For Judges & Evaluators
+
+**🔗 Live Demo**: [Your Deployed URL Here]
+
+**📋 Demo Credentials**: See [DEMO_CREDENTIALS.md](./DEMO_CREDENTIALS.md) for:
+- Admin login (full access to Knowledge Graph & all features)
+- Quick navigation guide
+- Feature testing checklist
+
+**📊 Problem Statement #1 Alignment**: See [PS1_ALIGNMENT_CHECK.md](./PS1_ALIGNMENT_CHECK.md)
+
+---
+
 ## Overview
 
 JanaNaadi is an AI-powered multilingual sentiment intelligence platform that combines:
