@@ -251,8 +251,8 @@ app.include_router(ontology.router)
 app.include_router(ws_router.router)
 
 
-@app.get("/")
-async def root():
+@app.api_route("/", methods=["GET", "HEAD"])
+async def root() -> dict[str, str]:
     return {
         "name": "JanaNaadi API",
         "tagline": "Pulse of the People",
@@ -261,6 +261,6 @@ async def root():
     }
 
 
-@app.get("/health")
-async def health():
-    return {"status": "healthy"}
+@app.api_route("/health", methods=["GET", "HEAD"])
+async def health() -> dict[str, str]:
+    return {"status": "ok"}
