@@ -10,6 +10,10 @@ from app.models.entity_schemas import (
     DomainIntelligenceScore, IntelligenceDomain
 )
 from app.services.entity_service import process_entry_for_entities
+from app.services.explainability_service import (
+    get_relationship_explanation,
+    get_entity_explanation
+)
 from datetime import datetime, timedelta, timezone
 
 logger = logging.getLogger("jananaadi.ontology")
@@ -99,7 +103,6 @@ async def get_entity_relationships(entity_id: int, direction: str = Query("both"
             return []
     
     return relationships
-
 
 @router.get("/graph/stats", response_model=KnowledgeGraphStats)
 async def get_graph_stats():
@@ -288,10 +291,12 @@ async def extract_entities_from_entry(request: Request, entry_id: str):
     entry_data = entry.data[0]
     
     # Extract entities
+    text_to_use = entry["original_text"] if len(entry.get("cleaned_text", "")) < 100 else entry["cleaned_text"]
     result = await process_entry_for_entities(
-        entry_id=entry_data["id"],
-        text=entry_data["cleaned_text"],
-        sentiment=entry_data.get("sentiment")
+        entry_id=entry["id"],
+        text=text_to_use,
+        sentiment=entry.get("sentiment"),
+        domain=entry.get("domain")
     )
     
     return result
@@ -316,7 +321,7 @@ async def extract_entities_batch(
     
     # Get recent entries
     query = sb.table("sentiment_entries")\
-        .select("id, cleaned_text, sentiment, domain")\
+        .select("id, original_text, cleaned_text, sentiment, domain")\
         .order("ingested_at", desc=True)\
         .limit(limit)
     
@@ -335,9 +340,18 @@ async def extract_entities_batch(
     total_relationships = 0
     errors = 0
     
+    # MAX API calls per batch run - change this number to control spend
+    MAX_API_CALLS_PER_BATCH = 10  # only 10 Bytez calls per batch request
+
+    api_calls_made = 0
+
     for i, entry in enumerate(entries.data):
+        # Stop if we hit the call limit
+        if api_calls_made >= MAX_API_CALLS_PER_BATCH:
+            logger.info(f"Hit API call limit ({MAX_API_CALLS_PER_BATCH}), stopping batch")
+            break
+
         try:
-            # Check if already processed
             existing_mentions = sb.table("entity_mentions")\
                 .select("id")\
                 .eq("entry_id", entry["id"])\
@@ -347,22 +361,26 @@ async def extract_entities_batch(
             if existing_mentions.data:
                 logger.debug(f"Entry {entry['id']} already processed, skipping")
                 continue
-            
-            # Extract entities
+
+            # Use original_text if cleaned_text is too short
+            text_to_use = (
+                entry.get("original_text") 
+                if len(entry.get("cleaned_text", "")) < 50 
+                else entry["cleaned_text"]
+            )
+
+            # Skip if still too short after fallback
+            if not text_to_use or len(text_to_use.strip()) < 30:
+                continue
+
             result = await process_entry_for_entities(
                 entry_id=entry["id"],
-                text=entry["cleaned_text"],
-                sentiment=entry.get("sentiment")
+                text=text_to_use,
+                sentiment=entry.get("sentiment"),
+                domain=entry.get("domain")   # ← domain fix also here
             )
-            
-            if result:
-                processed += 1
-                total_entities += result.get("entities_stored", 0)
-                total_relationships += result.get("relationships_stored", 0)
-            
-            # Add delay between entries to prevent connection issues
-            if i < len(entries.data) - 1:  # Not last entry
-                await asyncio.sleep(0.3)
+
+            api_calls_made += 1  # count the call
             
         except Exception as e:
             logger.error(f"Failed to process entry {entry['id']}: {e}")
@@ -377,3 +395,184 @@ async def extract_entities_batch(
         "total_entities_created": total_entities,
         "total_relationships_created": total_relationships
     }
+
+@router.get("/cross-domain-connections")
+async def get_cross_domain_connections(
+    domain_a: str | None = Query(None, description="Filter by first domain e.g. defense"),
+    domain_b: str | None = Query(None, description="Filter by second domain e.g. economics"),
+    min_strength: float = Query(0.0, description="Minimum edge strength 0.0-1.0"),
+    limit: int = Query(50, le=200),
+):
+    """Get cross-domain relationship edges between entities from different domains.
+ 
+    These edges show how entities in one intelligence domain (e.g. defense)
+    are connected to entities in another domain (e.g. economics) — forming
+    the unified cross-domain intelligence graph.
+ 
+    Example: 'Indian Army' (defense) ↔ 'GDP Growth' (economics)
+    """
+    sb = get_supabase_admin()
+ 
+    # Fetch cross_domain_impact edges with entity details
+    query = (
+        sb.table("entity_relationships")
+        .select(
+            "id, strength, context, created_at, "
+            "source:source_entity_id(id, name, entity_type), "
+            "target:target_entity_id(id, name, entity_type), "
+            "metadata"
+        )
+        .eq("relationship_type", "cross_domain_impact")
+        .gte("strength", min_strength)
+        .order("strength", desc=True)
+        .limit(limit)
+    )
+ 
+    result = query.execute()
+ 
+    if not result.data:
+        return {"connections": [], "total": 0}
+ 
+    # Format response and apply optional domain filters
+    connections = []
+    for row in result.data:
+        source = row.get("source") or {}
+        target = row.get("target") or {}
+        metadata = row.get("metadata") or {}
+ 
+        d_a = metadata.get("domain_a", "unknown")
+        d_b = metadata.get("domain_b", "unknown")
+ 
+        # Apply domain filters if provided
+        if domain_a and domain_a not in (d_a, d_b):
+            continue
+        if domain_b and domain_b not in (d_a, d_b):
+            continue
+ 
+        connections.append({
+            "id": row["id"],
+            "entity_a": {
+                "id": source.get("id"),
+                "name": source.get("name", "Unknown"),
+                "type": source.get("entity_type", "other"),
+                "domain": d_a,
+            },
+            "entity_b": {
+                "id": target.get("id"),
+                "name": target.get("name", "Unknown"),
+                "type": target.get("entity_type", "other"),
+                "domain": d_b,
+            },
+            "strength": round(row.get("strength", 0.3), 2),
+            "context": row.get("context", ""),
+            "created_at": row.get("created_at"),
+        })
+ 
+    return {
+        "connections": connections,
+        "total": len(connections),
+        "domains_present": list({c["entity_a"]["domain"] for c in connections}
+                                | {c["entity_b"]["domain"] for c in connections}),
+    }
+ 
+ 
+@router.get("/cross-domain-summary")
+async def get_cross_domain_summary():
+    """Get a summary of how many cross-domain connections exist between each domain pair.
+ 
+    Useful for the dashboard to show which domains are most interconnected.
+    Returns pairs like: defense↔economics: 12 connections
+    """
+    sb = get_supabase_admin()
+ 
+    result = (
+        sb.table("entity_relationships")
+        .select("metadata, strength")
+        .eq("relationship_type", "cross_domain_impact")
+        .execute()
+    )
+ 
+    if not result.data:
+        return {"domain_pairs": [], "total_cross_domain_edges": 0}
+ 
+    # Count connections per domain pair
+    pair_counts: dict[str, dict] = {}
+    pair_strength: dict[str, list] = {}
+ 
+    for row in result.data:
+        metadata = row.get("metadata") or {}
+        d_a = metadata.get("domain_a", "unknown")
+        d_b = metadata.get("domain_b", "unknown")
+ 
+        # Normalise pair order so defense↔economics == economics↔defense
+        pair_key = "↔".join(sorted([d_a, d_b]))
+ 
+        if pair_key not in pair_counts:
+            pair_counts[pair_key] = {"domain_a": d_a, "domain_b": d_b, "count": 0}
+            pair_strength[pair_key] = []
+ 
+        pair_counts[pair_key]["count"] += 1
+        pair_strength[pair_key].append(row.get("strength", 0.3))
+ 
+    domain_pairs = []
+    for pair_key, info in pair_counts.items():
+        strengths = pair_strength[pair_key]
+        domain_pairs.append({
+            "pair": pair_key,
+            "domain_a": info["domain_a"],
+            "domain_b": info["domain_b"],
+            "connection_count": info["count"],
+            "avg_strength": round(sum(strengths) / len(strengths), 2),
+        })
+ 
+    # Sort by connection count descending
+    domain_pairs.sort(key=lambda x: x["connection_count"], reverse=True)
+ 
+    return {
+        "domain_pairs": domain_pairs,
+        "total_cross_domain_edges": sum(p["connection_count"] for p in domain_pairs),
+    }
+ 
+# -- EXPLAINABILITY ENGINE ENDPOINTS --------------------------------
+
+@router.get("/explain")
+@limiter.limit("30/minute")
+async def explain_relationship(
+    request: Request,
+    entity_a: str = Query(..., description="First entity name"),
+    entity_b: str = Query(..., description="Second entity name")
+):
+    """
+    Get full explainable explanation for relationship between two entities.
+    
+    Returns:
+    - Direct relationship with evidence (if found)
+    - Multi-hop reasoning chain (if direct not found)
+    - Confidence scores
+    - Evidence entries with sources
+    
+    Example:
+        GET /api/ontology/explain?entity_a=Flooding&entity_b=Economy
+    """
+    explanation = await get_relationship_explanation(entity_a, entity_b)
+    return explanation
+
+
+@router.get("/entity-profile/{entity_name}")
+@limiter.limit("30/minute")
+async def get_entity_profile(
+    request: Request,
+    entity_name: str = Query(..., description="Entity name")
+):
+    """
+    Get comprehensive profile for a single entity.
+    
+    Returns:
+    - Entity details (type, description, sentiment, mentions)
+    - All incoming relationships
+    - All outgoing relationships
+    - Domain classification
+    - First seen / last seen dates
+    """
+    explanation = await get_entity_explanation(entity_name)
+    return explanation

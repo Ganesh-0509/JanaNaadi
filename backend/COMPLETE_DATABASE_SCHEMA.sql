@@ -109,7 +109,7 @@ CREATE TABLE IF NOT EXISTS sentiment_entries (
 CREATE TABLE IF NOT EXISTS entities (
     id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
-    entity_type TEXT NOT NULL CHECK (entity_type IN ('person', 'organization', 'location', 'event', 'policy', 'technology', 'infrastructure', 'other')),
+    entity_type TEXT NOT NULL CHECK (entity_type IN ('person', 'organization', 'location', 'event', 'policy', 'technology', 'infrastructure', 'concept','other')),
     description TEXT,
     aliases TEXT[] DEFAULT '{}',  -- alternate names for entity linking
     metadata JSONB DEFAULT '{}',  -- flexible storage for type-specific fields
@@ -377,6 +377,69 @@ COMMENT ON COLUMN entities.aliases IS 'Alternate names for entity matching and l
 COMMENT ON COLUMN entities.sentiment_score IS 'Weighted average sentiment about this entity';
 COMMENT ON COLUMN entity_relationships.strength IS 'Relationship strength (0.0-1.0), increases with multiple mentions';
 
+-- Update the demo user's role to admin
+UPDATE auth.users 
+SET raw_app_meta_data = 
+  COALESCE(raw_app_meta_data, '{}'::jsonb) || '{"role": "admin"}'::jsonb
+WHERE email = 'admin@jananaadi.demo';
+
+-- Verify it worked
+SELECT email, raw_app_meta_data->'role' as role 
+FROM auth.users 
+WHERE email = 'admin@jananaadi.demo';
+
+-- Step 1: Drop the old constraint that only allows specific relationship types
+ALTER TABLE entity_relationships
+    DROP CONSTRAINT IF EXISTS entity_relationships_relationship_type_check;
+ 
+-- Step 2: Add the new constraint with cross_domain_impact included
+ALTER TABLE entity_relationships
+    ADD CONSTRAINT entity_relationships_relationship_type_check
+    CHECK (relationship_type IN (
+        'supports',
+        'opposes',
+        'impacts',
+        'related_to',
+        'part_of',
+        'causes',
+        'mentioned_in',
+        'located_in',
+        'cross_domain_impact'   -- NEW: cross-domain co-occurrence edge
+    ));
+ 
+-- Step 3: Add metadata column to entity_relationships (stores domain_a, domain_b info)
+-- Only runs if column doesn't already exist
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'entity_relationships' AND column_name = 'metadata'
+    ) THEN
+        ALTER TABLE entity_relationships ADD COLUMN metadata JSONB DEFAULT '{}';
+    END IF;
+END $$;
+ 
+-- Step 4: Index for fast cross-domain queries
+CREATE INDEX IF NOT EXISTS idx_entity_relationships_cross_domain
+    ON entity_relationships(relationship_type)
+    WHERE relationship_type = 'cross_domain_impact';
+ 
+-- Step 5: Index on metadata for domain filtering
+CREATE INDEX IF NOT EXISTS idx_entity_relationships_metadata
+    ON entity_relationships USING GIN(metadata);
+-- Add text_hash column and populate it from existing data
+ALTER TABLE sentiment_entries 
+ADD COLUMN IF NOT EXISTS text_hash TEXT;
+
+-- Index it so the lookup is fast
+CREATE INDEX IF NOT EXISTS idx_sentiment_entries_text_hash 
+ON sentiment_entries(text_hash);
+
+-- Populate existing rows (md5 of first 500 chars of cleaned_text)
+UPDATE sentiment_entries 
+SET text_hash = md5(left(cleaned_text, 500))
+WHERE text_hash IS NULL;
+-- 
 -- ============================================================
 -- COMPLETE! Database schema ready for JanaNaadi
 -- Global Ontology Engine + Sentiment Intelligence Platform

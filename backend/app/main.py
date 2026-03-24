@@ -22,12 +22,71 @@ logger = logging.getLogger("jananaadi.scheduler")
 scheduler = AsyncIOScheduler()
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Scheduled jobs
+# ─────────────────────────────────────────────────────────────────────────────
+
+async def _scheduled_domain_ingestion():
+    """Background job: fetch all 6 intelligence domains (defense, climate,
+    technology, economics, geopolitics, society).
+
+    FIX: This job was completely missing from the original scheduler.
+    Domain intelligence was never being auto-ingested — the graph was
+    only populated by manual triggers.
+    """
+    try:
+        from app.ingesters.domain_ingester import DomainIngester
+        from app.routers.ingest import _process_and_store, _last_run_info
+        from app.services.ingest_guard import clear_run_cache
+        from datetime import datetime, timezone
+
+        clear_run_cache()  # reset dedup cache at start of each run
+
+        ingester = DomainIngester()
+        domain_data = await ingester.fetch_all_domains(max_items_per_feed=10)
+
+        total_count = 0
+        for domain, entries in domain_data.items():
+            domain_count = 0
+            for entry in entries:
+                try:
+                    result = await _process_and_store(
+                        entry["text"],
+                        domain,
+                        location_hint=entry.get("location_hint"),
+                        source_id=entry.get("source_id"),
+                        source_url=entry.get("source_url"),
+                        domain=domain,
+                    )
+                    if result:
+                        domain_count += 1
+                except Exception:
+                    continue
+                await asyncio.sleep(0)
+
+            total_count += domain_count
+            logger.info(f"Domain ingestion [{domain}]: {domain_count} new entries")
+
+        _last_run_info["domains"] = {
+            "ran_at": datetime.now(timezone.utc).isoformat(),
+            "count": total_count,
+        }
+        logger.info(f"Scheduled domain ingestion complete: {total_count} total new entries")
+
+    except Exception as e:
+        logger.error(f"Scheduled domain ingestion failed: {e}")
+
+
 async def _scheduled_news_ingestion():
     """Background job: fetch and process RSS news feeds."""
     try:
         from app.ingesters.news_ingester import NewsIngester
         from app.routers.ingest import _process_and_store, _last_run_info
+        from app.services.ingest_guard import clear_run_cache
         from datetime import datetime, timezone
+
+        clear_run_cache()  # reset dedup cache
+
         ingester = NewsIngester()
         entries = await ingester.fetch()
         count = 0
@@ -43,7 +102,7 @@ async def _scheduled_news_ingestion():
                     count += 1
             except Exception:
                 continue
-            await asyncio.sleep(0)  # yield between entries so other requests aren't blocked
+            await asyncio.sleep(0)
         _last_run_info["news"] = {"ran_at": datetime.now(timezone.utc).isoformat(), "count": count}
         logger.info(f"Scheduled news ingestion: {count} new entries")
     except Exception as e:
@@ -75,7 +134,11 @@ async def _scheduled_reddit_ingestion():
     try:
         from app.ingesters.reddit_ingester import RedditIngester
         from app.routers.ingest import _process_and_store, _last_run_info
+        from app.services.ingest_guard import clear_run_cache
         from datetime import datetime, timezone
+
+        clear_run_cache()
+
         ingester = RedditIngester()
         entries = await ingester.fetch()
         count = 0
@@ -91,7 +154,7 @@ async def _scheduled_reddit_ingestion():
                     count += 1
             except Exception:
                 continue
-            await asyncio.sleep(0)  # yield between entries
+            await asyncio.sleep(0)
         _last_run_info["reddit"] = {"ran_at": datetime.now(timezone.utc).isoformat(), "count": count}
         logger.info(f"Scheduled Reddit ingestion: {count} new entries")
     except Exception as e:
@@ -103,7 +166,11 @@ async def _scheduled_gnews_ingestion():
     try:
         from app.ingesters.gnews_ingester import GNewsIngester
         from app.routers.ingest import _process_and_store, _last_run_info
+        from app.services.ingest_guard import clear_run_cache
         from datetime import datetime, timezone
+
+        clear_run_cache()
+
         ingester = GNewsIngester()
         entries = await ingester.fetch()
         count = 0
@@ -120,48 +187,53 @@ async def _scheduled_gnews_ingestion():
                     count += 1
             except Exception:
                 continue
-            await asyncio.sleep(0)  # yield between entries
+            await asyncio.sleep(0)
         _last_run_info["gnews"] = {"ran_at": datetime.now(timezone.utc).isoformat(), "count": count}
         logger.info(f"Scheduled GNews ingestion: {count} new entries")
     except Exception as e:
         logger.error(f"Scheduled GNews ingestion failed: {e}")
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# App lifespan
+# ─────────────────────────────────────────────────────────────────────────────
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup / shutdown."""
-    # Schedule background jobs with OPTIMIZED intervals to reduce API costs
-    # Changed from 2h to 12h for ingestion tasks (83% cost reduction)
-    scheduler.add_job(_scheduled_news_ingestion, "interval", hours=12, id="news_ingest")
+    # Domain intelligence — was completely missing before, added now
+    scheduler.add_job(_scheduled_domain_ingestion, "interval", hours=12, id="domain_ingest")
+
+    # General news ingesters
+    scheduler.add_job(_scheduled_news_ingestion,  "interval", hours=12, id="news_ingest")
     scheduler.add_job(_scheduled_gnews_ingestion, "interval", hours=12, id="gnews_ingest")
-    scheduler.add_job(_scheduled_reddit_ingestion, "interval", hours=12, id="reddit_ingest")
-    # Snapshots and alerts (no API cost)
-    scheduler.add_job(_scheduled_snapshot, "interval", hours=1, id="snapshot")
-    scheduler.add_job(_scheduled_alert_check, "interval", hours=6, id="alert_check")
+    scheduler.add_job(_scheduled_reddit_ingestion,"interval", hours=12, id="reddit_ingest")
+
+    # Snapshots and alerts (no API cost — keep frequent)
+    scheduler.add_job(_scheduled_snapshot,    "interval", hours=1,  id="snapshot")
+    scheduler.add_job(_scheduled_alert_check, "interval", hours=6,  id="alert_check")
+
     scheduler.start()
-    logger.info("📅 Background scheduler started: news(12h), gnews(12h), reddit(12h), snapshot(1h), alerts(6h)")
-    
-    # OPTIMIZATION: Disabled automatic startup ingestion to save API credits during development
-    # Only manual triggers or scheduled runs will ingest data
-    # To re-enable, uncomment these lines:
-    # import asyncio as _asyncio
-    # _asyncio.create_task(_scheduled_news_ingestion())
-    # _asyncio.create_task(_scheduled_gnews_ingestion())
-    
-    logger.info("⚠️ Auto-ingestion on startup DISABLED to save API credits")
-    logger.info("💡 Trigger manually via /api/admin/trigger-ingestion or wait for scheduled run")
-    
+    logger.info(
+        "Background scheduler started: "
+        "domains(12h), news(12h), gnews(12h), reddit(12h), snapshot(1h), alerts(6h)"
+    )
+    logger.info("Auto-ingestion on startup DISABLED — trigger via /api/admin/trigger-ingestion")
+
     yield
     scheduler.shutdown()
     logger.info("Background scheduler stopped")
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# App setup (unchanged from original)
+# ─────────────────────────────────────────────────────────────────────────────
+
 settings = get_settings()
 
 
 class _LimitRequestSizeMiddleware(BaseHTTPMiddleware):
-    """Reject requests whose Content-Length exceeds 1 MB."""
-    _MAX = 1_000_000  # 1 MB
+    _MAX = 1_000_000
 
     async def dispatch(self, request: StarletteRequest, call_next):
         cl = request.headers.get("content-length")
@@ -174,31 +246,23 @@ class _LimitRequestSizeMiddleware(BaseHTTPMiddleware):
 
 
 class _SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    """Add security headers to all responses."""
     async def dispatch(self, request: StarletteRequest, call_next):
         response = await call_next(request)
-        # Content Security Policy - restrict sources for scripts, styles, etc.
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "  # React requires inline scripts
-            "style-src 'self' 'unsafe-inline'; "  # Tailwind uses inline styles
-            "img-src 'self' data: https:; "  # Allow images from https sources
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data: https:; "
             "font-src 'self' data:; "
-            "connect-src 'self' ws: wss: https:; "  # Allow WebSocket and API calls
-            "frame-ancestors 'none'; "  # Prevent clickjacking (same as X-Frame-Options)
+            "connect-src 'self' ws: wss: https:; "
+            "frame-ancestors 'none'; "
         )
-        # Prevent MIME type sniffing
         response.headers["X-Content-Type-Options"] = "nosniff"
-        # Prevent clickjacking
         response.headers["X-Frame-Options"] = "DENY"
-        # XSS protection (legacy but still useful for older browsers)
         response.headers["X-XSS-Protection"] = "1; mode=block"
-        # Strict Transport Security - force HTTPS (only in production)
         if not settings.debug:
             response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-        # Referrer policy - don't leak referrer to external sites
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        # Permissions policy - restrict access to browser features
         response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
         return response
 
@@ -210,19 +274,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Rate limiting
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# CORS — MUST be first to handle preflight OPTIONS requests
 if not settings.debug:
     _localhost = [o for o in settings.cors_origins if "localhost" in o or "127.0.0.1" in o]
     if _localhost:
         logging.getLogger("jananaadi").warning(
-            "PRODUCTION WARNING: CORS still allows localhost origins %s. "
-            "Set CORS_ORIGINS env var to restrict access.",
-            _localhost,
+            "PRODUCTION WARNING: CORS still allows localhost origins %s.", _localhost
         )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -230,14 +291,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Security headers for all responses
 app.add_middleware(_SecurityHeadersMiddleware)
-
-# Body size guard
 app.add_middleware(_LimitRequestSizeMiddleware)
 
-# Register routers
 app.include_router(public.router)
 app.include_router(heatmap.router)
 app.include_router(analysis.router)

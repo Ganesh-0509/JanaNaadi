@@ -45,6 +45,7 @@ _last_run_info: dict[str, dict] = {
 }
 
 
+ 
 async def _process_and_store(
     text: str,
     source: str,
@@ -52,49 +53,43 @@ async def _process_and_store(
     source_id: str | None = None,
     source_url: str | None = None,
     published_at: str | None = None,
-    domain: str | None = None,  # NEW: intelligence domain tag
+    domain: str | None = None,
 ):
-    """Process a single text entry through the NLP pipeline and store it."""
+    """Process a single text entry through the NLP pipeline and store it.
+ 
+    Call flow (1 Bytez call total per new article):
+      1. ingest_guard.should_process()  — skip if already in DB (free)
+      2. score_sentiment(text)          — calls nlp_service.analyze_text()
+                                          which runs ONE combined Bytez prompt:
+                                          sentiment + entities + relationships
+                                          and caches the entity result
+      3. store to sentiment_entries     — as before
+      4. process_entry_for_entities()  — reads entity result from cache (FREE)
+                                          stores entities + cross-domain edges
+    """
     from datetime import datetime, timezone
-
+    from app.services.ingest_guard import should_process
+ 
     sb = get_supabase_admin()
     loop = asyncio.get_event_loop()
-
-    # Fast-path dedup: if we have a source_id, check it first (O(1) indexed lookup)
-    if source_id:
-        sid_check = await loop.run_in_executor(
-            None,
-            lambda: sb.table("sentiment_entries").select("id").eq("source_id", source_id).eq("source", source).limit(1).execute(),
-        )
-        if sid_check.data:
-            return None  # Already ingested this exact item
-
-    # Exact text dedup: same cleaned text + same source
-    cleaned = normalize_text(text)
-    existing = await loop.run_in_executor(
-        None,
-        lambda: sb.table("sentiment_entries").select("id").eq("cleaned_text", cleaned).eq("source", source).limit(1).execute(),
-    )
-    if existing.data:
-        return None  # Skip exact duplicate
-
-    # Near-duplicate check against the 100 most recent entries from same source
-    recent = await loop.run_in_executor(
-        None,
-        lambda: sb.table("sentiment_entries").select("cleaned_text").eq("source", source).order("published_at", desc=True).limit(100).execute(),
-    )
-    for row in recent.data or []:
-        if is_near_duplicate(cleaned, row["cleaned_text"], normalized=True):
-            return None  # Skip near-duplicate
-
+ 
+    # ── Step 1: Dedup via ingest_guard (replaces the 3 manual dedup checks) ──
+    # Uses: in-memory set → DB source_id check → DB text_hash check
+    # All three are free — no API call. Returns False if article already exists.
+    effective_source_id = source_id or f"{source}_{hash(text[:200])}"
+    if not await should_process(effective_source_id, text):
+        return None  # already ingested, skip
+ 
+    # ── Step 2: NLP analysis — ONE Bytez call covers sentiment + entities ─────
+    # score_sentiment → nlp_service.analyze_text → combined Bytez prompt
+    # Entity result is stored in _entity_cache keyed by text hash
     nlp = await score_sentiment(text)
-
-    # Geolocate
+ 
+    # ── Step 3: Geolocate + topic match (unchanged) ───────────────────────────
     geo = geolocate(text, hints={"location_hint": location_hint} if location_hint else None)
-
-    # Match topic
     topic_id = match_topic(text, nlp.topics[0] if nlp.topics else None)
-
+ 
+    # ── Step 4: Build and store the entry ─────────────────────────────────────
     entry = {
         "id": str(uuid4()),
         "source": source,
@@ -109,7 +104,7 @@ async def _process_and_store(
         "confidence": nlp.confidence,
         "primary_topic_id": topic_id,
         "extracted_keywords": nlp.keywords,
-        "domain": domain,  # NEW: intelligence domain
+        "domain": domain,
         "state_id": geo.get("state_id"),
         "district_id": geo.get("district_id"),
         "constituency_id": geo.get("constituency_id"),
@@ -119,19 +114,40 @@ async def _process_and_store(
         "published_at": published_at or datetime.now(timezone.utc).isoformat(),
         "processed_at": datetime.now(timezone.utc).isoformat(),
     }
-    await loop.run_in_executor(None, lambda: sb.table("sentiment_entries").insert(entry).execute())
-
-    # Invalidate cached snapshots so dashboards reflect the new entry
+ 
+    await loop.run_in_executor(
+        None, lambda: sb.table("sentiment_entries").insert(entry).execute()
+    )
+ 
+    # Invalidate cached snapshots
     from app.core.cache import invalidate_for_entry
     invalidate_for_entry(entry.get("state_id"))
-
-    # Broadcast to live-stream WebSocket clients
+ 
+    # Broadcast to WebSocket clients
     try:
         from app.routers.ws import publish_voice_entry
         publish_voice_entry(entry)
     except Exception:
-        pass  # Non-critical — never fail ingestion because of WS
-
+        pass
+ 
+    # ── Step 5: Store entities + cross-domain edges (0 extra API calls) ───────
+    # process_entry_for_entities() calls extract_entities() which reads from
+    # the cache populated in step 2 — guaranteed cache hit, no Bytez call.
+    try:
+        from app.services.entity_service import process_entry_for_entities
+        await process_entry_for_entities(
+            entry_id=entry["id"],
+            text=text,
+            sentiment=nlp.sentiment,
+            domain=domain,
+        )
+    except Exception as e:
+        # Entity extraction failure must never break ingestion
+        import logging
+        logging.getLogger("jananaadi.ingest").warning(
+            f"Entity extraction failed for entry {entry['id']}: {e}"
+        )
+ 
     return entry
 
 

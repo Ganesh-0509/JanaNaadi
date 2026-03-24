@@ -8,6 +8,7 @@ import re
 from pathlib import Path
 from datetime import datetime, timezone
 import feedparser
+from app.services.ingest_guard import should_process, clear_run_cache
 
 logger = logging.getLogger("jananaadi.domain_ingester")
 
