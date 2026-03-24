@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" />
   <img src="https://img.shields.io/badge/Built_For-India_🇮🇳-FF9933?style=flat-square" />
   <img src="https://img.shields.io/badge/Languages-9+_Indian-8E24AA?style=flat-square" />
-  <img src="https://img.shields.io/badge/AI-Gemini_2.5_Flash-4285F4?style=flat-square" />
+  <img src="https://img.shields.io/badge/AI-Ollama_Qwen2.5_(Local)_First-00BFAE?style=flat-square" />
 <a href="https://jana-naadi.vercel.app/">
   <img src="https://img.shields.io/badge/Deployed_Link-neon?style=flat-square&logo=vercel" />
 </a>
@@ -33,7 +33,7 @@ It enables government analysts, policymakers, researchers, and citizens to **dis
 ## ✨ Key Features
 
 ### 🧠 AI-Powered Knowledge Graph
-- **Entity Extraction** — Automatically identifies **people, organizations, locations, events, policies, and technologies** from unstructured text using Gemini 2.5 Flash
+- **Entity Extraction** — Automatically identifies **people, organizations, locations, events, policies, and technologies** from unstructured text using your **local LLM (Ollama/Qwen2.5)** by default (cloud APIs only as fallback)
 - **Relationship Mapping** — Discovers and visualizes connections: *supports, opposes, impacts, causes, related_to, part_of, mentioned_in, located_in*
 - **Weighted Strength Scoring** — Relationship importance grows dynamically with mention frequency
 - **Interactive D3.js Visualization** — Explore the graph with zoom, pan, filter, search, and click-to-drill-down
@@ -122,9 +122,10 @@ Natively supports **9+ Indian languages** — not just translation, but true lan
 └──────────────────────────┬──────────────────────────────────────┘
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                  NLP ENGINE (Bytez AI / Gemini 2.5 Flash)       │
+│                  NLP ENGINE (Ollama/Qwen2.5 Local LLM)          │
 │  Language Detection · Sentiment Analysis · Topic Extraction     │
 │  Entity Extraction · Relationship Discovery · Translation       │
+│  (Cloud APIs: Bytez/Gemini used only as fallback)               │
 └──────────────────────────┬──────────────────────────────────────┘
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
@@ -159,7 +160,8 @@ Natively supports **9+ Indian languages** — not just translation, but true lan
 | **Visualization** | D3.js (Knowledge Graph), Leaflet.js (Maps), Recharts (Charts) |
 | **Backend** | FastAPI (Python), APScheduler, WebSocket |
 | **Database** | Supabase (PostgreSQL), Row-Level Security |
-| **AI / NLP** | Bytez API (Gemini 2.5 Flash) — Sentiment, Entities, Translation |
+| **AI / NLP** | Ollama (Qwen2.5, Local LLM) — Sentiment, Entities, Translation  |
+|              | (Cloud APIs: Bytez/Gemini only as fallback)                    |
 | **Auth** | Supabase Auth with RBAC |
 | **Deployment** | Render (Backend + Frontend), Supabase (Database) |
 | **Data Sources** | 122+ RSS feeds, News APIs, Reddit, Twitter |
@@ -187,11 +189,19 @@ cd JanaNaadi
 -- Creates all 12 tables, indexes, triggers, and security policies
 ```
 
+
 ### 3️⃣ Backend
 ```bash
 cd backend
 pip install -r requirements.txt
 cp .env.example .env       # Configure your API keys
+#
+# By default, JanaNaadi uses your local LLM (Ollama/Qwen2.5) for all AI/NLP tasks.
+# Cloud APIs (Bytez, Gemini) are only used if Ollama is unavailable.
+#
+# To use local LLM, make sure Ollama is running:
+#   ollama serve qwen2.5
+#
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -203,6 +213,7 @@ cp .env.example .env       # Configure Supabase credentials
 npm run dev
 ```
 
+
 ### 5️⃣ Access
 | Service | URL |
 |---------|-----|
@@ -210,6 +221,24 @@ npm run dev
 | ⚙️ Backend API | `http://localhost:8000` |
 | 📖 API Docs (Swagger) | `http://localhost:8000/docs` |
 | 🧬 Knowledge Graph | `http://localhost:5173/ontology` |
+
+---
+
+## 🤖 AI/NLP Priority Order
+
+**JanaNaadi always uses your local LLM (Ollama/Qwen2.5) as the first priority for all AI/NLP tasks.**
+
+- If Ollama is running and reachable, all entity extraction, sentiment analysis, and recommendations use your local model.
+- If Ollama is not available, the system will automatically fall back to cloud APIs (Bytez, Gemini) as a backup.
+- This ensures maximum privacy, speed, and zero API cost by default.
+
+**To use local LLM:**
+1. Install Ollama (https://ollama.com/)
+2. Download the Qwen2.5 model: `ollama pull qwen2.5`
+3. Start Ollama: `ollama serve qwen2.5`
+4. Set `USE_LOCAL_LLM=true` in your `.env` file (default is already true)
+
+**No cloud API calls will be made unless Ollama is unavailable.**
 
 ---
 

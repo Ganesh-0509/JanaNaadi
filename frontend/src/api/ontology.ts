@@ -149,6 +149,43 @@ export const extractEntitiesFromEntry = async (entryId: string): Promise<{
 };
 
 /**
+ * Get relationship explanation with evidence chain
+ */
+export const getRelationshipExplanation = async (
+  entity_a: string,
+  entity_b: string
+): Promise<{
+  insight_summary: string;
+  confidence: number;
+  evidence_count: number;
+  evidence_texts: string[];
+  reasoning_type: 'direct' | 'multi_hop';
+  chain_depth: number;
+  multi_hop_path?: Array<{ entity: string; relationship: string }>;
+}> => {
+  const response = await apiClient.get('/api/ontology/explain', {
+    params: { entity_a, entity_b }
+  });
+  return response.data;
+};
+
+/**
+ * Get complete entity profile with all relationships and mentions
+ */
+export const getEntityProfile = async (entity_name: string): Promise<{
+  entity: Entity;
+  total_mentions: number;
+  sentiment_distribution: { positive: number; negative: number; neutral: number };
+  top_related_entities: Array<{ name: string; relationship_type: string; strength: number }>;
+  mention_timeline: Array<{ date: string; count: number }>;
+  domains: string[];
+  evidence_entry_ids: string[];
+}> => {
+  const response = await apiClient.get(`/api/ontology/entity-profile/${entity_name}`);
+  return response.data;
+};
+
+/**
  * Get entities for knowledge graph visualization
  * Returns entities with their relationships in a format ready for D3.js
  */

@@ -11,13 +11,17 @@ class Settings(BaseSettings):
     supabase_key: str = ""  # anon key
     supabase_service_key: str = ""  # service role key
 
-    # Bytez (primary LLM)
+    # LLM Configuration - choose one:
+    # Option 1: Cloud APIs (Bytez + Gemini)
     bytez_api_key: str = ""
     bytez_model: str = "google/gemini-2.5-flash"
-
-    # Gemini (secondary/fallback LLM)
     gemini_api_key: str = ""
     gemini_model: str = "gemini-2.0-flash"
+    
+    # Option 2: Local LLM (Ollama) - recommended for cost savings
+    use_local_llm: bool = False  # Set to True to use Ollama instead of cloud APIs
+    ollama_base_url: str = "http://localhost:11434"
+    ollama_model: str = "qwen2.5"
 
     # Twitter (optional)
     twitter_bearer_token: str = ""

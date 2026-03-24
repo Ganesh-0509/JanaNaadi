@@ -275,6 +275,19 @@ BEGIN
     END IF;
 END $$;
 
+-- Add evidence_entry_ids column to track which entries contributed to each relationship
+-- Required for Explainability Engine + Policy Recommendations (Phase 3-4)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'entity_relationships' AND column_name = 'evidence_entry_ids'
+    ) THEN
+        ALTER TABLE entity_relationships 
+        ADD COLUMN evidence_entry_ids UUID[] DEFAULT '{}';
+    END IF;
+END $$;
+
 -- ============================================================
 -- INDEXES - SENTIMENT ENTRIES
 -- ============================================================

@@ -57,8 +57,22 @@ Text: "{text}"
 }}"""
 
 async def _call_llm(prompt: str) -> dict:
-    """Try Bytez first, fall back to Gemini, fall back to keyword engine."""
-    # 1. Bytez (primary)
+    """Try LLM based on settings: Local (Ollama) first if enabled, else Bytez, then Gemini."""
+    from app.core.settings import get_settings
+    
+    settings = get_settings()
+    
+    # 1. Local LLM (Ollama) if enabled
+    if settings.use_local_llm:
+        try:
+            from app.services.local_llm_service import generate_json
+            result = await generate_json(prompt)
+            logger.info("NLP via Ollama (local LLM)")
+            return result
+        except Exception as e:
+            logger.warning(f"Ollama failed: {e} — trying cloud APIs fallback")
+    
+    # 2. Bytez (primary cloud)
     try:
         from app.services.bytez_service import call_bytez
         result = await call_bytez(prompt)
@@ -67,7 +81,7 @@ async def _call_llm(prompt: str) -> dict:
     except Exception as e:
         logger.warning(f"Bytez failed: {e} — trying Gemini fallback")
 
-    # 2. Gemini (secondary)
+    # 3. Gemini (secondary cloud)
     try:
         from app.services.gemini_service import call_gemini
         result = await call_gemini(prompt)

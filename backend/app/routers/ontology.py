@@ -2,7 +2,7 @@
 
 import logging
 import asyncio
-from fastapi import APIRouter, Query, HTTPException, Request
+from fastapi import APIRouter, Query, Path, HTTPException, Request
 from app.core.supabase_client import get_supabase_admin
 from app.core.rate_limiter import limiter
 from app.models.entity_schemas import (
@@ -129,6 +129,14 @@ async def get_graph_stats():
             entity_type = entity.get("entity_type", "other")
             entities_by_type[entity_type] = entities_by_type.get(entity_type, 0) + 1
     
+    # Relationship types - count by relationship_type
+    relationship_types = {}
+    all_rels = sb.table("entity_relationships").select("relationship_type").execute()
+    if all_rels.data:
+        for rel in all_rels.data:
+            rel_type = rel.get("relationship_type", "other")
+            relationship_types[rel_type] = relationship_types.get(rel_type, 0) + 1
+    
     # Top entities
     top_entities_result = sb.table("entities")\
         .select("name, entity_type, mention_count, sentiment_score")\
@@ -151,7 +159,7 @@ async def get_graph_stats():
         "total_relationships": total_relationships,
         "total_mentions": total_mentions,
         "entities_by_type": entities_by_type,
-        "relationship_types": {},  # TODO: implement
+        "relationship_types": relationship_types,
         "top_entities": top_entities
     }
 
@@ -239,9 +247,24 @@ async def compute_domain_intelligence(
     else:
         urgency_level = "low"
     
-    # Key factors (extract common keywords/topics)
-    # TODO: Improve with more sophisticated analysis
-    key_factors = []
+    # Key factors - extract common topics and entities mentioned
+    topic_counts = {}
+    entity_mentions_local = {}
+    
+    for entry in entries.data:
+        # Count topics
+        topic = entry.get("primary_topic_id")
+        if topic:
+            topic_counts[topic] = topic_counts.get(topic, 0) + 1
+        
+        # Extract entities from cleaned text (simple keyword matching)
+        text = entry.get("cleaned_text", "").lower()
+        # This is a simple approach - just get top topic mentions
+        # In production, you'd use entity extraction service
+    
+    # Build key_factors from top topics
+    sorted_topics = sorted(topic_counts.items(), key=lambda x: x[1], reverse=True)
+    key_factors = [{"topic_id": t[0], "mentions": t[1]} for t in sorted_topics[:5]]
     
     # Store the score
     score_data = {
@@ -562,7 +585,7 @@ async def explain_relationship(
 @limiter.limit("30/minute")
 async def get_entity_profile(
     request: Request,
-    entity_name: str = Query(..., description="Entity name")
+    entity_name: str = Path(..., description="Entity name")
 ):
     """
     Get comprehensive profile for a single entity.
