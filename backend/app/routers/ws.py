@@ -182,15 +182,17 @@ async def websocket_live(websocket: WebSocket):
         payload = await _get_pulse()
         await websocket.send_text(json.dumps(payload))
 
-        # 2. Replay last 20 entries from DB so the page is never empty on open
+        # 2. Replay last N entries from DB so the page is never empty on open
         try:
+            from app.core.settings import get_settings
+            s = get_settings()
             _ensure_caches()
             sb = get_supabase_admin()
             result = (
                 sb.table("sentiment_entries")
                 .select("id, source_id, original_text, sentiment, sentiment_score, primary_topic_id, state_id, source, language")
                 .order("ingested_at", desc=True)
-                .limit(20)
+                .limit(s.ws_history_limit)
                 .execute()
             )
             # Send in chronological order so newest appears at top after frontend prepends

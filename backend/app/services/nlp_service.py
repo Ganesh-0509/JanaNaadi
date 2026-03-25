@@ -56,36 +56,50 @@ Text: "{text}"
   ]
 }}"""
 
-async def _call_llm(prompt: str) -> dict:
+async def _call_llm(text: str) -> dict:
     """Try LLM based on settings: Local (Ollama) first if enabled, else Bytez, then Gemini."""
     from app.core.settings import get_settings
-    
+
     settings = get_settings()
-    
-    # 1. Local LLM (Ollama) if enabled
-    if settings.use_local_llm:
-        try:
-            from app.services.local_llm_service import generate_json
-            result = await generate_json(prompt)
-            logger.info("NLP via Ollama (local LLM)")
-            return result
-        except Exception as e:
-            logger.warning(f"Ollama failed: {e} — trying cloud APIs fallback")
-    
-    # 2. Bytez (primary cloud)
+
+    prompt = COMBINED_PROMPT.format(text=text)
+    cache_key = hashlib.sha256(prompt.encode()).hexdigest()
+    if not hasattr(analyze_text, "_nlp_cache"):
+        analyze_text._nlp_cache = {}
+    cache = analyze_text._nlp_cache
+    if cache_key in cache:
+        logger.info("NLP cache HIT for text")
+        return cache[cache_key]
+
+    # 1. Try local LLM (Ollama)
     try:
-        from app.services.bytez_service import call_bytez
-        result = await call_bytez(prompt)
-        logger.info("NLP via Bytez (primary)")
+        from app.services.local_llm_service import generate_json
+        result = await generate_json(prompt)
+        logger.info("NLP via Ollama (local LLM)")
+        cache[cache_key] = result
         return result
     except Exception as e:
-        logger.warning(f"Bytez failed: {e} — trying Gemini fallback")
+        logger.warning(f"Ollama failed: {e} — trying cloud APIs fallback")
 
-    # 3. Gemini (secondary cloud)
+    # 2. Bytez (primary cloud, 1 retry max)
+    for attempt in range(2):
+        try:
+            from app.services.bytez_service import call_bytez
+            result = await call_bytez(prompt)
+            logger.info(f"NLP via Bytez (primary), attempt {attempt+1}")
+            cache[cache_key] = result
+            return result
+        except Exception as e:
+            logger.warning(f"Bytez failed (attempt {attempt+1}): {e}")
+            if attempt == 1:
+                logger.warning("Bytez failed twice, trying Gemini fallback")
+
+    # 3. Gemini (secondary cloud, no retry)
     try:
         from app.services.gemini_service import call_gemini
         result = await call_gemini(prompt)
         logger.info("NLP via Gemini (fallback)")
+        cache[cache_key] = result
         return result
     except Exception as e:
         logger.warning(f"Gemini also failed: {e} — using keyword fallback")
@@ -93,50 +107,50 @@ async def _call_llm(prompt: str) -> dict:
 
 
 async def analyze_text(text: str) -> NLPAnalysisResult:
-    """Full NLP analysis — ONE API call covers sentiment + entities.
+    """Full NLP analysis — ONE API call covers sentiment + entities."""
+    import hashlib
+    prompt = COMBINED_PROMPT.format(text=text)
+    cache_key = hashlib.sha256(prompt.encode()).hexdigest()
+    if not hasattr(analyze_text, "_nlp_cache"):
+        analyze_text._nlp_cache = {}
+    cache = analyze_text._nlp_cache
+    if cache_key in cache:
+        logger.info("NLP cache HIT for text")
+        return cache[cache_key]
 
-    After this returns, entity_service.extract_entities() on the same text
-    will always be a cache hit — no second API call needed.
-    """
-    text_hash = hashlib.md5(text[:1500].encode("utf-8", errors="ignore")).hexdigest()
-
+    # 1. Try local LLM (Ollama)
     try:
-        prompt = COMBINED_PROMPT.format(text=text[:800])
-        result = await _call_llm(prompt)
-
-        # ── Cache the entity portion so extract_entities() costs 0 calls ──
-        entity_result = {
-            "entities": result.get("entities", []),
-            "relationships": result.get("relationships", []),
-        }
-        _entity_cache[text_hash] = entity_result
-        # Keep cache size bounded (same logic as entity_service)
-        if len(_entity_cache) > 1000:
-            oldest = list(_entity_cache.keys())[0]
-            del _entity_cache[oldest]
-
-        logger.info(
-            f"Combined NLP+Entity call done — "
-            f"{len(entity_result['entities'])} entities cached for hash {text_hash[:8]}"
-        )
-
-        return NLPAnalysisResult(
-            sentiment=result.get("sentiment", "neutral"),
-            sentiment_score=float(result.get("sentiment_score", 0)),
-            confidence=float(result.get("confidence", 0.5)),
-            topics=[result.get("primary_topic", "Other")] + result.get("secondary_topics", []),
-            keywords=result.get("keywords", []),
-            language=result.get("language", "en"),
-            language_name=result.get("language_name", "English"),
-            translation=result.get("english_translation"),
-            urgency=float(result.get("urgency", 0)),
-        )
-
+        from app.services.local_llm_service import generate_json
+        result = await generate_json(prompt)
+        logger.info("NLP via Ollama (local LLM)")
+        cache[cache_key] = result
+        return result
     except Exception as e:
-        logger.warning(f"LLM call failed ({e}), using keyword fallback")
-        # Store empty entity result in cache so extract_entities() skips API too
-        _entity_cache[text_hash] = {"entities": [], "relationships": []}
-        from app.services.sentiment_engine import _keyword_fallback
+        logger.warning(f"Ollama failed: {e} — trying cloud APIs fallback")
+
+    # 2. Bytez (primary cloud, 1 retry max)
+    for attempt in range(2):
+        try:
+            from app.services.bytez_service import call_bytez
+            result = await call_bytez(prompt)
+            logger.info(f"NLP via Bytez (primary), attempt {attempt+1}")
+            cache[cache_key] = result
+            return result
+        except Exception as e:
+            logger.warning(f"Bytez failed (attempt {attempt+1}): {e}")
+            if attempt == 1:
+                logger.warning("Bytez failed twice, trying Gemini fallback")
+
+    # 3. Gemini (secondary cloud, no retry)
+    try:
+        from app.services.gemini_service import call_gemini
+        result = await call_gemini(prompt)
+        logger.info("NLP via Gemini (fallback)")
+        cache[cache_key] = result
+        return result
+    except Exception as e:
+        logger.warning(f"Gemini also failed: {e} — using keyword fallback")
+        raise  # let analyze_text handle the final fallback
         return _keyword_fallback(text)
 
 

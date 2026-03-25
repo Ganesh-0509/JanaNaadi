@@ -130,11 +130,34 @@ async def get_recommendations(
         "urgency": 0.0,
     }
 
-    recommendations = await generate_action_recommendations(
-        alert_type=alert["alert_type"],
-        severity=alert["severity"],
-        region_name=region_name,
-        top_topics=top_topics,
-        stats=stats,
-    )
+    import hashlib
+    import time
+    rec_input = str({
+        'alert_type': alert["alert_type"],
+        'severity': alert["severity"],
+        'region_name': region_name,
+        'top_topics': top_topics,
+        'stats': stats
+    })
+    rec_key = hashlib.sha256(rec_input.encode()).hexdigest()
+    TTL_SECONDS = 300  # 5 minutes
+    if not hasattr(get_recommendations, "_rec_cache"):
+        get_recommendations._rec_cache = {}
+    if not hasattr(get_recommendations, "_rec_cache_time"):
+        get_recommendations._rec_cache_time = {}
+    rec_cache = get_recommendations._rec_cache
+    rec_cache_time = get_recommendations._rec_cache_time
+    now = time.time()
+    if rec_key in rec_cache and (now - rec_cache_time[rec_key] < TTL_SECONDS):
+        recommendations = rec_cache[rec_key]
+    else:
+        recommendations = await generate_action_recommendations(
+            alert_type=alert["alert_type"],
+            severity=alert["severity"],
+            region_name=region_name,
+            top_topics=top_topics,
+            stats=stats,
+        )
+        rec_cache[rec_key] = recommendations
+        rec_cache_time[rec_key] = now
     return recommendations

@@ -155,7 +155,8 @@ async def summarize_search(
     # Sample up to 30 voices for the AI to analyze (to keep token count reasonable)
     sample_texts = [e["cleaned_text"][:200] for e in entries[:30]]
     
-    prompt = f"""Analyze these citizen voices from India about "{q}" and provide a concise summary.
+    import hashlib
+    prompt = f"""Analyze these citizen voices from India about \"{q}\" and provide a concise summary.
 
 Search query: {q}
 Number of voices: {entry_count}
@@ -177,19 +178,27 @@ Format as JSON:
   "sentiment_analysis": "what's driving the sentiment"
 }}"""
 
-    try:
-        # OPTIMIZATION: Reduced token limit 400→300 (25% savings)
-        result_text = await call_bytez_model(prompt, max_tokens=300)
-        import json
-        ai_result = json.loads(result_text)
-    except Exception:
-        # Fallback if AI parsing fails
-        ai_result = {
-            "summary": f"Found {entry_count} voices discussing '{q}'. Sentiment is {overall_sentiment} with an average score of {avg_score:.2f}.",
-            "key_themes": [],
-            "sentiment_analysis": f"{pos_count} positive, {neu_count} neutral, {neg_count} negative voices."
-        }
-    
+    cache_key = hashlib.sha256(prompt.encode()).hexdigest()
+    if not hasattr(summarize_search, "_summary_cache"):
+        summarize_search._summary_cache = {}
+    cache = summarize_search._summary_cache
+    if cache_key in cache:
+        ai_result = cache[cache_key]
+    else:
+        try:
+            # OPTIMIZATION: Reduced token limit 400→300 (25% savings)
+            result_text = await call_bytez_model(prompt, max_tokens=300)
+            import json
+            ai_result = json.loads(result_text)
+            cache[cache_key] = ai_result
+        except Exception:
+            # Fallback if AI parsing fails
+            ai_result = {
+                "summary": f"Found {entry_count} voices discussing '{q}'. Sentiment is {overall_sentiment} with an average score of {avg_score:.2f}.",
+                "key_themes": [],
+                "sentiment_analysis": f"{pos_count} positive, {neu_count} neutral, {neg_count} negative voices."
+            }
+
     return {
         "summary": ai_result.get("summary", ""),
         "key_themes": ai_result.get("key_themes", []),

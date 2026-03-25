@@ -201,22 +201,21 @@ async def _scheduled_gnews_ingestion():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup / shutdown."""
-    # Domain intelligence — was completely missing before, added now
-    scheduler.add_job(_scheduled_domain_ingestion, "interval", hours=12, id="domain_ingest")
 
-    # General news ingesters
-    scheduler.add_job(_scheduled_news_ingestion,  "interval", hours=12, id="news_ingest")
-    scheduler.add_job(_scheduled_gnews_ingestion, "interval", hours=12, id="gnews_ingest")
-    scheduler.add_job(_scheduled_reddit_ingestion,"interval", hours=12, id="reddit_ingest")
-
-    # Snapshots and alerts (no API cost — keep frequent)
+    # Use settings for intervals
+    from app.core.settings import get_settings
+    s = get_settings()
+    scheduler.add_job(_scheduled_domain_ingestion, "interval", minutes=s.scheduler_domain_interval_min, id="domain_ingest")
+    scheduler.add_job(_scheduled_news_ingestion,  "interval", minutes=s.scheduler_news_interval_min, id="news_ingest")
+    scheduler.add_job(_scheduled_gnews_ingestion, "interval", minutes=s.scheduler_gnews_interval_min, id="gnews_ingest")
+    scheduler.add_job(_scheduled_reddit_ingestion,"interval", minutes=s.scheduler_reddit_interval_min, id="reddit_ingest")
+    # Snapshots and alerts (keep frequent)
     scheduler.add_job(_scheduled_snapshot,    "interval", hours=1,  id="snapshot")
     scheduler.add_job(_scheduled_alert_check, "interval", hours=6,  id="alert_check")
 
     scheduler.start()
     logger.info(
-        "Background scheduler started: "
-        "domains(12h), news(12h), gnews(12h), reddit(12h), snapshot(1h), alerts(6h)"
+        f"Background scheduler started: domains({s.scheduler_domain_interval_min}m), news({s.scheduler_news_interval_min}m), gnews({s.scheduler_gnews_interval_min}m), reddit({s.scheduler_reddit_interval_min}m), snapshot(1h), alerts(6h)"
     )
     logger.info("Auto-ingestion on startup DISABLED — trigger via /api/admin/trigger-ingestion")
 

@@ -56,6 +56,7 @@ Generate a policy brief in this EXACT JSON format:
 
 async def generate_brief(scope_type: str, scope_id: int | None, period: str) -> dict:
     """Generate an AI policy brief for a given scope and period."""
+    import hashlib
     sb = get_supabase_admin()
 
     # Determine period range
@@ -125,7 +126,17 @@ async def generate_brief(scope_type: str, scope_id: int | None, period: str) -> 
         positive_samples="\n".join(f'- "{s}"' for s in pos_samples) or "- None",
     )
 
-    result = await _call_llm_for_brief(prompt)
+    # Caching: Use a hash of the prompt as the cache key
+    cache_key = hashlib.sha256(prompt.encode()).hexdigest()
+    if not hasattr(generate_brief, "_brief_cache"):
+        generate_brief._brief_cache = {}
+    cache = generate_brief._brief_cache
+    if cache_key in cache:
+        logger.info(f"Brief cache HIT for {region_name} {period}")
+        result = cache[cache_key]
+    else:
+        result = await _call_llm_for_brief(prompt)
+        cache[cache_key] = result
 
     # Store brief
     brief = {

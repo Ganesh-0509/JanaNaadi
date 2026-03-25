@@ -6,6 +6,14 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    # Scheduler intervals (minutes)
+    scheduler_news_interval_min: int = 1
+    scheduler_gnews_interval_min: int = 1
+    scheduler_reddit_interval_min: int = 1
+    scheduler_domain_interval_min: int = 1
+
+    # WebSocket history limit
+    ws_history_limit: int = 100
     # Supabase
     supabase_url: str = ""
     supabase_key: str = ""  # anon key
@@ -19,9 +27,9 @@ class Settings(BaseSettings):
     gemini_model: str = "gemini-2.0-flash"
     
     # Option 2: Local LLM (Ollama) - recommended for cost savings
-    use_local_llm: bool = False  # Set to True to use Ollama instead of cloud APIs
+    use_local_llm: bool = True  # Set to True to use Ollama instead of cloud APIs
     ollama_base_url: str = "http://localhost:11434"
-    ollama_model: str = "qwen2.5"
+    ollama_model: str = "qwen2.5-coder:7b"
 
     # Twitter (optional)
     twitter_bearer_token: str = ""
