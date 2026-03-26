@@ -2,12 +2,13 @@ import { useAlerts } from '../hooks/useAlerts';
 import AlertCard from '../components/AlertCard';
 import { useState, useEffect } from 'react';
 import { CheckCheck } from 'lucide-react';
+import { type Alert } from '../types/api';
 
-type Filter = 'all' | 'critical' | 'high' | 'medium' | 'low';
+type FilterState = 'all' | 'critical' | 'high' | 'medium' | 'low';
 
 export default function AlertCenter() {
-  const { alerts, loading, unreadCount, markRead, resolve } = useAlerts();
-  const [filter, setFilter] = useState<Filter>('all');
+  const { alerts, loading, unreadCount, markRead, resolve } = useAlerts(true);
+  const [filter, setFilter] = useState<FilterState>('all');
   const [typeFilter, setTypeFilter] = useState('all');
 
   // Request browser notification permission so push alerts work

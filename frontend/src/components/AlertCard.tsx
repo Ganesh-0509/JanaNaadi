@@ -1,17 +1,9 @@
 import { useState } from 'react';
 import { formatRelative } from '../utils/formatters';
-import { AlertTriangle, TrendingDown, TrendingUp, Volume2, Lightbulb, ChevronDown, ChevronUp, Loader2, Building2 } from 'lucide-react';
+import { AlertTriangle, TrendingDown, TrendingUp, Volume2, Lightbulb, ChevronDown, ChevronUp, Loader2, Building2, Network } from 'lucide-react';
 import { getAlertRecommendations } from '../api/alerts';
-
-interface Alert {
-  id: string;
-  alert_type: string;
-  severity: string;
-  title: string;
-  description: string;
-  triggered_at: string;
-  is_read: boolean;
-}
+import { Link } from 'react-router-dom';
+import { type Alert } from '../types/api';
 
 interface Action {
   priority: 'immediate' | 'short_term' | 'long_term';
@@ -73,8 +65,8 @@ export default function AlertCard({ alert, onMarkRead, onResolve }: Props) {
 
   return (
     <div
-      className={`bg-slate-800 rounded-xl border transition-colors ${
-        alert.is_read ? 'border-slate-700' : 'border-l-4'
+      className={`bg-[#141B2D] rounded-xl border transition-all mcd-glass ${
+        alert.is_read ? 'border-white/5 opacity-80' : 'border-l-4 mcd-glow-saffron'
       }`}
       style={{ borderLeftColor: alert.is_read ? undefined : color }}
     >
@@ -95,10 +87,34 @@ export default function AlertCard({ alert, onMarkRead, onResolve }: Props) {
               >
                 {alert.severity}
               </span>
+              {alert.is_strategic && (
+                <span className="text-[10px] font-black bg-[#FF9933]/20 text-[#FF9933] px-3 py-1 rounded-full border border-[#FF9933]/30 animate-pulse tracking-widest uppercase mcd-glow-saffron">
+                  STRATEGIC PRIORITY
+                </span>
+              )}
               <span className="text-xs text-slate-400">{formatRelative(alert.triggered_at)}</span>
             </div>
             <h3 className="font-semibold text-sm mb-1">{alert.title}</h3>
             <p className="text-xs text-slate-400 leading-relaxed">{alert.description}</p>
+            
+            {/* Strategic Metadata Bar */}
+            {(alert.ac_name || alert.population_impact) && (
+              <div className="flex gap-4 mt-3 py-2 px-3 bg-slate-900/40 rounded-lg border border-slate-700/50">
+                {alert.ac_name && (
+                  <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                    <Building2 size={12} className="text-blue-400" />
+                    AC: <span className="text-slate-200 font-semibold">{alert.ac_name}</span>
+                  </div>
+                )}
+                {alert.population_impact && (
+                  <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                    <TrendingUp size={12} className="text-emerald-400" />
+                    IMPACT: <span className="text-slate-200 font-semibold">{alert.population_impact.toLocaleString()} Citizens</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex gap-2 mt-3 flex-wrap">
               {!alert.is_read && onMarkRead && (
                 <button
@@ -129,6 +145,14 @@ export default function AlertCard({ alert, onMarkRead, onResolve }: Props) {
                 AI Recommendations
                 {recs && (open ? <ChevronUp size={11} /> : <ChevronDown size={11} />)}
               </button>
+              {/* Explore Knowledge Graph link */}
+              <Link
+                to={`/ontology?q=${encodeURIComponent(alert.title)}`}
+                className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 transition-colors"
+              >
+                <Network size={12} />
+                Explore Graph
+              </Link>
             </div>
           </div>
         </div>

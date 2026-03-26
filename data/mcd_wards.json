@@ -1,0 +1,319 @@
+[
+{"id":1,"name":"Narela","ac":"Narela","population":54908,"sc_population":11618},
+{"id":2,"name":"Bankner","ac":"Narela","population":52874,"sc_population":12650},
+{"id":3,"name":"Holambi Kalan","ac":"Narela","population":80238,"sc_population":18845},
+{"id":4,"name":"Alipur","ac":"Narela","population":74449,"sc_population":15359},
+{"id":5,"name":"Bakhtawarpur","ac":"Narela","population":55144,"sc_population":10926},
+
+{"id":6,"name":"Burari","ac":"Burari","population":71180,"sc_population":6441},
+{"id":7,"name":"Kadipur","ac":"Burari","population":70169,"sc_population":12232},
+{"id":8,"name":"Mukundpur","ac":"Burari","population":86243,"sc_population":18359},
+{"id":9,"name":"Sant Nagar","ac":"Burari","population":54096,"sc_population":7685},
+{"id":10,"name":"Jharoda","ac":"Burari","population":83406,"sc_population":8954},
+
+{"id":11,"name":"Timarpur","ac":"Timarpur","population":76596,"sc_population":14624},
+{"id":12,"name":"Malka Ganj","ac":"Timarpur","population":68941,"sc_population":22081},
+{"id":13,"name":"Mukherjee Nagar","ac":"Timarpur","population":79914,"sc_population":7337},
+
+{"id":14,"name":"Dhirpur","ac":"Adarsh Nagar","population":59858,"sc_population":10544},
+{"id":15,"name":"Adarsh Nagar","ac":"Adarsh Nagar","population":59139,"sc_population":7578},
+{"id":16,"name":"Azadpur","ac":"Adarsh Nagar","population":69220,"sc_population":15031},
+
+{"id":17,"name":"Bhalswa","ac":"Badli","population":63537,"sc_population":13939},
+{"id":18,"name":"Jahangir Puri","ac":"Badli","population":80335,"sc_population":15048},
+{"id":19,"name":"Sarup Nagar","ac":"Badli","population":78653,"sc_population":10629},
+{"id":20,"name":"Samaypur Badli","ac":"Badli","population":67788,"sc_population":15621},
+
+{"id":21,"name":"Rohini-A","ac":"Rithala","population":66482,"sc_population":4014},
+{"id":22,"name":"Rohini-B","ac":"Rithala","population":60621,"sc_population":2939},
+{"id":23,"name":"Rithala","ac":"Rithala","population":71698,"sc_population":9069},
+{"id":24,"name":"Vijay Vihar","ac":"Rithala","population":68107,"sc_population":12902},
+{"id":25,"name":"Budh Vihar","ac":"Rithala","population":51524,"sc_population":3755},
+
+{"id":26,"name":"Pooth Kalan","ac":"Bawana","population":70203,"sc_population":16038},
+{"id":27,"name":"Begumpur","ac":"Bawana","population":78987,"sc_population":12816},
+{"id":28,"name":"Shahbaad Dairy","ac":"Bawana","population":54537,"sc_population":18554},
+{"id":29,"name":"Pooth Khurd","ac":"Bawana","population":57630,"sc_population":11704},
+{"id":30,"name":"Bawana","ac":"Bawana","population":64013,"sc_population":8619},
+{"id":31,"name":"Nangal Thakran","ac":"Bawana","population":57612,"sc_population":12911},
+
+{"id":32,"name":"Kanjhawala","ac":"Mundka","population":40467,"sc_population":7769},
+{"id":33,"name":"Rani Khera","ac":"Mundka","population":69553,"sc_population":10652},
+{"id":34,"name":"Nangloi","ac":"Mundka","population":71856,"sc_population":27068},
+{"id":35,"name":"Mundka","ac":"Mundka","population":50839,"sc_population":7539},
+{"id":36,"name":"Nilothi","ac":"Mundka","population":79992,"sc_population":7108},
+
+{"id":37,"name":"Kirari","ac":"Kirari","population":57703,"sc_population":10787},
+{"id":38,"name":"Prem Nagar","ac":"Kirari","population":63337,"sc_population":10299},
+{"id":39,"name":"Mubarikpur","ac":"Kirari","population":81734,"sc_population":11903},
+{"id":40,"name":"Nithari","ac":"Kirari","population":63982,"sc_population":6447},
+{"id":41,"name":"Aman Vihar","ac":"Kirari","population":78962,"sc_population":18331},
+
+{"id":42,"name":"Mangol Puri","ac":"Sultanpur Majra","population":68404,"sc_population":26576},
+{"id":43,"name":"Sultanpuri-A","ac":"Sultanpur Majra","population":74003,"sc_population":37206},
+{"id":44,"name":"Sultanpuri-B","ac":"Sultanpur Majra","population":72975,"sc_population":31777},
+
+{"id":45,"name":"Jawalapuri","ac":"Nangloi Jat","population":80685,"sc_population":33731},
+{"id":46,"name":"Nangloi Jat","ac":"Nangloi Jat","population":64870,"sc_population":6874},
+{"id":47,"name":"Nihal Vihar","ac":"Nangloi Jat","population":52919,"sc_population":7460},
+{"id":48,"name":"Guru Harkishan Nagar","ac":"Nangloi Jat","population":62946,"sc_population":5334},
+
+{"id":49,"name":"Mangolpuri-A","ac":"Mangol Puri","population":78867,"sc_population":33950},
+{"id":50,"name":"Mangolpuri-B","ac":"Mangol Puri","population":81344,"sc_population":41151},
+{"id":51,"name":"Rohini-C","ac":"Mangol Puri","population":71696,"sc_population":8133},
+
+{"id":52,"name":"Rohini-F","ac":"Rohini","population":81298,"sc_population":4021},
+{"id":53,"name":"Rohini-E","ac":"Rohini","population":66795,"sc_population":1196},
+{"id":54,"name":"Rohini-D","ac":"Rohini","population":80948,"sc_population":6191},
+
+{"id":55,"name":"Shalimar Bagh-A","ac":"Shalimar Bagh","population":61220,"sc_population":10480},
+{"id":56,"name":"Shalimar Bagh-B","ac":"Shalimar Bagh","population":72416,"sc_population":4861},
+{"id":57,"name":"Pitampura","ac":"Shalimar Bagh","population":80594,"sc_population":5366},
+
+{"id":58,"name":"Saraswati Vihar","ac":"Shakur Basti","population":63630,"sc_population":3390},
+{"id":59,"name":"Paschim Vihar","ac":"Shakur Basti","population":67423,"sc_population":7643},
+{"id":60,"name":"Rani Bagh","ac":"Shakur Basti","population":66602,"sc_population":5562},
+
+{"id":61,"name":"Kohat Enclave","ac":"Tri Nagar","population":66252,"sc_population":6349},
+{"id":62,"name":"Shakur Pur","ac":"Tri Nagar","population":71833,"sc_population":25266},
+{"id":63,"name":"Tri Nagar","ac":"Tri Nagar","population":69013,"sc_population":1914},
+
+{"id":64,"name":"Keshav Puram","ac":"Wazirpur","population":65433,"sc_population":7237},
+{"id":65,"name":"Ashok Vihar","ac":"Wazirpur","population":55773,"sc_population":12206},
+{"id":66,"name":"Wazirpur","ac":"Wazirpur","population":87397,"sc_population":26071},
+
+{"id":67,"name":"Sangam Park","ac":"Model Town","population":54854,"sc_population":23074},
+{"id":68,"name":"Model Town","ac":"Model Town","population":65907,"sc_population":7141},
+{"id":69,"name":"Kamla Nagar","ac":"Model Town","population":61009,"sc_population":6774},
+
+{"id":70,"name":"Shastri Nagar","ac":"Sadar Bazar","population":78483,"sc_population":7232},
+{"id":71,"name":"Kishan Ganj","ac":"Sadar Bazar","population":74022,"sc_population":21251},
+{"id":72,"name":"Sadar Bazar","ac":"Sadar Bazar","population":66050,"sc_population":11501},
+
+{"id":73,"name":"Civil Lines","ac":"Chandni Chowk","population":55142,"sc_population":15510},
+{"id":74,"name":"Chandni Chowk","ac":"Chandni Chowk","population":51672,"sc_population":10139},
+{"id":75,"name":"Jama Masjid","ac":"Chandni Chowk","population":46051,"sc_population":2258},
+
+{"id":76,"name":"Chandani Mahal","ac":"Matia Mahal","population":58169,"sc_population":1784},
+{"id":77,"name":"Delhi Gate","ac":"Matia Mahal","population":55397,"sc_population":16210},
+{"id":78,"name":"Bazar Sita Ram","ac":"Matia Mahal","population":57774,"sc_population":3449},
+
+{"id":79,"name":"Ballimaran","ac":"Ballimaran","population":62034,"sc_population":3069},
+{"id":80,"name":"Ram Nagar","ac":"Ballimaran","population":69121,"sc_population":30402},
+{"id":81,"name":"Quraish Nagar","ac":"Ballimaran","population":60053,"sc_population":13059},
+
+{"id":82,"name":"Pahar Ganj","ac":"Karol Bagh","population":67390,"sc_population":14936},
+{"id":83,"name":"Karol Bagh","ac":"Karol Bagh","population":66938,"sc_population":20985},
+{"id":84,"name":"Dev Nagar","ac":"Karol Bagh","population":64451,"sc_population":44756},
+
+{"id":85,"name":"West Patel Nagar","ac":"Patel Nagar","population":69686,"sc_population":25390},
+{"id":86,"name":"East Patel Nagar","ac":"Patel Nagar","population":44420,"sc_population":7685},
+{"id":87,"name":"Ranjeet Nagar","ac":"Patel Nagar","population":54256,"sc_population":8884},
+{"id":88,"name":"Baljeet Nagar","ac":"Patel Nagar","population":54213,"sc_population":6240},
+
+{"id":89,"name":"Karam Pura","ac":"Moti Nagar","population":72228,"sc_population":7693},
+{"id":90,"name":"Moti Nagar","ac":"Moti Nagar","population":59046,"sc_population":4349},
+{"id":91,"name":"Ramesh Nagar","ac":"Moti Nagar","population":72577,"sc_population":7801},
+
+{"id":92,"name":"Punjabi Bagh","ac":"Madipur","population":69946,"sc_population":9880},
+{"id":93,"name":"Madipur","ac":"Madipur","population":71727,"sc_population":34405},
+{"id":94,"name":"Raghubir Nagar","ac":"Madipur","population":78369,"sc_population":20161},
+
+{"id":95,"name":"Vishnu Garden","ac":"Rajouri Garden","population":73302,"sc_population":6517},
+{"id":96,"name":"Rajouri Garden","ac":"Rajouri Garden","population":65596,"sc_population":6507},
+{"id":97,"name":"Chaukhandi Nagar","ac":"Rajouri Garden","population":67284,"sc_population":11289},
+
+{"id":98,"name":"Subhash Nagar","ac":"Hari Nagar","population":59595,"sc_population":4633},
+{"id":99,"name":"Hari Nagar","ac":"Hari Nagar","population":74020,"sc_population":7847},
+{"id":100,"name":"Fateh Nagar","ac":"Hari Nagar","population":57335,"sc_population":2034},
+
+{"id":101,"name":"Tilak Nagar","ac":"Tilak Nagar","population":52859,"sc_population":1754},
+{"id":102,"name":"Khyala","ac":"Tilak Nagar","population":72421,"sc_population":10904},
+{"id":103,"name":"Keshopur","ac":"Tilak Nagar","population":72766,"sc_population":4690},
+
+{"id":104,"name":"Janakpuri South","ac":"Janakpuri","population":80061,"sc_population":5578},
+{"id":105,"name":"Mahaveer Enclave","ac":"Janakpuri","population":70924,"sc_population":5917},
+{"id":106,"name":"Janakpuri West","ac":"Janakpuri","population":69625,"sc_population":5701},
+
+{"id":107,"name":"Vikas Puri","ac":"Vikaspuri","population":74846,"sc_population":12043},
+{"id":108,"name":"Hastsal","ac":"Vikaspuri","population":68864,"sc_population":9374},
+{"id":109,"name":"Vikas Nagar","ac":"Vikaspuri","population":51864,"sc_population":6999},
+{"id":110,"name":"Kunwar Singh Nagar","ac":"Vikaspuri","population":55270,"sc_population":10830},
+{"id":111,"name":"Baprola","ac":"Vikaspuri","population":54328,"sc_population":7657},
+{"id":112,"name":"Sainik Enclave","ac":"Vikaspuri","population":88571,"sc_population":7262},
+
+{"id":113,"name":"Mohan Garden","ac":"Uttam Nagar","population":60029,"sc_population":5854},
+{"id":114,"name":"Nawada","ac":"Uttam Nagar","population":86959,"sc_population":7407},
+{"id":115,"name":"Uttam Nagar","ac":"Uttam Nagar","population":68309,"sc_population":3410},
+{"id":116,"name":"Bindapur","ac":"Uttam Nagar","population":58750,"sc_population":6992},
+
+{"id":117,"name":"Dabri","ac":"Dwarka","population":66907,"sc_population":8083},
+{"id":118,"name":"Sagarpur","ac":"Dwarka","population":78790,"sc_population":8447},
+{"id":119,"name":"Manglapuri","ac":"Dwarka","population":68160,"sc_population":10348},
+
+{"id":120,"name":"Dwarka-B","ac":"Matiala","population":62971,"sc_population":2683},
+{"id":121,"name":"Dwarka-A","ac":"Matiala","population":73208,"sc_population":6039},
+{"id":122,"name":"Matiala","ac":"Matiala","population":54631,"sc_population":6093},
+{"id":123,"name":"Kakrola","ac":"Matiala","population":65930,"sc_population":10503},
+{"id":124,"name":"Nangli Sakrawati","ac":"Matiala","population":83159,"sc_population":10490},
+{"id":125,"name":"Chhawla","ac":"Matiala","population":81500,"sc_population":14750},
+
+{"id":126,"name":"Isapur","ac":"Najafgarh","population":76423,"sc_population":12170},
+{"id":127,"name":"Najafgarh","ac":"Najafgarh","population":68559,"sc_population":11316},
+{"id":128,"name":"Dichaon Kalan","ac":"Najafgarh","population":71665,"sc_population":10004},
+{"id":129,"name":"Roshan Pura","ac":"Najafgarh","population":69828,"sc_population":10462},
+
+{"id":130,"name":"Dwarka-C","ac":"Bijwasan","population":45075,"sc_population":5926},
+{"id":131,"name":"Bijwasan","ac":"Bijwasan","population":47291,"sc_population":7015},
+{"id":132,"name":"Kapashera","ac":"Bijwasan","population":74073,"sc_population":6503},
+{"id":133,"name":"Mahipalpur","ac":"Bijwasan","population":65162,"sc_population":11490},
+{"id":134,"name":"Raj Nagar","ac":"Bijwasan","population":66635,"sc_population":10170},
+
+{"id":135,"name":"Palam","ac":"Palam","population":54900,"sc_population":5637},
+{"id":136,"name":"Madhu Vihar","ac":"Palam","population":67394,"sc_population":6236},
+{"id":137,"name":"Mahavir Enclave","ac":"Palam","population":67473,"sc_population":9134},
+{"id":138,"name":"Sadh Nagar","ac":"Palam","population":56487,"sc_population":5826},
+
+{"id":139,"name":"Naraina","ac":"Rajinder Nagar","population":80240,"sc_population":15689},
+{"id":140,"name":"Inder Puri","ac":"Rajinder Nagar","population":59603,"sc_population":17847},
+{"id":141,"name":"Rajinder Nagar","ac":"Rajinder Nagar","population":62224,"sc_population":10420},
+
+{"id":142,"name":"Daryaganj","ac":"Jangpura","population":44956,"sc_population":8037},
+{"id":143,"name":"Sidhartha Nagar","ac":"Jangpura","population":52058,"sc_population":12208},
+{"id":144,"name":"Lajpat Nagar","ac":"Jangpura","population":53035,"sc_population":6325},
+
+{"id":145,"name":"Andrews Ganj","ac":"Kasturba Nagar","population":66237,"sc_population":9643},
+{"id":146,"name":"Amar Colony","ac":"Kasturba Nagar","population":56045,"sc_population":2235},
+{"id":147,"name":"Kotla Mubarakpur","ac":"Kasturba Nagar","population":49669,"sc_population":11030},
+
+{"id":148,"name":"Hauz Khas","ac":"Malviya Nagar","population":45509,"sc_population":4368},
+{"id":149,"name":"Malviya Nagar","ac":"Malviya Nagar","population":62475,"sc_population":5106},
+{"id":150,"name":"Green Park","ac":"Malviya Nagar","population":49705,"sc_population":4068},
+
+{"id":151,"name":"Munirka","ac":"RK Puram","population":64543,"sc_population":8943},
+{"id":152,"name":"RK Puram","ac":"RK Puram","population":54347,"sc_population":10587},
+{"id":153,"name":"Vasant Vihar","ac":"RK Puram","population":55960,"sc_population":9430},
+
+{"id":154,"name":"Lado Sarai","ac":"Mehrauli","population":68172,"sc_population":16349},
+{"id":155,"name":"Mehrauli","ac":"Mehrauli","population":74939,"sc_population":8317},
+{"id":156,"name":"Vasant Kunj","ac":"Mehrauli","population":57080,"sc_population":5467},
+
+{"id":157,"name":"Aya Nagar","ac":"Chhatarpur","population":51783,"sc_population":7027},
+{"id":158,"name":"Bhati","ac":"Chhatarpur","population":71373,"sc_population":11057},
+{"id":159,"name":"Chhatarpur","ac":"Chhatarpur","population":58988,"sc_population":8849},
+{"id":160,"name":"Said-Ul-Ajaib","ac":"Chhatarpur","population":70967,"sc_population":8905},
+
+{"id":161,"name":"Deoli","ac":"Deoli","population":69916,"sc_population":12113},
+{"id":162,"name":"Tigri","ac":"Deoli","population":70576,"sc_population":24661},
+{"id":163,"name":"Sangam Vihar-A","ac":"Deoli","population":75114,"sc_population":11363},
+{"id":164,"name":"Dakshin Puri","ac":"Deoli","population":72967,"sc_population":25724},
+
+{"id":165,"name":"Madangir","ac":"Ambedkar Nagar","population":52695,"sc_population":23458},
+{"id":166,"name":"Pushp Vihar","ac":"Ambedkar Nagar","population":82509,"sc_population":29433},
+{"id":167,"name":"Khanpur","ac":"Ambedkar Nagar","population":64453,"sc_population":9414},
+
+{"id":168,"name":"Sangam Vihar-C","ac":"Sangam Vihar","population":73215,"sc_population":8611},
+{"id":169,"name":"Sangam Vihar-B","ac":"Sangam Vihar","population":72010,"sc_population":8365},
+{"id":170,"name":"Tughlakabad Extension","ac":"Sangam Vihar","population":72486,"sc_population":5834},
+
+{"id":171,"name":"Chitaranjan Park","ac":"Greater Kailash","population":62940,"sc_population":3184},
+{"id":172,"name":"Chirag Delhi","ac":"Greater Kailash","population":74850,"sc_population":10313},
+{"id":173,"name":"Greater Kailash","ac":"Greater Kailash","population":47763,"sc_population":1582},
+
+{"id":174,"name":"Sri Niwas Puri","ac":"Kalkaji","population":70489,"sc_population":8174},
+{"id":175,"name":"Kalkaji","ac":"Kalkaji","population":45038,"sc_population":3016},
+{"id":176,"name":"Govind Puri","ac":"Kalkaji","population":74610,"sc_population":10566},
+
+{"id":177,"name":"Harkesh Nagar","ac":"Tughlakabad","population":65932,"sc_population":16071},
+{"id":178,"name":"Tughlakabad","ac":"Tughlakabad","population":63172,"sc_population":8944},
+{"id":179,"name":"Pul Pehladpur","ac":"Tughlakabad","population":69724,"sc_population":17853},
+
+{"id":180,"name":"Badarpur","ac":"Badarpur","population":70836,"sc_population":20750},
+{"id":181,"name":"Molarband","ac":"Badarpur","population":66525,"sc_population":8292},
+{"id":182,"name":"Meethapur","ac":"Badarpur","population":69837,"sc_population":6727},
+{"id":183,"name":"Hari Nagar Extension","ac":"Badarpur","population":66979,"sc_population":5570},
+{"id":184,"name":"Jaitpur","ac":"Badarpur","population":62317,"sc_population":4642},
+
+{"id":185,"name":"Madanpur Khadar East","ac":"Okhla","population":55119,"sc_population":16500},
+{"id":186,"name":"Madanpur Khadar West","ac":"Okhla","population":56323,"sc_population":7091},
+{"id":187,"name":"Sarita Vihar","ac":"Okhla","population":55385,"sc_population":5399},
+{"id":188,"name":"Abul Fazal Enclave","ac":"Okhla","population":76012,"sc_population":1557},
+{"id":189,"name":"Zakir Nagar","ac":"Okhla","population":76470,"sc_population":699},
+
+{"id":190,"name":"New Ashok Nagar","ac":"Trilokpuri","population":63870,"sc_population":4961},
+{"id":191,"name":"Mayur Vihar Phase-I","ac":"Trilokpuri","population":88878,"sc_population":24363},
+{"id":192,"name":"Trilokpuri","ac":"Trilokpuri","population":88792,"sc_population":47282},
+
+{"id":193,"name":"Kondli","ac":"Kondli","population":66098,"sc_population":5743},
+{"id":194,"name":"Gharoli","ac":"Kondli","population":78926,"sc_population":21747},
+{"id":195,"name":"Kalyanpuri","ac":"Kondli","population":87375,"sc_population":34937},
+
+{"id":196,"name":"Mayur Vihar Phase-II","ac":"Patparganj","population":55663,"sc_population":10835},
+{"id":197,"name":"Patparganj","ac":"Patparganj","population":58762,"sc_population":7093},
+{"id":198,"name":"Vinod Nagar","ac":"Patparganj","population":58936,"sc_population":5864},
+{"id":199,"name":"Mandawali","ac":"Patparganj","population":49753,"sc_population":6804},
+
+{"id":200,"name":"Pandav Nagar","ac":"Laxmi Nagar","population":71022,"sc_population":6682},
+{"id":201,"name":"Lalita Park","ac":"Laxmi Nagar","population":55805,"sc_population":3044},
+{"id":202,"name":"Shakarpur","ac":"Laxmi Nagar","population":66256,"sc_population":6640},
+{"id":203,"name":"Laxmi Nagar","ac":"Laxmi Nagar","population":47859,"sc_population":2258},
+
+{"id":204,"name":"Preet Vihar","ac":"Vishwas Nagar","population":52293,"sc_population":2150},
+{"id":205,"name":"IP Extension","ac":"Vishwas Nagar","population":60343,"sc_population":4041},
+{"id":206,"name":"Anand Vihar","ac":"Vishwas Nagar","population":56495,"sc_population":7107},
+{"id":207,"name":"Vishwas Nagar","ac":"Vishwas Nagar","population":53057,"sc_population":15149},
+
+{"id":208,"name":"Anarkali","ac":"Krishna Nagar","population":57322,"sc_population":5866},
+{"id":209,"name":"Jagat Puri","ac":"Krishna Nagar","population":76170,"sc_population":5932},
+{"id":210,"name":"Geeta Colony","ac":"Krishna Nagar","population":59249,"sc_population":4782},
+{"id":211,"name":"Krishna Nagar","ac":"Krishna Nagar","population":61458,"sc_population":3690},
+
+{"id":212,"name":"Gandhi Nagar","ac":"Gandhi Nagar","population":62052,"sc_population":7127},
+{"id":213,"name":"Shastri Park","ac":"Gandhi Nagar","population":68530,"sc_population":6720},
+{"id":214,"name":"Azad Nagar","ac":"Gandhi Nagar","population":66674,"sc_population":6994},
+
+{"id":215,"name":"Shahdara","ac":"Shahdara","population":69110,"sc_population":16796},
+{"id":216,"name":"Jhilmil","ac":"Shahdara","population":68555,"sc_population":11476},
+{"id":217,"name":"Dilshad Colony","ac":"Shahdara","population":76598,"sc_population":10854},
+
+{"id":218,"name":"Sundar Nagri","ac":"Seema Puri","population":83935,"sc_population":20704},
+{"id":219,"name":"Dilshad Garden","ac":"Seema Puri","population":79248,"sc_population":15189},
+{"id":220,"name":"Nand Nagri","ac":"Seema Puri","population":73753,"sc_population":36402},
+
+{"id":221,"name":"Ashok Nagar","ac":"Rohtas Nagar","population":59850,"sc_population":13216},
+{"id":222,"name":"Ram Nagar East","ac":"Rohtas Nagar","population":59874,"sc_population":13201},
+{"id":223,"name":"Rohtash Nagar","ac":"Rohtas Nagar","population":55550,"sc_population":12468},
+{"id":224,"name":"Welcome Colony","ac":"Rohtas Nagar","population":65707,"sc_population":10033},
+
+{"id":225,"name":"Seelampur","ac":"Seelampur","population":63039,"sc_population":7542},
+{"id":226,"name":"Gautam Puri","ac":"Seelampur","population":51072,"sc_population":7144},
+{"id":227,"name":"Chauhan Banger","ac":"Seelampur","population":58344,"sc_population":124},
+{"id":228,"name":"Maujpur","ac":"Seelampur","population":63960,"sc_population":4461},
+
+{"id":229,"name":"Brahampuri","ac":"Ghonda","population":66203,"sc_population":7166},
+{"id":230,"name":"Bhajanpura","ac":"Ghonda","population":57248,"sc_population":9295},
+{"id":231,"name":"Ghonda","ac":"Ghonda","population":65273,"sc_population":10923},
+{"id":232,"name":"Yamuna Vihar","ac":"Ghonda","population":53966,"sc_population":3791},
+
+{"id":233,"name":"Subhash Mohalla","ac":"Babarpur","population":57209,"sc_population":2236},
+{"id":234,"name":"Kabir Nagar","ac":"Babarpur","population":54811,"sc_population":4070},
+{"id":235,"name":"Gorakh Park","ac":"Babarpur","population":63353,"sc_population":3295},
+{"id":236,"name":"Kardam Puri","ac":"Babarpur","population":64940,"sc_population":4648},
+
+{"id":237,"name":"Harsh Vihar","ac":"Gokalpur","population":78698,"sc_population":31746},
+{"id":238,"name":"Saboli","ac":"Gokalpur","population":71019,"sc_population":22218},
+{"id":239,"name":"Gokal Puri","ac":"Gokalpur","population":73943,"sc_population":33590},
+{"id":240,"name":"Joharipur","ac":"Gokalpur","population":71269,"sc_population":21411},
+
+{"id":241,"name":"Karawal Nagar-East","ac":"Mustafabad","population":65474,"sc_population":14352},
+{"id":242,"name":"Dayalpur","ac":"Mustafabad","population":54188,"sc_population":11316},
+{"id":243,"name":"Mustafabad","ac":"Mustafabad","population":55586,"sc_population":385},
+{"id":244,"name":"Nehru Vihar","ac":"Mustafabad","population":73213,"sc_population":6021},
+{"id":245,"name":"Brij Puri","ac":"Mustafabad","population":63040,"sc_population":4075},
+
+{"id":246,"name":"Sri Ram Colony","ac":"Karawal Nagar","population":83347,"sc_population":3146},
+{"id":247,"name":"Sadatpur","ac":"Karawal Nagar","population":60181,"sc_population":5739},
+{"id":248,"name":"Karawal Nagar-West","ac":"Karawal Nagar","population":69926,"sc_population":8413},
+{"id":249,"name":"Sonia Vihar","ac":"Karawal Nagar","population":65031,"sc_population":6071},
+{"id":250,"name":"Sabapur","ac":"Karawal Nagar","population":42819,"sc_population":3852}
+]

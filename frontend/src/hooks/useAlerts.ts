@@ -1,15 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { getAlerts, markAlertRead, markAlertResolved } from '../api/alerts';
-
-interface Alert {
-  id: string;
-  alert_type: string;
-  severity: string;
-  title: string;
-  description: string;
-  triggered_at: string;
-  is_read: boolean;
-}
+import { type Alert } from '../types/api';
 
 export function useAlerts(isAdmin = false) {
   const [alerts, setAlerts] = useState<Alert[]>([]);

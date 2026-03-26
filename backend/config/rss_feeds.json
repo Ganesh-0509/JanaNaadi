@@ -75,5 +75,8 @@
 {"name":"GNews Punjab","url":"https://news.google.com/rss/search?q=punjab+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Punjab","language":"en"},
 {"name":"GNews Haryana","url":"https://news.google.com/rss/search?q=haryana+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Haryana","language":"en"},
 {"name":"GNews Delhi","url":"https://news.google.com/rss/search?q=delhi+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Delhi","language":"en"},
+{"name":"GNews MCD Delhi","url":"https://news.google.com/rss/search?q=MCD+Delhi+news+municipal&hl=en-IN&gl=IN&ceid=IN:en","region":"Delhi","language":"en"},
+{"name":"GNews Delhi Mayor","url":"https://news.google.com/rss/search?q=MCD+Mayor+Delhi+Raja+Iqbal+Singh&hl=en-IN&gl=IN&ceid=IN:en","region":"Delhi","language":"en"},
+{"name":"GNews Delhi Wards","url":"https://news.google.com/rss/search?q=Delhi+Ward+development+MCD&hl=en-IN&gl=IN&ceid=IN:en","region":"Delhi","language":"en"},
 {"name":"GNews Northeast","url":"https://news.google.com/rss/search?q=northeast+india+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Assam","language":"en"}
 ]

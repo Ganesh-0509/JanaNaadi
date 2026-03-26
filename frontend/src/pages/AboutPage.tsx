@@ -6,14 +6,13 @@ export default function AboutPage() {
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-          About JanaNaadi
+          Platform Methodology
         </h1>
         <p className="text-slate-400 text-lg">
-          India's Real-Time Public Sentiment Intelligence Platform
+          The Science Behind JanaNaadi Intelligence
         </p>
       </div>
 
-      {/* Mission */}
       <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
         <div className="flex items-center gap-2 mb-4">
           <Users size={20} className="text-blue-400" />
@@ -25,6 +24,46 @@ export default function AboutPage() {
           into citizen concerns, emerging issues, and regional sentiment patterns. Our AI-powered
           platform processes voices in multiple Indian languages to deliver actionable intelligence.
         </p>
+      </div>
+
+      {/* Ontology Module — Core PS Feature */}
+      <div className="bg-gradient-to-br from-indigo-900/30 to-slate-800 rounded-2xl p-6 border border-indigo-500/20">
+        <div className="flex items-center gap-2 mb-4">
+          <Zap size={20} className="text-indigo-400" />
+          <h2 className="text-xl font-bold">Global Ontology Engine</h2>
+        </div>
+        <div className="space-y-4">
+          <p className="text-slate-300 leading-relaxed">
+            The core of JanaNaadi is a sophisticated <span className="text-indigo-300 font-semibold">Intelligence Graph</span> that goes beyond mere sentiment counting.
+            It connects unstructured content (voices) to structured domains:
+          </p>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+              <h4 className="text-sm font-bold text-indigo-300 mb-2 uppercase">Entity Extraction</h4>
+              <p className="text-xs text-slate-400">
+                Algorithms automatically identify people, organizations, locations, and policies mentioned in speech.
+              </p>
+            </div>
+            <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+              <h4 className="text-sm font-bold text-indigo-300 mb-2 uppercase">Cross-Domain Mapping</h4>
+              <p className="text-xs text-slate-400">
+                Understanding how a shift in <span className="text-emerald-400">Economic</span> sentiment impacts <span className="text-amber-400">Society</span> or <span className="text-red-400">Defense</span> posture.
+              </p>
+            </div>
+            <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+              <h4 className="text-sm font-bold text-indigo-300 mb-2 uppercase">Predictive Risk</h4>
+              <p className="text-xs text-slate-400">
+                A linear intelligence forecast that predicts future urgency based on connectivity strength between entities.
+              </p>
+            </div>
+            <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+              <h4 className="text-sm font-bold text-indigo-300 mb-2 uppercase">Structural Reasoning</h4>
+              <p className="text-xs text-slate-400">
+                Moving from "What are people saying?" to "Why is this happening and what is the strategic risk?"
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Data Sources */}

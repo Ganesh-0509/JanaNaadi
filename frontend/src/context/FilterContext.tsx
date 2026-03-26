@@ -6,6 +6,8 @@ interface Filters {
   source: string | null;
   language: string | null;
   sentiment: string | null;
+  municipality: string | null;
+  ward_id: number | null;
 }
 
 interface FilterContextType {
@@ -20,6 +22,8 @@ const defaultFilters: Filters = {
   source: null,
   language: null,
   sentiment: null,
+  municipality: null,
+  ward_id: null,
 };
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);

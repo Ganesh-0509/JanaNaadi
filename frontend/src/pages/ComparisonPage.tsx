@@ -5,14 +5,10 @@ import { getComparison } from '../api/analysis';
 import { getStateRankings } from '../api/public';
 import CompareView from '../components/CompareView';
 import { GitCompare, ExternalLink } from 'lucide-react';
-
-interface StateOption {
-  id: number;
-  name: string;
-}
+import { type StateRanking } from '../types/api';
 
 export default function ComparisonPage() {
-  const [states, setStates] = useState<StateOption[]>([]);
+  const [states, setStates] = useState<StateRanking[]>([]);
   const [selA, setSelA] = useState('');
   const [selB, setSelB] = useState('');
   const [selC, setSelC] = useState('');
@@ -23,9 +19,7 @@ export default function ComparisonPage() {
 
   useEffect(() => {
     getStateRankings()
-      .then((data: any[]) =>
-        setStates(data.map((s: any) => ({ id: s.state_id, name: s.state })))
-      )
+      .then((data: StateRanking[]) => setStates(data))
       .catch(() => {});
   }, []);
 
@@ -78,8 +72,8 @@ export default function ComparisonPage() {
               >
                 <option value="">Select state…</option>
                 {states.map((s) => (
-                  <option key={s.id} value={String(s.id)}>
-                    {s.name}
+                  <option key={s.state_id} value={String(s.state_id)}>
+                    {s.state}
                   </option>
                 ))}
               </select>

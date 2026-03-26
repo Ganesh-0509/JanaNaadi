@@ -3,15 +3,38 @@
 @tailwind utilities;
 
 :root {
-  --color-bg: #0f172a;
-  --color-surface: #1e293b;
-  --color-text: #f8fafc;
-  --color-muted: #94a3b8;
-  --color-accent: #3b82f6;
-  --color-positive: #22c55e;
-  --color-neutral: #eab308;
-  --color-negative: #ef4444;
-  --color-critical: #dc2626;
+  --color-bg: #0B0F1A; /* Deeper Space Charcoal */
+  --color-surface: #141B2D;
+  --color-text: #F8FAFC;
+  --color-muted: #94A3B8;
+  --color-accent: #FF9933; /* Vibrant Saffron */
+  --color-teal: #0FD2B5; /* Neon Teal */
+  --color-gold: #D4AF37; /* Matte Gold */
+  --color-positive: #10B981;
+  --color-neutral: #EAB308;
+  --color-negative: #EF4444;
+  --color-critical: #DC2626;
+}
+
+.mcd-glass {
+  background: rgba(20, 27, 45, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 153, 51, 0.1);
+}
+
+.mcd-glow-saffron {
+  box-shadow: 0 0 25px -5px rgba(255, 153, 51, 0.2);
+}
+
+.mcd-glow-teal {
+  box-shadow: 0 0 25px -5px rgba(15, 210, 181, 0.2);
+}
+
+.text-gradient-saffron {
+  background: linear-gradient(to right, #FF9933, #FF5E14);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 body {

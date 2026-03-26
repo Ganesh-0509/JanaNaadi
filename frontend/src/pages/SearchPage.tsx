@@ -4,19 +4,8 @@ import { Search, SlidersHorizontal, X, Loader2, Sparkles } from 'lucide-react';
 import { searchEntries, summarizeSearch } from '../api/analysis';
 import { formatRelative } from '../utils/formatters';
 import { useSearchParams } from 'react-router-dom';
-
-interface Entry {
-  id: string;
-  text: string;
-  sentiment: string;
-  sentiment_score: number;
-  topic: string | null;
-  state: string | null;
-  source: string | null;
-  source_url: string | null;
-  language: string | null;
-  ingested_at: string | null;
-}
+import { useFilters } from '../context/FilterContext';
+import { type PulseEntry } from '../types/api';
 
 interface Summary {
   summary: string;
@@ -42,11 +31,12 @@ const PAGE_SIZE = 30;
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
+  const { filters } = useFilters();
   const [query, setQuery] = useState(() => searchParams.get('q') || '');
   const [sentiment, setSentiment] = useState('');
   const [source, setSource] = useState('');
   const [language, setLanguage] = useState('');
-  const [results, setResults] = useState<Entry[]>([]);
+  const [results, setResults] = useState<PulseEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -80,8 +70,9 @@ export default function SearchPage() {
       if (sentiment) params.sentiment = sentiment;
       if (source) params.source = source;
       if (language) params.language = language;
+      if (filters.timeRange !== '24h') params.time_range = filters.timeRange;
 
-      const data: Entry[] = await searchEntries(params);
+      const data: PulseEntry[] = await searchEntries(params);
       if (reset) {
         setResults(data);
         setOffset(PAGE_SIZE);
@@ -98,13 +89,20 @@ export default function SearchPage() {
     }
   }, [query, sentiment, source, language, offset]);
 
+  // Re-search when global timeRange filter changes
+  useEffect(() => {
+    if (searched) {
+      doSearch(true);
+    }
+  }, [filters.timeRange]);
+
   // Auto-search when navigated here with ?q= URL param
   useEffect(() => {
     const initialQ = searchParams.get('q');
     if (!initialQ) return;
     setLoading(true);
-    searchEntries({ q: initialQ, limit: PAGE_SIZE, offset: 0 })
-      .then((data: Entry[]) => {
+    searchEntries({ q: initialQ, limit: PAGE_SIZE, offset: 0, time_range: filters.timeRange !== '24h' ? filters.timeRange : undefined })
+      .then((data: PulseEntry[]) => {
         setResults(data);
         setOffset(PAGE_SIZE);
         setHasMore(data.length === PAGE_SIZE);

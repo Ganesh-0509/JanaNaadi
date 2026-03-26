@@ -266,3 +266,34 @@ const getEntityTypeGroup = (type: string): number => {
   };
   return groupMap[type] || 0;
 };
+
+// ============================================================
+// CROSS-DOMAIN INTELLIGENCE API
+// ============================================================
+
+import type { CrossDomainConnection, CrossDomainPair } from '../types/api';
+
+/**
+ * Get cross-domain connection edges between entities from different domains
+ */
+export const getCrossDomainConnections = async (params?: {
+  domain_a?: string;
+  domain_b?: string;
+  min_strength?: number;
+  limit?: number;
+}): Promise<{ connections: CrossDomainConnection[]; total: number; domains_present: string[] }> => {
+  const response = await apiClient.get('/api/ontology/cross-domain-connections', { params });
+  return response.data;
+};
+
+/**
+ * Get summary of cross-domain connection counts per domain pair
+ */
+export const getCrossDomainSummary = async (): Promise<{
+  domain_pairs: CrossDomainPair[];
+  total_cross_domain_edges: number;
+}> => {
+  const response = await apiClient.get('/api/ontology/cross-domain-summary');
+  return response.data;
+};
+

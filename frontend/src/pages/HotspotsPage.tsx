@@ -3,39 +3,21 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Flame, TrendingDown, AlertTriangle, ArrowRight } from 'lucide-react';
 import { getHotspots } from '../api/public';
-
-interface Hotspot {
-  state_id: number;
-  state: string;
-  state_code: string;
-  urgency_score: number;
-  avg_sentiment: number;
-  volume: number;
-}
-
-function urgencyColor(score: number) {
-  if (score >= 0.7) return { bar: 'bg-red-500', text: 'text-red-400', badge: 'bg-red-500/20 text-red-400 border-red-500/30' };
-  if (score >= 0.4) return { bar: 'bg-amber-500', text: 'text-amber-400', badge: 'bg-amber-500/20 text-amber-400 border-amber-500/30' };
-  return { bar: 'bg-yellow-400', text: 'text-yellow-400', badge: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' };
-}
-
-function urgencyLabel(score: number) {
-  if (score >= 0.7) return 'Critical';
-  if (score >= 0.4) return 'High';
-  if (score >= 0.2) return 'Moderate';
-  return 'Low';
-}
+import { useFilters } from '../context/FilterContext';
+import { type Hotspot, urgencyConfig } from '../types/api';
 
 export default function HotspotsPage() {
   const [hotspots, setHotspots] = useState<Hotspot[]>([]);
   const [loading, setLoading] = useState(true);
+  const { filters } = useFilters();
 
   useEffect(() => {
+    setLoading(true);
     getHotspots(15)
       .then(setHotspots)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [filters.timeRange]); // Re-fetch when timeRange filter changes
 
   return (
     <motion.div
@@ -81,7 +63,7 @@ export default function HotspotsPage() {
       ) : (
         <div className="space-y-3">
           {hotspots.map((h, i) => {
-            const colors = urgencyColor(h.urgency_score);
+            const colors = urgencyConfig(h.urgency_score);
             return (
               <motion.div
                 key={h.state_code}
@@ -109,7 +91,7 @@ export default function HotspotsPage() {
                   {/* Urgency Badge + drill-down */}
                   <div className="flex items-center gap-3">
                     <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${colors.badge}`}>
-                      {urgencyLabel(h.urgency_score)}
+                      {colors.label}
                     </span>
                     <span className={`text-sm font-mono font-bold ${colors.text}`}>
                       {(h.urgency_score * 100).toFixed(0)}

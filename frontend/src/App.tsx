@@ -14,6 +14,7 @@ const AnalysisView = lazy(() => import('./pages/AnalysisView'));
 const SearchPage = lazy(() => import('./pages/SearchPage'));
 const GovDashboard = lazy(() => import('./pages/GovDashboard'));
 const OntologyPage = lazy(() => import('./pages/OntologyPage'));
+const CrossDomainPage = lazy(() => import('./pages/CrossDomainPage'));
 
 // Medium weight pages - lazy loaded
 const PolicyBriefs = lazy(() => import('./pages/PolicyBriefs'));
@@ -25,6 +26,7 @@ import AlertCenter from './pages/AlertCenter';
 import HotspotsPage from './pages/HotspotsPage';
 import StreamPage from './pages/StreamPage';
 import AboutPage from './pages/AboutPage';
+import SubmitGrievance from './pages/SubmitGrievance';
 
 // Loading fallback component
 const PageLoader = () => (
@@ -88,7 +90,12 @@ export default function App() {
                   path="/ontology"
                   element={<PrivateRoute><OntologyPage /></PrivateRoute>}
                 />
+                <Route
+                  path="/cross-domain"
+                  element={<PrivateRoute><CrossDomainPage /></PrivateRoute>}
+                />
                 <Route path="/about" element={<AboutPage />} />
+                <Route path="/submit" element={<SubmitGrievance />} />
               </Route>
             </Routes>
           </Suspense>

@@ -4,20 +4,7 @@ import { getStateRankings } from '../api/public';
 import BriefViewer from '../components/BriefViewer';
 import { formatDate } from '../utils/formatters';
 import { Search, Printer } from 'lucide-react';
-
-interface BriefSummary {
-  id: string;
-  title: string;
-  scope: string;
-  scope_name: string;
-  generated_at: string;
-}
-
-interface GeoOption {
-  id: number;
-  name: string;
-  type?: string;
-}
+import { type BriefSummary, type GeoOption } from '../types/api';
 
 export default function PolicyBriefs() {
   const [briefs, setBriefs] = useState<BriefSummary[]>([]);

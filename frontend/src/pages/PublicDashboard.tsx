@@ -8,59 +8,16 @@ import KeywordCloud from '../components/KeywordCloud';
 import { StatCardSkeleton, VoiceCardSkeleton, TopicCardSkeleton, TableRowSkeleton, CardSkeleton } from '../components/Skeleton';
 import { formatNumber, formatRelative } from '../utils/formatters';
 import { Link, useNavigate } from 'react-router-dom';
-import { Map, ArrowRight, Search, MessageSquare, Users, TrendingUp } from 'lucide-react';
+import { Map, ArrowRight, Search, MessageSquare, Users, TrendingUp, Send } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-
-interface Pulse {
-  total_entries_24h: number;
-  avg_sentiment: number;
-  positive_count: number;
-  negative_count: number;
-  neutral_count: number;
-  top_3_issues: Array<{ topic: string; count: number }>;
-  top_3_positive: Array<{ topic: string; count: number }>;
-  language_breakdown: Record<string, number>;
-}
-
-interface StateRanking {
-  state: string;
-  state_code: string;
-  avg_sentiment: number;
-  volume: number;
-  top_issue: string | null;
-}
-
-interface TrendingTopic {
-  topic: string;
-  mention_count: number;
-  sentiment_trend: number;
-  seven_day_change: number;
-}
-
-interface Voice {
-  text: string;
-  sentiment: string;
-  score: number;
-  topic: string;
-  state: string;
-  time: string;
-  source: string;
-}
-
-interface AreaResult {
-  found: boolean;
-  state?: string;
-  avg_sentiment?: number;
-  total_entries?: number;
-  positive?: number;
-  negative?: number;
-  neutral?: number;
-  top_issues?: Array<{ topic: string; count: number }>;
-  message?: string;
-}
+import { useFilters } from '../context/FilterContext';
+import {
+  type Pulse, type StateRanking, type TrendingTopic, type Voice, type AreaResult
+} from '../types/api';
 
 export default function PublicDashboard() {
   const { user } = useAuth();
+  const { filters } = useFilters();
   const navigate = useNavigate();
   const [pulse, setPulse] = useState<Pulse | null>(null);
   const [states, setStates] = useState<StateRanking[]>([]);
@@ -76,6 +33,7 @@ export default function PublicDashboard() {
 
   useEffect(() => {
     const load = async () => {
+      setLoading(true);
       try {
         const [p, s, t, v, kw] = await Promise.all([
           getNationalPulse(),
@@ -96,7 +54,7 @@ export default function PublicDashboard() {
       }
     };
     load();
-  }, []);
+  }, [filters.timeRange]); // Re-fetch when global timeRange changes
 
   const handleAreaSearch = async () => {
     if (!areaQuery.trim()) return;
@@ -151,38 +109,18 @@ export default function PublicDashboard() {
       transition={{ duration: 0.4 }}
       className="p-6 space-y-8"
     >
-      {/* Header — different for public vs authenticated */}
+      {/* Header — Community View */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            {user ? (
-              <>
-                <TrendingUp size={24} className="text-blue-400" />
-                National Analytics
-              </>
-            ) : (
-              <>
-                <Users size={24} className="text-emerald-400" />
-                Community Pulse
-              </>
-            )}
+            <Users size={24} className="text-emerald-400" />
+            Community Pulse
           </h1>
           <p className="text-sm text-slate-400">
-            {user
-              ? 'Governance intelligence dashboard — real-time sentiment analytics'
-              : 'See how India feels — powered by citizen voices & AI analysis'}
+            Delhi Citizen Sentiment Platform — Powered by AI analysis across 250 Wards
           </p>
         </div>
-        {user ? (
-          <Link
-            to="/map"
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-sm font-medium"
-          >
-            <Map size={16} />
-            Open Heatmap
-            <ArrowRight size={14} />
-          </Link>
-        ) : (
+        {!user && (
           <Link
             to="/login"
             className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium"
@@ -190,6 +128,27 @@ export default function PublicDashboard() {
             Governance Login <ArrowRight size={14} />
           </Link>
         )}
+      </div>
+
+      {/* NEW: Citizen Feedback Banner — MCD Focus */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600/20 to-emerald-600/20 rounded-3xl p-6 border border-blue-500/30">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center">
+              <MessageSquare className="text-blue-400" size={24} />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold">Have a Concern in your Ward?</h2>
+              <p className="text-sm text-slate-400">Your voice feeds directly into the Delhi Government's Strategic Intelligence Engine.</p>
+            </div>
+          </div>
+          <Link 
+            to="/submit" 
+            className="w-full md:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
+          >
+            Submit Grievance <Send size={16} />
+          </Link>
+        </div>
       </div>
 
       {/* Stats Row */}
@@ -303,7 +262,7 @@ export default function PublicDashboard() {
                 topic={t.topic}
                 count={t.mention_count}
                 sentiment={t.sentiment_trend > 0 ? 'positive' : t.sentiment_trend < 0 ? 'negative' : 'neutral'}
-                onClick={() => navigate(user ? `/search?q=${encodeURIComponent(t.topic)}` : `/pulse`)}
+                onClick={() => navigate(`/pulse`)}
               />
             ))}
           </div>
@@ -355,11 +314,8 @@ export default function PublicDashboard() {
         </div>
       )}
 
-      {/* State Rankings — shown to everyone but labeled differently */}
       <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
-        <h2 className="text-lg font-bold mb-4">
-          {user ? 'State Sentiment Rankings' : 'How States Are Feeling'}
-        </h2>
+        <h2 className="text-lg font-bold mb-4">How States Are Feeling</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>

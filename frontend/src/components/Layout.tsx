@@ -4,7 +4,7 @@ import { useAlerts } from '../hooks/useAlerts';
 import { useState } from 'react';
 import {
   Map, BarChart3, Bell, FileText, Database, LogOut, Users, Menu, X,
-  Flame, Radio, Search, LayoutDashboard, Network,
+  Flame, Radio, Search, LayoutDashboard, Network, Layers,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { to: '/hotspots', label: 'Hotspots', icon: Flame, public: true },
   { to: '/gov', label: 'Gov Intelligence', icon: LayoutDashboard, public: false },
   { to: '/ontology', label: 'Knowledge Graph', icon: Network, public: false },
+  { to: '/cross-domain', label: 'Cross-Domain Map', icon: Layers, public: false },
   { to: '/map', label: 'Heatmap', icon: Map, public: false },
   { to: '/compare', label: 'Compare States', icon: BarChart3, public: false },
   { to: '/stream', label: 'Live Stream', icon: Radio, public: false },
@@ -48,18 +49,18 @@ export default function Layout() {
 
       {/* Sidebar */}
       <aside className={`
-        fixed md:static z-[800] h-full w-64 bg-slate-800 border-r border-slate-700 flex flex-col
-        transition-transform duration-300 ease-in-out
+        fixed md:static z-[800] h-full w-64 bg-[#141B2D] border-r border-white/5 flex flex-col
+        transition-transform duration-300 ease-in-out mcd-glow-saffron
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-700">
+        <div className="flex items-center justify-between px-6 py-6 border-b border-white/5">
           <Link to="/" className="flex items-center gap-3" onClick={() => setSidebarOpen(false)}>
-            <div className="w-9 h-9 rounded-lg bg-blue-500 flex items-center justify-center text-lg font-bold">
+            <div className="w-9 h-9 rounded-lg bg-[#FF9933] flex items-center justify-center text-lg font-black text-white mcd-glow-saffron">
               J
             </div>
             <div>
-              <div className="font-bold text-lg leading-tight">JanaNaadi</div>
-              <div className="text-xs text-slate-400">Pulse of the People</div>
+              <div className="font-black text-lg leading-tight tracking-tight uppercase">JanaNaadi</div>
+              <div className="text-[10px] font-bold text-[#FF9933] uppercase tracking-widest">MCD Edition</div>
             </div>
           </Link>
           <button onClick={() => setSidebarOpen(false)} className="md:hidden text-slate-400 hover:text-white">
@@ -77,10 +78,10 @@ export default function Layout() {
                 key={item.to}
                 to={item.to}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-bold transition-all ${
                   active
-                    ? 'bg-blue-500/20 text-blue-400'
-                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                    ? 'bg-[#FF9933]/15 text-[#FF9933] shadow-inner'
+                    : 'text-slate-400 hover:bg-white/5 hover:text-white'
                 }`}
               >
                 <item.icon size={18} />
@@ -129,17 +130,13 @@ export default function Layout() {
         </div>
         
         {/* Footer */}
-        <footer className="bg-slate-800/50 border-t border-slate-700 px-6 py-4 text-center text-sm text-slate-400">
-          <div className="max-w-4xl mx-auto space-y-2">
+        <footer className="bg-[#141B2D]/50 border-t border-white/5 px-6 py-6 text-center text-xs text-slate-500 font-medium">
+          <div className="max-w-4xl mx-auto space-y-2 uppercase tracking-widest">
             <p>
-              News content sourced from RSS feeds. Sentiment analysis by JanaNaadi. 
-              Original sources linked where available.{' '}
-              <Link to="/about" className="text-blue-400 hover:text-blue-300 underline">
-                View all data sources & attribution
-              </Link>
+              MUNICIPAL INTELLIGENCE ENGINE • NATIVE CENSUS SYNC ACTIVE
             </p>
-            <p className="text-xs text-slate-500">
-              © 2025 JanaNaadi • Government of India — Citizen Intelligence Platform
+            <p className="">
+              © 2026 JANA NAADI • BHARAT MANDAPAM • INDIA INNOVATES
             </p>
           </div>
         </footer>

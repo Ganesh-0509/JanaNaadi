@@ -194,6 +194,100 @@ async def _scheduled_gnews_ingestion():
         logger.error(f"Scheduled GNews ingestion failed: {e}")
 
 
+async def _scheduled_domain_score_computation():
+    """Background job: auto-compute domain intelligence scores for all 6 domains.
+
+    FIX: Previously domain intelligence scores were NEVER computed automatically.
+    GovDashboard's Multi-Domain Intelligence cards showed empty because no one
+    called /api/ontology/domain/{domain}/compute. This job runs every 2 hours
+    after ingestion and computes fresh scores for all 6 PS domains at national scope.
+    """
+    DOMAINS = ["geopolitics", "economics", "defense", "climate", "technology", "society"]
+    try:
+        from app.core.supabase_client import get_supabase_admin
+        from datetime import datetime, timedelta, timezone
+
+        sb = get_supabase_admin()
+        cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+        computed_count = 0
+
+        for domain in DOMAINS:
+            try:
+                # Fetch last 24h entries for this domain
+                entries_result = await asyncio.to_thread(
+                    lambda d=domain: sb.table("sentiment_entries")
+                    .select("sentiment, sentiment_score, urgency_score, primary_topic_id")
+                    .eq("domain", d)
+                    .gte("ingested_at", cutoff)
+                    .execute()
+                )
+
+                entries = entries_result.data or []
+                if not entries:
+                    logger.debug(f"Domain score [{domain}]: no entries in last 24h, skipping")
+                    continue
+
+                total = len(entries)
+                avg_sentiment = sum(e.get("sentiment_score", 0) for e in entries) / total
+                avg_urgency = sum(e.get("urgency_score", 0) or 0 for e in entries) / total
+                negative_count = sum(1 for e in entries if e.get("sentiment") == "negative")
+                negative_ratio = negative_count / total
+
+                # Risk score: weighted combination
+                risk_score = round(min(negative_ratio * 0.6 + avg_urgency * 0.4, 1.0), 4)
+
+                if risk_score >= 0.7:
+                    urgency_level = "critical"
+                elif risk_score >= 0.4:
+                    urgency_level = "high"
+                elif risk_score >= 0.2:
+                    urgency_level = "moderate"
+                else:
+                    urgency_level = "low"
+
+                # Build key factors from top topics
+                topic_counts: dict = {}
+                for e in entries:
+                    tid = e.get("primary_topic_id")
+                    if tid:
+                        topic_counts[tid] = topic_counts.get(tid, 0) + 1
+                sorted_topics = sorted(topic_counts.items(), key=lambda x: x[1], reverse=True)
+                key_factors = [{"topic_id": t[0], "mentions": t[1]} for t in sorted_topics[:5]]
+
+                score_data = {
+                    "domain": domain,
+                    "scope": "national",
+                    "scope_id": None,
+                    "risk_score": risk_score,
+                    "sentiment_trend": round(avg_sentiment, 4),
+                    "urgency_level": urgency_level,
+                    "key_factors": key_factors,
+                    "entity_ids": [],
+                    "metadata": {
+                        "entries_analyzed": total,
+                        "negative_ratio": round(negative_ratio, 4),
+                        "avg_urgency": round(avg_urgency, 4),
+                        "auto_computed": True,
+                    },
+                    "computed_at": datetime.now(timezone.utc).isoformat(),
+                }
+
+                await asyncio.to_thread(
+                    lambda d=score_data: sb.table("domain_intelligence").insert(d).execute()
+                )
+                computed_count += 1
+                logger.info(f"Domain score [{domain}]: risk={risk_score:.3f} urgency={urgency_level} entries={total}")
+
+            except Exception as domain_err:
+                logger.warning(f"Domain score computation failed for [{domain}]: {domain_err}")
+                continue
+
+        logger.info(f"Scheduled domain score computation complete: {computed_count}/{len(DOMAINS)} domains updated")
+
+    except Exception as e:
+        logger.error(f"Scheduled domain score computation failed: {e}")
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # App lifespan
 # ─────────────────────────────────────────────────────────────────────────────
@@ -205,17 +299,21 @@ async def lifespan(app: FastAPI):
     # Use settings for intervals
     from app.core.settings import get_settings
     s = get_settings()
-    scheduler.add_job(_scheduled_domain_ingestion, "interval", minutes=s.scheduler_domain_interval_min, id="domain_ingest")
-    scheduler.add_job(_scheduled_news_ingestion,  "interval", minutes=s.scheduler_news_interval_min, id="news_ingest")
-    scheduler.add_job(_scheduled_gnews_ingestion, "interval", minutes=s.scheduler_gnews_interval_min, id="gnews_ingest")
-    scheduler.add_job(_scheduled_reddit_ingestion,"interval", minutes=s.scheduler_reddit_interval_min, id="reddit_ingest")
-    # Snapshots and alerts (keep frequent)
-    scheduler.add_job(_scheduled_snapshot,    "interval", hours=1,  id="snapshot")
-    scheduler.add_job(_scheduled_alert_check, "interval", hours=6,  id="alert_check")
+    scheduler.add_job(_scheduled_domain_ingestion,        "interval", minutes=s.scheduler_domain_interval_min, id="domain_ingest")
+    scheduler.add_job(_scheduled_news_ingestion,          "interval", minutes=s.scheduler_news_interval_min,   id="news_ingest")
+    scheduler.add_job(_scheduled_gnews_ingestion,         "interval", minutes=s.scheduler_gnews_interval_min,  id="gnews_ingest")
+    scheduler.add_job(_scheduled_reddit_ingestion,        "interval", minutes=s.scheduler_reddit_interval_min, id="reddit_ingest")
+    # Snapshots, alerts, and domain intelligence scores
+    scheduler.add_job(_scheduled_snapshot,                "interval", hours=1,  id="snapshot")
+    scheduler.add_job(_scheduled_alert_check,             "interval", hours=6,  id="alert_check")
+    # FIX: Auto-compute domain intelligence scores every 2h so GovDashboard always has fresh data
+    scheduler.add_job(_scheduled_domain_score_computation,"interval", hours=2,  id="domain_scores")
 
     scheduler.start()
     logger.info(
-        f"Background scheduler started: domains({s.scheduler_domain_interval_min}m), news({s.scheduler_news_interval_min}m), gnews({s.scheduler_gnews_interval_min}m), reddit({s.scheduler_reddit_interval_min}m), snapshot(1h), alerts(6h)"
+        f"Background scheduler started: domains({s.scheduler_domain_interval_min}m), news({s.scheduler_news_interval_min}m), "
+        f"gnews({s.scheduler_gnews_interval_min}m), reddit({s.scheduler_reddit_interval_min}m), "
+        f"snapshot(1h), domain_scores(2h), alerts(6h)"
     )
     logger.info("Auto-ingestion on startup DISABLED — trigger via /api/admin/trigger-ingestion")
 
