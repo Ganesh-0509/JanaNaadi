@@ -48,3 +48,8 @@ export async function getHotspots(limit = 15): Promise<{
   const { data } = await client.get('/api/public/hotspots', { params: { limit } });
   return data;
 }
+
+export async function getMCDNews(): Promise<any[]> {
+  const { data } = await client.get('/api/public/mcd-news');
+  return data;
+}

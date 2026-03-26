@@ -164,7 +164,7 @@ export default function AnalysisView() {
   if (!analysis) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-slate-400">No data found for this region</div>
+        <div className="text-[#6B5E57]">No data found for this region</div>
       </div>
     );
   }
@@ -180,7 +180,7 @@ export default function AnalysisView() {
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold">{analysis.name}</h1>
-          <p className="text-sm text-slate-400 capitalize">{scope} Analysis</p>
+          <p className="text-sm text-[#6B5E57] capitalize">{scope} Analysis</p>
         </div>
         <button
           onClick={handleSummarize}
@@ -200,7 +200,7 @@ export default function AnalysisView() {
           className="bg-purple-500/10 border border-purple-500/30 rounded-2xl p-5"
         >
           <p className="text-xs font-semibold text-purple-400 uppercase tracking-wide mb-2">✨ AI Policy Summary</p>
-          <p className="text-slate-200 text-sm leading-relaxed">{aiSummary}</p>
+          <p className="text-[#6B5E57]/40 text-sm leading-relaxed">{aiSummary}</p>
         </motion.div>
       )}
 
@@ -213,13 +213,13 @@ export default function AnalysisView() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-slate-800 rounded-lg p-1 w-fit">
+      <div className="flex gap-1 bg-[#3E2C23] rounded-lg p-1 w-fit">
         {(['overview', 'sources', 'voices'] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`px-4 py-2 rounded-lg text-sm font-medium capitalize ${
-              tab === t ? 'bg-blue-500 text-white' : 'text-slate-400 hover:text-white'
+              tab === t ? 'bg-blue-500 text-white' : 'text-[#6B5E57] hover:text-white'
             }`}
           >
             {t === 'sources' ? 'Sources & Languages' : t}
@@ -231,7 +231,7 @@ export default function AnalysisView() {
       {tab === 'overview' && (
         <div className="grid md:grid-cols-3 gap-6">
           {/* Gauge */}
-          <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-col items-center">
+          <div className="bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20 flex flex-col items-center">
             <h3 className="font-bold mb-4">Distribution</h3>
             <SentimentGauge
               positive={analysis.sentiment_distribution?.positive || 0}
@@ -242,7 +242,7 @@ export default function AnalysisView() {
           </div>
 
           {/* Trend Chart */}
-          <div className="md:col-span-2 bg-slate-800 rounded-2xl p-6 border border-slate-700">
+          <div className="md:col-span-2 bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20">
             <h3 className="font-bold mb-4">Sentiment Trend</h3>
             {/* Forecast Insight Banner */}
             {forecastData.length > 0 && (() => {
@@ -261,16 +261,16 @@ export default function AnalysisView() {
                     <DirIcon size={16} />
                     <span>{label} Mood</span>
                   </div>
-                  <div className="text-slate-400 text-xs">
+                  <div className="text-[#6B5E57] text-xs">
                     Predicted score in 7 days: <span className={`font-bold ${dirColor}`}>{last.forecast_score.toFixed(3)}</span>
                     <span className="ml-2 opacity-60">(range {last.lower.toFixed(2)} → {last.upper.toFixed(2)})</span>
                   </div>
-                  <div className="ml-auto text-xs text-slate-500 hidden md:block">AI linear forecast · 30-day history</div>
+                  <div className="ml-auto text-xs text-[#6B5E57] hidden md:block">AI linear forecast · 30-day history</div>
                 </div>
               );
             })()}
             {trendLoading ? (
-              <div className="text-slate-400 text-center py-10">Loading trend...</div>
+              <div className="text-[#6B5E57] text-center py-10">Loading trend...</div>
             ) : (
               <TrendChart data={trendData} forecastData={forecastData} />
             )}
@@ -281,7 +281,7 @@ export default function AnalysisView() {
       {tab === 'sources' && (
         <div className="grid md:grid-cols-2 gap-6">
           {/* Source Distribution */}
-          <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
+          <div className="bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20">
             <h3 className="font-bold mb-4">Source Breakdown</h3>
             {(() => {
               const srcData = Object.entries(analysis.source_distribution || {}).map(([name, count]) => ({
@@ -317,8 +317,8 @@ export default function AnalysisView() {
                     {srcData.map((d) => (
                       <div key={d.name} className="flex items-center gap-1.5 text-sm">
                         <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }} />
-                        <span className="text-slate-300">{d.name}</span>
-                        <span className="text-slate-500">({Math.round((d.value / totalVoices) * 100)}%)</span>
+                        <span className="text-[#6B5E57]/60">{d.name}</span>
+                        <span className="text-[#6B5E57]">({Math.round((d.value / totalVoices) * 100)}%)</span>
                       </div>
                     ))}
                   </div>
@@ -328,7 +328,7 @@ export default function AnalysisView() {
           </div>
 
           {/* Language Distribution */}
-          <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
+          <div className="bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20">
             <h3 className="font-bold mb-4">Language Distribution</h3>
             {(() => {
               const langData = Object.entries(analysis.language_breakdown || {})
@@ -340,8 +340,8 @@ export default function AnalysisView() {
                   {langData.map(([code, count], i) => (
                     <div key={code}>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-slate-300">{LANG_LABELS[code] || code}</span>
-                        <span className="text-slate-400">{count as number} voices</span>
+                        <span className="text-[#6B5E57]/60">{LANG_LABELS[code] || code}</span>
+                        <span className="text-[#6B5E57]">{count as number} voices</span>
                       </div>
                       <div className="w-full bg-slate-700 rounded-full h-2.5">
                         <div
@@ -355,7 +355,7 @@ export default function AnalysisView() {
                     </div>
                   ))}
                   {langData.length === 0 && (
-                    <div className="text-slate-400 text-center py-4">No language data</div>
+                    <div className="text-[#6B5E57] text-center py-4">No language data</div>
                   )}
                 </div>
               );
@@ -363,17 +363,17 @@ export default function AnalysisView() {
           </div>
 
           {/* Top Issues Breakdown */}
-          <div className="md:col-span-2 bg-slate-800 rounded-2xl p-6 border border-slate-700">
+          <div className="md:col-span-2 bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20">
             <h3 className="font-bold mb-4">Top Issues</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
               {(analysis.topic_breakdown || []).map((t: any, i: number) => (
                 <div key={i} className="bg-slate-700/50 rounded-xl p-4 text-center">
                   <div className="text-2xl font-bold text-white">{t.count}</div>
-                  <div className="text-xs text-slate-400 mt-1">{t.topic}</div>
+                  <div className="text-xs text-[#6B5E57] mt-1">{t.topic}</div>
                 </div>
               ))}
               {(!analysis.topic_breakdown || analysis.topic_breakdown.length === 0) && (
-                <div className="col-span-full text-slate-400 text-center py-4">No topic data</div>
+                <div className="col-span-full text-[#6B5E57] text-center py-4">No topic data</div>
               )}
             </div>
           </div>
@@ -381,7 +381,7 @@ export default function AnalysisView() {
       )}
 
       {tab === 'voices' && (
-        <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
+        <div className="bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold">Citizen Voices ({voices.length})</h3>
             <button

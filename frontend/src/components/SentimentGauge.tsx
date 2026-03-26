@@ -37,7 +37,7 @@ export default function SentimentGauge({ positive, negative, neutral, size = 200
       </ResponsiveContainer>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <div className="text-3xl font-bold">{((positive / total) * 100).toFixed(0)}%</div>
-        <div className="text-xs text-slate-400">Positive</div>
+        <div className="text-xs text-[#6B5E57]">Positive</div>
       </div>
     </div>
   );

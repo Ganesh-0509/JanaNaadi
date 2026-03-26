@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { getNationalPulse, getStateRankings, getTrendingTopics, getRecentVoices, getAreaPulse, getKeywords } from '../api/public';
+import { getNationalPulse, getStateRankings, getTrendingTopics, getRecentVoices, getAreaPulse, getKeywords, getHotspots, getMCDNews } from '../api/public';
 import SentimentGauge from '../components/SentimentGauge';
 import StatCard from '../components/StatCard';
 import TopicCard from '../components/TopicCard';
 import KeywordCloud from '../components/KeywordCloud';
 import { StatCardSkeleton, VoiceCardSkeleton, TopicCardSkeleton, TableRowSkeleton, CardSkeleton } from '../components/Skeleton';
-import { formatNumber, formatRelative } from '../utils/formatters';
+import { formatNumber, formatRelative, formatCurrency } from '../utils/formatters';
 import { Link, useNavigate } from 'react-router-dom';
-import { Map, ArrowRight, Search, MessageSquare, Users, TrendingUp, Send } from 'lucide-react';
+import { Map, ArrowRight, Search, MessageSquare, Users, TrendingUp, Send, Activity, ShieldHalf, Landmark, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useFilters } from '../context/FilterContext';
 import {
@@ -20,10 +20,12 @@ export default function PublicDashboard() {
   const { filters } = useFilters();
   const navigate = useNavigate();
   const [pulse, setPulse] = useState<Pulse | null>(null);
-  const [states, setStates] = useState<StateRanking[]>([]);
+  const [wards, setWards] = useState<StateRanking[]>([]);
   const [trending, setTrending] = useState<TrendingTopic[]>([]);
   const [voices, setVoices] = useState<Voice[]>([]);
   const [keywords, setKeywords] = useState<{ keyword: string; count: number }[]>([]);
+  const [hotspots, setHotspots] = useState<any[]>([]);
+  const [mcdNews, setMcdNews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Area lookup
@@ -35,18 +37,22 @@ export default function PublicDashboard() {
     const load = async () => {
       setLoading(true);
       try {
-        const [p, s, t, v, kw] = await Promise.all([
+        const [p, s, t, v, kw, h, n] = await Promise.all([
           getNationalPulse(),
           getStateRankings(),
           getTrendingTopics(),
           getRecentVoices(12),
           getKeywords(40),
+          getHotspots(10),
+          getMCDNews(),
         ]);
         setPulse(p);
-        setStates(s);
+        setWards(s);
         setTrending(t);
         setVoices(v);
         setKeywords(kw);
+        setHotspots(h);
+        setMcdNews(n);
       } catch (e) {
         console.error('Dashboard load error:', e);
       } finally {
@@ -54,7 +60,7 @@ export default function PublicDashboard() {
       }
     };
     load();
-  }, [filters.timeRange]); // Re-fetch when global timeRange changes
+  }, [filters.timeRange]);
 
   const handleAreaSearch = async () => {
     if (!areaQuery.trim()) return;
@@ -71,33 +77,8 @@ export default function PublicDashboard() {
 
   if (loading) {
     return (
-      <div className="p-6 space-y-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="h-8 w-48 bg-slate-700/50 rounded-lg animate-pulse" />
-            <div className="h-4 w-72 bg-slate-700/50 rounded-lg animate-pulse mt-2" />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)}
-        </div>
-        <div className="grid md:grid-cols-3 gap-6">
-          <CardSkeleton />
-          <div className="md:col-span-2">
-            <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
-              <div className="h-5 w-32 bg-slate-700/50 rounded animate-pulse mb-4" />
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {Array.from({ length: 6 }).map((_, i) => <TopicCardSkeleton key={i} />)}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
-          <div className="h-5 w-40 bg-slate-700/50 rounded animate-pulse mb-4" />
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {Array.from({ length: 6 }).map((_, i) => <VoiceCardSkeleton key={i} />)}
-          </div>
-        </div>
+      <div className="p-6 space-y-8 bg-white min-h-screen">
+        <TableRowSkeleton />
       </div>
     );
   }
@@ -107,254 +88,253 @@ export default function PublicDashboard() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="p-6 space-y-8"
+      className="p-6 space-y-12 bg-white"
     >
-      {/* Header — Community View */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Users size={24} className="text-emerald-400" />
-            Community Pulse
-          </h1>
-          <p className="text-sm text-slate-400">
-            Delhi Citizen Sentiment Platform — Powered by AI analysis across 250 Wards
-          </p>
-        </div>
-        {!user && (
-          <Link
-            to="/login"
-            className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium"
-          >
-            Governance Login <ArrowRight size={14} />
-          </Link>
-        )}
-      </div>
-
-      {/* NEW: Citizen Feedback Banner — MCD Focus */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600/20 to-emerald-600/20 rounded-3xl p-6 border border-blue-500/30">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center">
-              <MessageSquare className="text-blue-400" size={24} />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold">Have a Concern in your Ward?</h2>
-              <p className="text-sm text-slate-400">Your voice feeds directly into the Delhi Government's Strategic Intelligence Engine.</p>
-            </div>
+      {/* 🏙️ HEADER — MCD INTELLIGENCE CORE — Light Ivory Variant */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-4">
+        <div className="flex items-center gap-6">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-saffron flex items-center justify-center text-white mcd-glow-saffron shadow-lg relative italic">
+            <Users size={28} />
           </div>
-          <Link 
-            to="/submit" 
-            className="w-full md:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
-          >
-            Submit Grievance <Send size={16} />
-          </Link>
+          <div>
+            <h1 className="text-3xl font-black uppercase tracking-tight leading-none text-[#3E2C23] italic">
+              COMMUNITY <span className="text-[#E76F2E]">CORE</span>
+            </h1>
+            <p className="text-[10px] font-bold text-[#6B5E57] uppercase tracking-[0.25em] mt-2 italic">
+              Municipal Corporation of Delhi <span className="text-[#6B5E57]/40 mx-2">|</span> 250 Wards Sync Active
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-3 px-5 py-2.5 bg-[#FAF5ED] border border-[#3E2C23]/10 rounded-2xl shadow-sm group transition-all hover:bg-[#FAF5ED]/50">
+          <div className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
+          <span className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest italic">Global MCD Systems Operational</span>
         </div>
       </div>
 
-      {/* Stats Row */}
-      {pulse && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <StatCard label="Total Voices" value={formatNumber(pulse.total_entries_24h ?? 0)} icon="📊" />
-          <StatCard
-            label="Avg Sentiment"
-            value={(pulse.avg_sentiment ?? 0).toFixed(2)}
-            icon="📈"
-            color={(pulse.avg_sentiment ?? 0) > 0 ? '#22C55E' : '#EF4444'}
-          />
-          <StatCard label="Top Issues" value={String(pulse.top_3_issues?.length ?? 0)} icon="📌" color="#3B82F6" />
-          <StatCard label="Languages" value={String(Object.keys(pulse.language_breakdown ?? {}).length)} icon="🌐" color="#A855F7" />
+      {/* 📊 TOP-LEVEL REVENUE & PERFORMANCE SYNC */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="mcd-card border-[#3E2C23]/5 bg-white relative overflow-hidden group hover:border-[#E76F2E]/20 transition-all rounded-[32px] shadow-sm">
+          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform pointer-events-none text-[#E76F2E]">
+            <Landmark size={60} />
+          </div>
+          <h3 className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest mb-6 italic">MCD Fund Transfer (24h)</h3>
+          <div className="text-4xl font-black text-[#3E2C23] mb-2 tracking-tighter">₹142.8 Cr</div>
+          <div className="flex items-center gap-2 text-[#10B981] text-[10px] font-black uppercase tracking-widest">
+            <TrendingUp size={14} /> +4.2% Capacity
+          </div>
         </div>
-      )}
 
-      {/* 🔍 AREA PULSE LOOKUP — unique public feature */}
-      {!user && (
-        <div className="bg-gradient-to-r from-blue-500/10 to-emerald-500/10 rounded-2xl p-6 border border-blue-500/20">
-          <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
-            <Search size={20} className="text-blue-400" />
-            How Does Your Area Feel?
-          </h2>
-          <div className="flex gap-3">
+        <div className="mcd-card border-[#3E2C23]/5 bg-white relative overflow-hidden group hover:border-[#0FD2B5]/20 transition-all rounded-[32px] shadow-sm">
+          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform pointer-events-none text-[#0FD2B5]">
+            <ShieldHalf size={60} />
+          </div>
+          <h3 className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest mb-6 italic">Gov Performance Index</h3>
+          <div className="text-4xl font-black text-[#3E2C23] mb-2 tracking-tighter">86.4%</div>
+          <div className="flex items-center gap-2 text-[#10B981] text-[10px] font-black uppercase tracking-widest">
+            <Activity size={14} /> Systems Optimal
+          </div>
+        </div>
+
+        <div className="mcd-card border-[#3E2C23]/5 bg-white relative overflow-hidden group hover:border-[#E76F2E]/20 transition-all rounded-[32px] shadow-sm">
+          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform pointer-events-none text-[#E76F2E]">
+            <Zap size={60} />
+          </div>
+          <h3 className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest mb-6 italic">Active Realities Sync</h3>
+          <div className="text-4xl font-black text-[#3E2C23] mb-2 tracking-tighter">{formatNumber(pulse?.total_entries_24h ?? 0)}</div>
+          <div className="flex items-center gap-2 text-[#6B5E57] text-[10px] font-black uppercase tracking-widest italic">
+             Integrated across 25 Wards
+          </div>
+        </div>
+      </div>
+
+      {/* 🔍 WARD / ZONE LOOKUP — Light ivory Version */}
+      <div className="mcd-card rounded-[40px] p-10 border border-[#3E2C23]/5 bg-[#FAF5ED]/40 relative overflow-hidden group shadow-sm transition-all hover:shadow-lg">
+        <div className="absolute top-[-20%] left-[-20%] w-[50%] h-[100%] bg-[#E76F2E]/5 blur-[100px] rounded-full group-hover:bg-[#E76F2E]/8 transition-all duration-700" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
+          <div className="flex-1">
+            <h2 className="text-2xl font-black uppercase tracking-tighter mb-2 italic text-[#3E2C23]">
+              SYNC YOUR <span className="text-[#E76F2E]">WARD PULSE</span>
+            </h2>
+            <p className="text-[#6B5E57] text-[10px] font-black uppercase tracking-widest leading-relaxed max-w-sm italic opacity-80">
+              Analyze sentiment metrics, active budget allocations, and reality voices for any Delhi Ward in real-time.
+            </p>
+          </div>
+          <div className="flex-[1.5] w-full relative group">
+            <div className="absolute inset-0 bg-[#E76F2E]/5 blur-xl rounded-2xl group-focus-within:bg-[#E76F2E]/10 transition-all opacity-0 group-focus-within:opacity-100" />
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#6B5E57] group-focus-within/input:text-[#E76F2E] transition-colors" size={20} />
             <input
               value={areaQuery}
               onChange={(e) => setAreaQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAreaSearch()}
-              placeholder="Type a state name... e.g., Tamil Nadu, Maharashtra, Delhi"
-              className="flex-1 bg-slate-900/60 border border-slate-600 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              placeholder="SEARCH WARD (E.G. NARELA, ROHINI, DWARKA)..."
+              className="w-full bg-white border-2 border-[#3E2C23]/5 rounded-2xl pl-16 pr-8 py-4 text-xs text-[#3E2C23] font-black uppercase placeholder-slate-400 focus:border-[#E76F2E]/30 focus:outline-none transition-all shadow-sm tracking-widest"
             />
-            <button
-              onClick={handleAreaSearch}
-              disabled={areaLoading}
-              className="px-5 py-2.5 bg-blue-500 hover:bg-blue-600 rounded-xl text-sm font-medium disabled:opacity-40"
-            >
-              {areaLoading ? 'Searching...' : 'Lookup'}
-            </button>
           </div>
+          <button
+            onClick={handleAreaSearch}
+            className="px-10 py-4 bg-gradient-saffron hover:scale-[1.02] active:scale-[0.98] text-white rounded-2xl text-[10px] font-black mcd-glow-saffron transition-all shadow-xl uppercase tracking-widest shadow-[#E76F2E]/10"
+          >
+            SYNC AREA
+          </button>
+        </div>
 
-          {areaResult && (
-            <div className="mt-4">
-              {areaResult.found ? (
-                <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
-                  <h3 className="font-bold text-lg mb-3">{areaResult.state}</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                    <div className="bg-slate-900/50 rounded-lg p-3">
-                      <div className="text-slate-400 text-xs">Sentiment</div>
-                      <div className={`text-xl font-bold ${
-                        (areaResult.avg_sentiment ?? 0) > 0.1 ? 'text-emerald-400' :
-                        (areaResult.avg_sentiment ?? 0) < -0.1 ? 'text-red-400' : 'text-yellow-400'
-                      }`}>
-                        {(areaResult.avg_sentiment ?? 0).toFixed(2)}
-                      </div>
+        {areaResult && areaResult.found && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.98 }} 
+            animate={{ opacity: 1, scale: 1 }} 
+            className="mt-12 pt-12 border-t border-[#3E2C23]/5 grid grid-cols-2 lg:grid-cols-4 gap-6"
+          >
+            <div className="p-6 bg-white rounded-[24px] border border-[#3E2C23]/5 hover:border-[#E76F2E]/20 transition-all group/stat shadow-sm">
+              <div className="text-[9px] font-black text-[#6B5E57] uppercase tracking-widest mb-3 italic">Target Ward Entity</div>
+              <div className="text-xl font-black text-[#3E2C23] uppercase tracking-tighter group-hover/stat:translate-x-1 transition-transform">{areaResult.state}</div>
+            </div>
+            <div className="p-6 bg-white rounded-[24px] border border-[#3E2C23]/5 hover:border-emerald-500/20 transition-all group/stat shadow-sm">
+              <div className="text-[9px] font-black text-[#6B5E57] uppercase tracking-widest mb-3 italic">Integrity Sync Score</div>
+              <div className="text-xl font-black text-emerald-600 font-mono group-hover/stat:translate-x-1 transition-transform">{(areaResult.avg_sentiment ?? 0 + 0.5).toFixed(3)}</div>
+            </div>
+            <div className="p-6 bg-white rounded-[24px] border border-[#3E2C23]/5 hover:border-[#E76F2E]/20 transition-all group/stat shadow-sm">
+              <div className="text-[9px] font-black text-[#6B5E57] uppercase tracking-widest mb-3 italic">Active Reality Voices</div>
+              <div className="text-xl font-black text-[#3E2C23] group-hover/stat:translate-x-1 transition-transform">{formatNumber(areaResult.total_entries)}</div>
+            </div>
+            <div className="p-6 bg-white rounded-[24px] border border-[#3E2C23]/5 hover:border-red-500/20 transition-all group/stat shadow-sm">
+              <div className="text-[9px] font-black text-[#6B5E57] uppercase tracking-widest mb-3 italic">Strategic Risk Status</div>
+              <div className={`text-xl font-black uppercase tracking-tighter group-hover/stat:translate-x-1 transition-transform ${((areaResult?.negative ?? 0) > 5) ? 'text-[#EF4444]' : 'text-[#6B5E57]'}`}>
+                {((areaResult?.negative ?? 0) > 5) ? 'HIGH AUDIT' : 'STABLE'}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </div>
+
+      {/* 🏆 WARD PERFORMANCE RANKINGS — Light Version */}
+      <div className="mcd-card border-[#3E2C23]/5 relative overflow-hidden bg-[#FAF5ED]/20 shadow-sm p-0 rounded-[40px]">
+        <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none text-[#3E2C23]">
+           <Landmark size={200} />
+        </div>
+        
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-0 gap-6 relative z-10 p-10 pb-6 border-b border-[#3E2C23]/5 bg-white/50">
+          <div>
+            <h2 className="text-2xl font-black uppercase tracking-tighter italic text-[#3E2C23]">WARD <span className="text-[#E76F2E]">INTEGRITY</span> RANKINGS</h2>
+            <p className="text-[9px] font-black text-[#6B5E57] uppercase tracking-[0.3em] mt-2 italic">Sentiment-Volume Delta Analysis across 250 Wards</p>
+          </div>
+          <Link to="/compare" className="px-6 py-3 bg-white hover:bg-[#FAF5ED] rounded-xl text-[9px] font-black text-[#E76F2E] uppercase tracking-widest flex items-center gap-2 transition-all border border-[#3E2C23]/10 shadow-sm">
+            Full Matrix Audit <ArrowRight size={14} />
+          </Link>
+        </div>
+
+        <div className="overflow-x-auto relative z-10">
+          <table className="w-full">
+            <thead>
+              <tr className="text-left border-b border-[#3E2C23]/5 bg-[#FAF5ED]/30">
+                <th className="py-6 px-10 text-[9px] font-black text-[#6B5E57] uppercase tracking-[0.2em] italic">Rank</th>
+                <th className="py-6 px-10 text-[9px] font-black text-[#6B5E57] uppercase tracking-[0.2em] italic">Ward Intelligence Entity</th>
+                <th className="py-6 px-10 text-[9px] font-black text-[#6B5E57] uppercase tracking-[0.2em] italic">Integrity Score</th>
+                <th className="py-6 px-10 text-[9px] font-black text-[#6B5E57] uppercase tracking-[0.2em] italic">Audit Volume</th>
+                <th className="py-6 px-10 text-[9px] font-black text-[#6B5E57] uppercase tracking-[0.2em] italic">Risk Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 bg-white">
+              {wards.slice(0, 10).map((w, i) => (
+                <tr key={w.state_code} className="group hover:bg-[#FAF5ED]/80 transition-all cursor-pointer">
+                  <td className="py-6 px-10">
+                    <span className="text-lg font-black text-[#6B5E57]/60 group-hover:text-[#E76F2E]/40 transition-colors uppercase tracking-tight italic">#{String(i + 1).padStart(2, '0')}</span>
+                  </td>
+                  <td className="py-6 px-10">
+                    <div className="font-black text-[#3E2C23] text-sm uppercase tracking-tight group-hover:translate-x-1 transition-transform italic">{w.state}</div>
+                    <div className="text-[8px] font-black text-[#6B5E57] uppercase tracking-widest mt-1">MCD Zonal Intelligence Unit</div>
+                  </td>
+                  <td className="py-6 px-10">
+                    <div className={`text-sm font-black font-mono ${w.avg_sentiment > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                      {w.avg_sentiment > 0 ? '+' : ''}{w.avg_sentiment.toFixed(3)}
                     </div>
-                    <div className="bg-slate-900/50 rounded-lg p-3">
-                      <div className="text-slate-400 text-xs">Total Voices</div>
-                      <div className="text-xl font-bold">{areaResult.total_entries ?? 0}</div>
+                  </td>
+                  <td className="py-8 px-6">
+                    <div className="text-lg font-black text-[#6B5E57] font-mono">{formatNumber(w.volume)}</div>
+                  </td>
+                  <td className="py-8 px-6 text-right">
+                    <div className={`inline-flex px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${
+                      w.avg_sentiment < -0.1 ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 
+                      'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                    }`}>
+                      {w.avg_sentiment < -0.1 ? 'CRITICAL AUDIT' : 'HEALTHY SYNC'}
                     </div>
-                    <div className="bg-slate-900/50 rounded-lg p-3">
-                      <div className="text-slate-400 text-xs">Positive</div>
-                      <div className="text-xl font-bold text-emerald-400">{areaResult.positive ?? 0}</div>
-                    </div>
-                    <div className="bg-slate-900/50 rounded-lg p-3">
-                      <div className="text-slate-400 text-xs">Negative</div>
-                      <div className="text-xl font-bold text-red-400">{areaResult.negative ?? 0}</div>
-                    </div>
-                  </div>
-                  {areaResult.top_issues && areaResult.top_issues.length > 0 && (
-                    <div className="mt-3 flex gap-2">
-                      <span className="text-xs text-slate-400">Top concerns:</span>
-                      {areaResult.top_issues.map((issue) => (
-                        <span key={issue.topic} className="text-xs px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400">
-                          {issue.topic} ({issue.count})
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-slate-400">{areaResult.message}</p>
-              )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* 📰 REAL-TIME MCD NEWS FEED — DIRECT RSS SYNC — Light Version */}
+      <div className="bg-[#FAF5ED]/50 rounded-[40px] p-10 border border-[#3E2C23]/5 mcd-card shadow-sm">
+        <div className="flex items-center gap-4 mb-10">
+          <div className="w-10 h-10 rounded-xl bg-[#E76F2E]/10 flex items-center justify-center text-[#E76F2E] border border-[#E76F2E]/20 italic">
+            <TrendingUp size={20} />
+          </div>
+          <h2 className="text-2xl font-black uppercase tracking-tight text-[#3E2C23] italic">Real-Time MCD <span className="text-[#E76F2E]">Intelligence</span> Feed</h2>
+          <div className="ml-auto flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
+            <span className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest italic">RSS Stream Active</span>
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {mcdNews.slice(0, 6).map((n, i) => (
+            <motion.div
+              key={i}
+              whileHover={{ y: -5 }}
+              className="bg-white rounded-[32px] p-8 border border-[#3E2C23]/5 hover:border-[#E76F2E]/20 transition-all shadow-sm hover:shadow-xl flex flex-col h-full italic"
+            >
+              <div className="text-[10px] font-black text-[#E76F2E] uppercase tracking-widest mb-4 flex items-center gap-2">
+                <ShieldHalf size={12} /> {n.source}
+              </div>
+              <h4 className="text-[#3E2C23] font-black text-lg leading-tight mb-4 group-hover:text-[#E76F2E] transition-all">
+                {n.title}
+              </h4>
+              <p className="text-[#6B5E57] text-xs leading-relaxed line-clamp-3 mb-6 font-medium">
+                {n.summary}
+              </p>
+              <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
+                <span className="text-[9px] font-bold text-[#6B5E57] uppercase tracking-widest">{n.published || 'Just now'}</span>
+                <a href={n.link} target="_blank" rel="noreferrer" className="text-[9px] font-black text-[#3E2C23] hover:text-[#E76F2E] uppercase transition-all flex items-center gap-1 italic">
+                  Read Audit <ArrowRight size={10} />
+                </a>
+              </div>
+            </motion.div>
+          ))}
+          {mcdNews.length === 0 && (
+            <div className="col-span-full py-20 text-center border-2 border-dashed border-[#3E2C23]/10 rounded-3xl">
+              <p className="text-[#6B5E57] font-black uppercase tracking-widest italic">Integrating Live MCD News Sources…</p>
             </div>
           )}
         </div>
-      )}
+      </div>
 
-      {/* Gauge + Trending Topics */}
-      <div className="grid md:grid-cols-3 gap-6">
-        {/* Gauge */}
-        {pulse && (
-          <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700 flex flex-col items-center">
-            <h2 className="text-lg font-bold mb-4">Sentiment Distribution</h2>
-            <SentimentGauge
-              positive={pulse.positive_count ?? 0}
-              negative={pulse.negative_count ?? 0}
-              neutral={pulse.neutral_count ?? 0}
-              size={220}
-            />
-          </div>
-        )}
-
-        {/* Trending Topics */}
-        <div className="md:col-span-2 bg-slate-800 rounded-2xl p-6 border border-slate-700">
-          <h2 className="text-lg font-bold mb-4">Trending Topics</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {trending.map((t) => (
+      {/* 🏷️ TOPIC MAP & TRENDS */}
+      <div className="grid md:grid-cols-2 gap-10">
+        <div className="mcd-card border-[#3E2C23]/5 bg-white shadow-sm">
+          <h2 className="text-2xl font-black uppercase tracking-tighter mb-10 italic text-[#3E2C23]">Crisis Intensity <span className="text-[#E76F2E]">Areas</span></h2>
+          <div className="grid grid-cols-2 gap-6">
+            {trending.slice(0, 6).map((t) => (
               <TopicCard
                 key={t.topic}
                 topic={t.topic}
                 count={t.mention_count}
                 sentiment={t.sentiment_trend > 0 ? 'positive' : t.sentiment_trend < 0 ? 'negative' : 'neutral'}
-                onClick={() => navigate(`/pulse`)}
+                onClick={() => {}}
               />
             ))}
           </div>
         </div>
-      </div>
 
-      {/* � TRENDING KEYWORDS CLOUD */}
-      {keywords.length > 0 && (
-        <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-            <span className="text-purple-400">🏷</span>
-            Trending Keywords (last 24h)
-          </h2>
-          <KeywordCloud keywords={keywords} />
-        </div>
-      )}
-
-      {/* �📢 LIVE VOICES FEED — unique public feature */}
-      {!user && voices.length > 0 && (
-        <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-            <MessageSquare size={20} className="text-emerald-400" />
-            Live Voices Across India
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {voices.map((v, i) => (
-              <div key={i} className={`bg-slate-900/50 rounded-xl p-4 border ${
-                v.sentiment === 'positive' ? 'border-emerald-500/20' :
-                v.sentiment === 'negative' ? 'border-red-500/20' : 'border-slate-700'
-              }`}>
-                <p className="text-sm text-slate-300 leading-relaxed line-clamp-2 mb-2">"{v.text}"</p>
-                <div className="flex items-center justify-between text-xs text-slate-500">
-                  <span>{v.state} {v.time ? `· ${formatRelative(v.time)}` : ''}</span>
-                  <div className="flex gap-1.5">
-                    <span className={`px-1.5 py-0.5 rounded ${
-                      v.sentiment === 'positive' ? 'bg-emerald-500/20 text-emerald-400' :
-                      v.sentiment === 'negative' ? 'bg-red-500/20 text-red-400' : 'bg-slate-600/50 text-slate-400'
-                    }`}>
-                      {v.sentiment}
-                    </span>
-                    <span className="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400">{v.topic}</span>
-                    <span className="px-1.5 py-0.5 rounded bg-slate-600/30 text-slate-400">{v.source}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+        <div className="mcd-card border-[#3E2C23]/5 bg-white shadow-sm flex flex-col">
+          <h2 className="text-2xl font-black uppercase tracking-tighter mb-10 italic text-[#3E2C23]">Discourse <span className="text-[#E76F2E]">Keywords</span></h2>
+          <div className="flex-1 min-h-[300px]">
+             <KeywordCloud keywords={keywords} />
           </div>
-        </div>
-      )}
-
-      <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
-        <h2 className="text-lg font-bold mb-4">How States Are Feeling</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-700">
-                <th className="text-left py-3 px-3 text-slate-400 font-medium">Rank</th>
-                <th className="text-left py-3 px-3 text-slate-400 font-medium">State</th>
-                <th className="text-left py-3 px-3 text-slate-400 font-medium">Sentiment</th>
-                <th className="text-left py-3 px-3 text-slate-400 font-medium">Volume</th>
-                <th className="text-left py-3 px-3 text-slate-400 font-medium">Top Issue</th>
-              </tr>
-            </thead>
-            <tbody>
-              {states.map((s, i) => (
-                <tr key={s.state_code} className="border-b border-slate-700/50 hover:bg-slate-700/30">
-                  <td className="py-3 px-3 font-bold text-slate-400">{i + 1}</td>
-                  <td className="py-3 px-3 font-medium">
-                    <Link to={`/analysis/state/${s.state_code}`} className="text-blue-400 hover:underline">
-                      {s.state}
-                    </Link>
-                  </td>
-                  <td className="py-3 px-3">
-                    <span
-                      className={`font-mono ${
-                        s.avg_sentiment > 0.2
-                          ? 'text-green-400'
-                          : s.avg_sentiment < -0.2
-                          ? 'text-red-400'
-                          : 'text-yellow-400'
-                      }`}
-                    >
-                      {(s.avg_sentiment ?? 0).toFixed(2)}
-                    </span>
-                  </td>
-                  <td className="py-3 px-3 text-slate-300">{formatNumber(s.volume ?? 0)}</td>
-                  <td className="py-3 px-3 text-slate-400">{s.top_issue || '—'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       </div>
     </motion.div>

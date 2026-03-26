@@ -95,9 +95,9 @@ export default function RegionPanel({ region, onClose }: Props) {
   }
 
   return (
-    <div className="fixed right-0 top-0 h-full w-80 bg-slate-900/95 backdrop-blur-md border-l border-slate-700/50 shadow-2xl z-[1000] overflow-y-auto">
+    <div className="fixed right-0 top-0 h-full w-80 bg-[#3E2C23]/95 backdrop-blur-md border-l border-[#3E2C23]/20/50 shadow-2xl z-[1000] overflow-y-auto">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700/50">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[#3E2C23]/20/50">
         <h2 className="font-bold text-lg text-white">{region.name}</h2>
         <button onClick={onClose} className="p-1.5 hover:bg-slate-700 rounded-full transition-colors">
           <X size={18} />
@@ -110,13 +110,13 @@ export default function RegionPanel({ region, onClose }: Props) {
           <div className="text-6xl font-extrabold tracking-tight" style={{ color: scoreColor }}>
             {scoreNum}
           </div>
-          <div className="text-xs text-slate-400 mt-1 uppercase tracking-wider">Sentiment Score</div>
+          <div className="text-xs text-[#6B5E57] mt-1 uppercase tracking-wider">Sentiment Score</div>
           {trend7d.length >= 2 && (
             <div className="flex items-center justify-center gap-1.5 mt-2">
               {trendDir === 'up' && <TrendingUp size={16} className="text-green-400" />}
               {trendDir === 'down' && <TrendingDown size={16} className="text-red-400" />}
-              {trendDir === 'flat' && <Minus size={16} className="text-slate-400" />}
-              <span className={`text-xs font-semibold ${trendDir === 'up' ? 'text-green-400' : trendDir === 'down' ? 'text-red-400' : 'text-slate-400'}`}>
+              {trendDir === 'flat' && <Minus size={16} className="text-[#6B5E57]" />}
+              <span className={`text-xs font-semibold ${trendDir === 'up' ? 'text-green-400' : trendDir === 'down' ? 'text-red-400' : 'text-[#6B5E57]'}`}>
                 {trendDir === 'up' ? 'Improving' : trendDir === 'down' ? 'Declining' : 'Stable'} (7d)
               </span>
             </div>
@@ -149,21 +149,21 @@ export default function RegionPanel({ region, onClose }: Props) {
           <div>
             <div className="flex items-center gap-1.5 justify-center">
               <span className="w-2 h-2 rounded-full bg-green-500" />
-              <span className="text-xs text-slate-400">Positive</span>
+              <span className="text-xs text-[#6B5E57]">Positive</span>
             </div>
             <div className="text-sm font-bold text-white">{pos}%</div>
           </div>
           <div>
             <div className="flex items-center gap-1.5 justify-center">
               <span className="w-2 h-2 rounded-full bg-yellow-500" />
-              <span className="text-xs text-slate-400">Neutral</span>
+              <span className="text-xs text-[#6B5E57]">Neutral</span>
             </div>
             <div className="text-sm font-bold text-white">{neu}%</div>
           </div>
           <div>
             <div className="flex items-center gap-1.5 justify-center">
               <span className="w-2 h-2 rounded-full bg-red-500" />
-              <span className="text-xs text-slate-400">Negative</span>
+              <span className="text-xs text-[#6B5E57]">Negative</span>
             </div>
             <div className="text-sm font-bold text-white">{neg}%</div>
           </div>
@@ -172,10 +172,10 @@ export default function RegionPanel({ region, onClose }: Props) {
         {/* Top Issues */}
         {topIssues.length > 0 && (
           <div>
-            <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-3">Top Issues</div>
+            <div className="text-xs text-[#6B5E57] uppercase tracking-wider font-semibold mb-3">Top Issues</div>
             <div className="space-y-2">
               {topIssues.map((issue, i) => (
-                <div key={i} className="flex items-center justify-between bg-slate-800/60 rounded-lg px-3 py-2.5 border border-slate-700/40">
+                <div key={i} className="flex items-center justify-between bg-[#3E2C23]/60 rounded-lg px-3 py-2.5 border border-[#3E2C23]/20/40">
                   <span className="text-sm text-white font-medium">{issue.topic}</span>
                   <span className={`text-xs px-2.5 py-0.5 rounded-full text-white font-medium ${badgeColors[issue.sentiment]}`}>
                     {issue.sentiment}
@@ -187,7 +187,7 @@ export default function RegionPanel({ region, onClose }: Props) {
         )}
 
         {/* Voices Count */}
-        <div className="text-center text-sm text-slate-400">
+        <div className="text-center text-sm text-[#6B5E57]">
           <span className="font-semibold text-white">{total.toLocaleString('en-IN')}</span> voices analyzed
         </div>
 
@@ -200,7 +200,7 @@ export default function RegionPanel({ region, onClose }: Props) {
         </Link>
 
         {loadingAnalysis && (
-          <div className="text-center text-xs text-slate-500">Loading details...</div>
+          <div className="text-center text-xs text-[#6B5E57]">Loading details...</div>
         )}
       </div>
     </div>

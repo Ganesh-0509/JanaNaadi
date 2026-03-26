@@ -41,10 +41,10 @@ export default function StatCard({ label, value, icon, trend, color }: Props) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="bg-[#141B2D] rounded-2xl p-6 border border-white/5 mcd-glass hover:border-white/10 transition-all group"
+      className="bg-white rounded-2xl p-6 border border-[#3E2C23]/10 mcd-glass hover:border-[#E76F2E]/30 transition-all group shadow-sm"
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm text-slate-400">{label}</span>
+        <span className="text-sm text-[#6B5E57]">{label}</span>
         {icon && <span className="text-xl">{icon}</span>}
       </div>
       <div className="text-3xl font-bold" style={{ color }}>

@@ -10,7 +10,7 @@ function Skeleton({ className = '' }: SkeletonProps) {
 
 export function StatCardSkeleton() {
   return (
-    <div className="bg-slate-800 rounded-xl p-5 border border-slate-700">
+    <div className="bg-[#3E2C23] rounded-xl p-5 border border-[#3E2C23]/20">
       <div className="flex items-center justify-between mb-2">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-6 w-6 rounded" />
@@ -23,7 +23,7 @@ export function StatCardSkeleton() {
 
 export function TableRowSkeleton({ cols = 5 }: { cols?: number }) {
   return (
-    <tr className="border-b border-slate-700/50">
+    <tr className="border-b border-[#3E2C23]/20/50">
       {Array.from({ length: cols }).map((_, i) => (
         <td key={i} className="py-3 px-3">
           <Skeleton className="h-4 w-full" />
@@ -35,7 +35,7 @@ export function TableRowSkeleton({ cols = 5 }: { cols?: number }) {
 
 export function CardSkeleton() {
   return (
-    <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
+    <div className="bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20">
       <Skeleton className="h-5 w-32 mb-4" />
       <Skeleton className="h-40 w-full" />
     </div>
@@ -44,7 +44,7 @@ export function CardSkeleton() {
 
 export function VoiceCardSkeleton() {
   return (
-    <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700">
+    <div className="bg-[#3E2C23]/50 rounded-xl p-4 border border-[#3E2C23]/20">
       <Skeleton className="h-4 w-full mb-2" />
       <Skeleton className="h-4 w-3/4 mb-3" />
       <div className="flex items-center justify-between">
@@ -60,7 +60,7 @@ export function VoiceCardSkeleton() {
 
 export function TopicCardSkeleton() {
   return (
-    <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+    <div className="bg-[#3E2C23]/50 rounded-xl p-4 border border-[#3E2C23]/20">
       <Skeleton className="h-5 w-24 mb-2" />
       <Skeleton className="h-4 w-12" />
     </div>

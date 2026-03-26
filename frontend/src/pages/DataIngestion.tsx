@@ -179,19 +179,19 @@ export default function DataIngestion() {
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Activity size={22} className="text-blue-400" /> Data Ingestion
           </h1>
-          <p className="text-sm text-slate-400 mt-0.5">
+          <p className="text-sm text-[#6B5E57] mt-0.5">
             News, Google News &amp; Reddit ingest automatically. Status refreshes every 30 s.
           </p>
         </div>
         <div className="flex items-center gap-3">
           {lastRefreshed && (
-            <span className="text-xs text-slate-500 flex items-center gap-1">
+            <span className="text-xs text-[#6B5E57] flex items-center gap-1">
               <Clock size={11} /> refreshed {fmtLastRun(lastRefreshed.toISOString())}
             </span>
           )}
           <button
             onClick={() => refreshStatus()}
-            className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm hover:bg-slate-700"
+            className="flex items-center gap-2 px-3 py-1.5 bg-[#3E2C23] border border-[#3E2C23]/20 rounded-lg text-sm hover:bg-slate-700"
           >
             <RefreshCw size={13} /> Refresh
           </button>
@@ -207,8 +207,8 @@ export default function DataIngestion() {
       </div>
 
       {/* Per-source scheduler status */}
-      <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
-        <h2 className="font-semibold mb-4 text-sm uppercase text-slate-400 tracking-wide">Automatic Scheduler Status</h2>
+      <div className="bg-[#3E2C23] rounded-2xl p-5 border border-[#3E2C23]/20">
+        <h2 className="font-semibold mb-4 text-sm uppercase text-[#6B5E57] tracking-wide">Automatic Scheduler Status</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {(Object.entries(SOURCE_META) as [TriggerSource, typeof SOURCE_META[TriggerSource]][]).map(([key, meta]) => (
             <div key={key} className="bg-slate-700/50 rounded-xl p-3 border border-slate-600/50">
@@ -216,24 +216,24 @@ export default function DataIngestion() {
                 <span className="text-lg">{meta.icon}</span>
                 <div>
                   <p className="text-sm font-medium">{meta.label}</p>
-                  <p className="text-[11px] text-slate-500">{meta.interval}</p>
+                  <p className="text-[11px] text-[#6B5E57]">{meta.interval}</p>
                 </div>
               </div>
               <div className="space-y-1 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Last run</span>
-                  <span className={`font-medium ${srcLastRun[key] ? 'text-slate-200' : 'text-slate-500'}`}>
+                  <span className="text-[#6B5E57]">Last run</span>
+                  <span className={`font-medium ${srcLastRun[key] ? 'text-[#6B5E57]/40' : 'text-[#6B5E57]'}`}>
                     {fmtLastRun(srcLastRun[key])}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Added last run</span>
-                  <span className={`font-medium ${(srcLastCount[key] ?? 0) > 0 ? 'text-green-400' : 'text-slate-500'}`}>
+                  <span className="text-[#6B5E57]">Added last run</span>
+                  <span className={`font-medium ${(srcLastCount[key] ?? 0) > 0 ? 'text-green-400' : 'text-[#6B5E57]'}`}>
                     {srcLastCount[key] != null ? `+${srcLastCount[key]}` : '—'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Today (DB)</span>
+                  <span className="text-[#6B5E57]">Today (DB)</span>
                   <span className="font-medium text-blue-300">
                     {key === 'gnews' ? '(→ news)' : (srcTodayCount[key] ?? 0)}
                   </span>
@@ -245,13 +245,13 @@ export default function DataIngestion() {
       </div>
 
       {/* Manual Trigger */}
-      <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
+      <div className="bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20">
         <h2 className="font-bold mb-4 flex items-center gap-2">
           <Play size={18} /> Manual Trigger
         </h2>
         <div className="flex gap-3 items-end flex-wrap">
           <div>
-            <label className="text-xs text-slate-400 block mb-1">Source</label>
+            <label className="text-xs text-[#6B5E57] block mb-1">Source</label>
             <select
               value={triggerType}
               onChange={(e) => setTriggerType(e.target.value as TriggerSource)}
@@ -284,7 +284,7 @@ export default function DataIngestion() {
             </span>
           )}
           {triggerResult === 'done' && newEntries === 0 && (
-            <span className="text-sm text-slate-400">
+            <span className="text-sm text-[#6B5E57]">
               ⚠️ No new entries — all items were duplicates or source returned nothing
             </span>
           )}
@@ -293,7 +293,7 @@ export default function DataIngestion() {
 
       <div className="grid md:grid-cols-2 gap-6">
         {/* CSV Upload */}
-        <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
+        <div className="bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20">
           <h2 className="font-bold mb-4 flex items-center gap-2">
             <Upload size={18} /> CSV Upload
           </h2>
@@ -302,7 +302,7 @@ export default function DataIngestion() {
               type="file"
               accept=".csv"
               onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
-              className="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-500 file:text-white hover:file:bg-blue-600"
+              className="block w-full text-sm text-[#6B5E57] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-500 file:text-white hover:file:bg-blue-600"
             />
             <button
               onClick={handleCSVUpload}
@@ -326,7 +326,7 @@ export default function DataIngestion() {
         </div>
 
         {/* Manual Entry */}
-        <div className="bg-slate-800 rounded-2xl p-6 border border-slate-700">
+        <div className="bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20">
           <h2 className="font-bold mb-4 flex items-center gap-2">
             <FileText size={18} /> Manual Entry
           </h2>
@@ -352,7 +352,7 @@ export default function DataIngestion() {
                   className="flex-1 min-w-0 bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm"
                 />
                 <button type="button" onClick={detectLocation} disabled={geoLocating} title="Detect my location"
-                  className="flex-shrink-0 px-2 py-2 bg-slate-600 hover:bg-blue-600 disabled:opacity-50 rounded-lg text-slate-300 transition-colors">
+                  className="flex-shrink-0 px-2 py-2 bg-slate-600 hover:bg-blue-600 disabled:opacity-50 rounded-lg text-[#6B5E57]/60 transition-colors">
                   <MapPin size={14} className={geoLocating ? 'animate-pulse' : ''} />
                 </button>
               </div>

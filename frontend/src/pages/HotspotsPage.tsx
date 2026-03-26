@@ -24,44 +24,37 @@ export default function HotspotsPage() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="p-6 space-y-6"
+      className="p-6 space-y-8 bg-[#F5E9D8]"
     >
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Flame size={24} className="text-red-400" />
-            Urgency Hotspots
-          </h1>
-          <p className="text-sm text-slate-400">States ranked by urgency — high negativity + volume in last 24h</p>
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#EF4444] to-[#DC2626] flex items-center justify-center text-white mcd-glow-saffron">
+            <Flame size={24} />
+          </div>
+          <div>
+            <h1 className="text-3xl font-black uppercase tracking-tight">
+              URGENCY <span className="text-[#EF4444]">HOTSPOTS</span>
+            </h1>
+            <p className="text-[10px] font-bold text-[#6B5E57] uppercase tracking-widest">
+              Wards ranked by criticality — High Negativity + Volume (Delhi MCD)
+            </p>
+          </div>
         </div>
       </div>
 
       {loading ? (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="bg-slate-800 rounded-2xl p-5 border border-slate-700 animate-pulse">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 rounded-lg bg-slate-700" />
-                  <div>
-                    <div className="h-5 w-32 bg-slate-700 rounded mb-1" />
-                    <div className="h-3 w-20 bg-slate-700 rounded" />
-                  </div>
-                </div>
-                <div className="h-4 w-24 bg-slate-700 rounded" />
-              </div>
-              <div className="mt-3 h-2 w-full bg-slate-700 rounded-full" />
-            </div>
+            <div key={i} className="bg-[#161B2E] rounded-3xl p-6 border border-white/5 animate-pulse h-28" />
           ))}
         </div>
       ) : hotspots.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-slate-500 gap-3">
-          <AlertTriangle size={40} className="opacity-40" />
-          <p>No hotspot data available yet</p>
-          <p className="text-xs">Data will appear once voices are ingested</p>
+        <div className="flex flex-col items-center justify-center py-32 text-[#6B5E57] gap-4">
+          <AlertTriangle size={60} className="opacity-20" />
+          <p className="font-black uppercase tracking-widest text-xs">No active hotspot data detected in core</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid gap-4">
           {hotspots.map((h, i) => {
             const colors = urgencyConfig(h.urgency_score);
             return (
@@ -70,56 +63,51 @@ export default function HotspotsPage() {
                 initial={{ opacity: 0, x: -12 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className="bg-slate-800 rounded-2xl p-5 border border-slate-700 hover:border-slate-600 transition-colors"
+                className="bg-[#161B2E] rounded-3xl p-6 border border-white/5 hover:border-[#E76F2E]/30 transition-all group mcd-card"
               >
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center justify-between gap-6">
                   {/* Rank + Name */}
-                  <div className="flex items-center gap-4">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm
-                      ${i === 0 ? 'bg-red-500/20 text-red-400' : i === 1 ? 'bg-orange-500/20 text-orange-400' : i === 2 ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-700/50 text-slate-400'}
+                  <div className="flex items-center gap-6">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg transition-all
+                      ${i === 0 ? 'bg-[#EF4444]/20 text-[#EF4444] shadow-lg shadow-[#EF4444]/10' : 
+                        i === 1 ? 'bg-[#E76F2E]/20 text-[#E76F2E]' : 
+                        i === 2 ? 'bg-[#EAB308]/20 text-[#EAB308]' : 'bg-[#F5E9D8] text-[#6B5E57]'}
                     `}>
                       {i + 1}
                     </div>
                     <div>
-                      <div className="font-semibold text-base">{h.state}</div>
-                      <div className="text-xs text-slate-500">
-                        {h.volume.toLocaleString()} voices · Sentiment {h.avg_sentiment.toFixed(2)}
+                      <div className="font-black text-xl uppercase tracking-tight text-white group-hover:text-[#E76F2E] transition-colors">{h.state}</div>
+                      <div className="text-[10px] font-bold text-[#6B5E57] uppercase tracking-widest mt-1">
+                        {h.volume.toLocaleString()} reports ingested · Sentiment {h.avg_sentiment.toFixed(3)}
                       </div>
                     </div>
                   </div>
 
                   {/* Urgency Badge + drill-down */}
-                  <div className="flex items-center gap-3">
-                    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${colors.badge}`}>
-                      {colors.label}
-                    </span>
-                    <span className={`text-sm font-mono font-bold ${colors.text}`}>
-                      {(h.urgency_score * 100).toFixed(0)}
-                    </span>
+                  <div className="flex items-center gap-6">
+                    <div className="text-right hidden sm:block">
+                      <div className={`text-[10px] font-black uppercase tracking-widest ${colors.text}`}>{colors.label}</div>
+                      <div className={`text-2xl font-black font-mono ${colors.text}`}>
+                        {(h.urgency_score * 100).toFixed(0)}
+                      </div>
+                    </div>
                     <Link
                       to={`/analysis/state/${h.state_code}`}
-                      className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300"
+                      className="w-12 h-12 rounded-xl bg-[#F5E9D8] border border-white/5 flex items-center justify-center text-[#6B5E57] hover:text-[#E76F2E] hover:border-[#E76F2E]/50 transition-all"
                     >
-                      Analyse <ArrowRight size={12} />
+                      <ArrowRight size={20} />
                     </Link>
                   </div>
                 </div>
 
                 {/* Urgency bar */}
-                <div className="mt-3 h-2 w-full bg-slate-700 rounded-full overflow-hidden">
+                <div className="mt-6 h-1.5 w-full bg-[#F5E9D8] rounded-full overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${h.urgency_score * 100}%` }}
                     transition={{ delay: i * 0.04 + 0.2, duration: 0.6 }}
                     className={`h-full rounded-full ${colors.bar}`}
                   />
-                </div>
-
-                {/* Sentiment breakdown bar */}
-                <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
-                  <TrendingDown size={10} />
-                  <span>Avg sentiment: {h.avg_sentiment > 0 ? '+' : ''}{h.avg_sentiment.toFixed(3)}</span>
-                  <span className="ml-auto">Urgency score: {h.urgency_score.toFixed(4)}</span>
                 </div>
               </motion.div>
             );
@@ -129,12 +117,24 @@ export default function HotspotsPage() {
 
       {/* Legend */}
       {!loading && hotspots.length > 0 && (
-        <div className="flex items-center gap-6 text-xs text-slate-500 border-t border-slate-700/50 pt-4">
-          <span className="font-semibold text-slate-400">Urgency scale:</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-yellow-400" /> Low (&lt;20)</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Moderate (20-40)</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-orange-500" /> High (40-70)</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-500" /> Critical (&gt;70)</span>
+        <div className="flex flex-wrap items-center gap-8 py-8 border-t border-white/5">
+          <span className="font-black text-[10px] text-[#6B5E57] uppercase tracking-[0.2em]">Urgency Spectrum:</span>
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-[#EAB308]" />
+            <span className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest">Stable</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-[#E76F2E]" />
+            <span className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest">Moderate</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
+            <span className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest">Critical</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-[#DC2626]" />
+            <span className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest">High Alert</span>
+          </div>
         </div>
       )}
     </motion.div>

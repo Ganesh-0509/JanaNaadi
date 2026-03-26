@@ -38,7 +38,7 @@ export default function FilterSidebar({ open = true }: Props) {
   if (!open) return null;
 
   return (
-    <div className="w-64 flex-shrink-0 bg-slate-800 border-r border-slate-700 p-4 space-y-5 overflow-y-auto">
+    <div className="w-64 flex-shrink-0 bg-[#3E2C23] border-r border-[#3E2C23]/20 p-4 space-y-5 overflow-y-auto">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="font-bold text-sm">Filters</h3>
@@ -55,7 +55,7 @@ export default function FilterSidebar({ open = true }: Props) {
 
       {/* Time Range */}
       <div>
-        <label className="text-xs text-slate-400 font-medium block mb-2">Time Range</label>
+        <label className="text-xs text-[#6B5E57] font-medium block mb-2">Time Range</label>
         <div className="flex gap-1">
           {TIME_OPTIONS.map((t) => (
             <button
@@ -64,7 +64,7 @@ export default function FilterSidebar({ open = true }: Props) {
               className={`flex-1 py-1.5 text-xs rounded-lg font-medium ${
                 filters.timeRange === t
                   ? 'bg-blue-500 text-white'
-                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                  : 'bg-slate-700 text-[#6B5E57]/60 hover:bg-slate-600'
               }`}
             >
               {t}
@@ -75,7 +75,7 @@ export default function FilterSidebar({ open = true }: Props) {
 
       {/* Topic */}
       <div>
-        <label className="text-xs text-slate-400 font-medium block mb-2">Topic</label>
+        <label className="text-xs text-[#6B5E57] font-medium block mb-2">Topic</label>
         <select
           value={filters.topic || ''}
           onChange={(e) => setFilters({ topic: e.target.value || null })}
@@ -90,7 +90,7 @@ export default function FilterSidebar({ open = true }: Props) {
 
       {/* Source */}
       <div>
-        <label className="text-xs text-slate-400 font-medium block mb-2">Source</label>
+        <label className="text-xs text-[#6B5E57] font-medium block mb-2">Source</label>
         <select
           value={filters.source || ''}
           onChange={(e) => setFilters({ source: e.target.value || null })}
@@ -105,7 +105,7 @@ export default function FilterSidebar({ open = true }: Props) {
 
       {/* Language */}
       <div>
-        <label className="text-xs text-slate-400 font-medium block mb-2">Language</label>
+        <label className="text-xs text-[#6B5E57] font-medium block mb-2">Language</label>
         <select
           value={filters.language || ''}
           onChange={(e) => setFilters({ language: e.target.value || null })}
@@ -120,7 +120,7 @@ export default function FilterSidebar({ open = true }: Props) {
 
       {/* Sentiment */}
       <div>
-        <label className="text-xs text-slate-400 font-medium block mb-2">Sentiment</label>
+        <label className="text-xs text-[#6B5E57] font-medium block mb-2">Sentiment</label>
         <select
           value={filters.sentiment || ''}
           onChange={(e) => setFilters({ sentiment: e.target.value || null })}

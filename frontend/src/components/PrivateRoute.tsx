@@ -13,7 +13,7 @@ export default function PrivateRoute({ children, requireAdmin }: Props) {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-slate-400">Loading...</div>
+        <div className="text-[#6B5E57]">Loading...</div>
       </div>
     );
   }

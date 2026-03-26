@@ -37,3 +37,11 @@ export function formatRelative(date: string | Date | null): string {
   const days = Math.floor(hrs / 24);
   return `${days}d ago`;
 }
+export function formatCurrency(n: number | null | undefined): string {
+  if (n == null) return '₹0';
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    maximumSignificantDigits: 3,
+  }).format(n);
+}

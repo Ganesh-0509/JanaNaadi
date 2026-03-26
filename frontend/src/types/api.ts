@@ -255,10 +255,10 @@ export function urgencyConfig(score: number) {
       label: 'MODERATE',
     };
   return {
-    bar: 'bg-slate-500',
-    text: 'text-slate-400',
+    bar: 'bg-[#FAF5ED]0',
+    text: 'text-[#6B5E57]',
     border: 'border-slate-600',
-    badge: 'bg-slate-600/30 text-slate-400 border-slate-600',
+    badge: 'bg-slate-600/30 text-[#6B5E57] border-slate-600',
     label: 'LOW',
   };
 }

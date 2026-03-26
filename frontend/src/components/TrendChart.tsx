@@ -141,7 +141,7 @@ export default function TrendChart({ data, forecastData, height = 300 }: Props) 
             <span className="w-4 h-0.5 bg-indigo-400 inline-block" style={{ borderTop: '2px dashed #818cf8' }} />
             7-day forecast
           </span>
-          <span className="text-xs text-slate-500">· shaded band = confidence interval · linear regression on 30-day history</span>
+          <span className="text-xs text-[#6B5E57]">· shaded band = confidence interval · linear regression on 30-day history</span>
         </div>
       )}
     </div>

@@ -14,8 +14,8 @@ export default function HeatmapLegend({ mode = 'sentiment' }: Props) {
   });
 
   return (
-    <div className="bg-slate-800/90 backdrop-blur rounded-xl px-4 py-3 border border-slate-700">
-      <div className="text-xs text-slate-300 mb-2 font-semibold">
+    <div className="bg-[#3E2C23]/90 backdrop-blur rounded-xl px-4 py-3 border border-[#3E2C23]/20">
+      <div className="text-xs text-[#6B5E57]/60 mb-2 font-semibold">
         {mode === 'urgency' ? 'Urgency Level' : 'Sentiment Score'}
       </div>
       <div className="flex items-center gap-2">

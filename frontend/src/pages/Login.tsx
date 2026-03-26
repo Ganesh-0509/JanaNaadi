@@ -32,11 +32,11 @@ export default function Login() {
             J
           </div>
           <h1 className="text-2xl font-bold">Admin Login</h1>
-          <p className="text-slate-400 text-sm mt-1">Access the JanaNaadi command center</p>
+          <p className="text-[#6B5E57] text-sm mt-1">Access the JanaNaadi command center</p>
         </div>
 
         {/* ...existing code... */}
-        <form onSubmit={handleSubmit} className="bg-slate-800 rounded-2xl p-6 border border-slate-700 space-y-4">
+        <form onSubmit={handleSubmit} className="bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20 space-y-4">
           {error && (
             <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg p-3">
               {error}
@@ -44,7 +44,7 @@ export default function Login() {
           )}
 
           <div>
-            <label className="text-sm text-slate-400 block mb-1.5">Email</label>
+            <label className="text-sm text-[#6B5E57] block mb-1.5">Email</label>
             <input
               type="email"
               autoComplete="email"
@@ -57,7 +57,7 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="text-sm text-slate-400 block mb-1.5">Password</label>
+            <label className="text-sm text-[#6B5E57] block mb-1.5">Password</label>
             <input
               type="password"
               autoComplete="current-password"

@@ -19,12 +19,12 @@ interface Summary {
 const SENTIMENT_BORDER: Record<string, string> = {
   positive: 'border-emerald-500/20',
   negative: 'border-red-500/20',
-  neutral: 'border-slate-700',
+  neutral: 'border-[#3E2C23]/10',
 };
 const SENTIMENT_BADGE: Record<string, string> = {
-  positive: 'bg-emerald-500/20 text-emerald-400',
-  negative: 'bg-red-500/20 text-red-400',
-  neutral: 'bg-slate-600/30 text-slate-400',
+  positive: 'bg-emerald-500/10 text-emerald-600',
+  negative: 'bg-red-500/10 text-red-600',
+  neutral: 'bg-[#FAF5ED] text-[#6B5E57]',
 };
 
 const PAGE_SIZE = 30;
@@ -87,14 +87,14 @@ export default function SearchPage() {
     } finally {
       setLoading(false);
     }
-  }, [query, sentiment, source, language, offset]);
+  }, [query, sentiment, source, language, offset, filters.timeRange]);
 
   // Re-search when global timeRange filter changes
   useEffect(() => {
     if (searched) {
       doSearch(true);
     }
-  }, [filters.timeRange]);
+  }, [filters.timeRange, searched, doSearch]);
 
   // Auto-search when navigated here with ?q= URL param
   useEffect(() => {
@@ -126,50 +126,58 @@ export default function SearchPage() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="p-6 space-y-6"
+      className="p-6 space-y-12 bg-white min-h-screen"
     >
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Search size={24} className="text-blue-400" />
-          Global Search
-        </h1>
-        <p className="text-sm text-slate-400">Search all ingested voices with full-text + filter support</p>
+      {/* Header — Light Mode */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-4">
+        <div className="flex items-center gap-6">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-saffron flex items-center justify-center text-white mcd-glow-saffron shadow-lg relative italic">
+            <Search size={28} />
+          </div>
+          <div>
+            <h1 className="text-3xl font-black uppercase tracking-tight leading-none italic text-[#3E2C23]">
+              INTELLIGENCE <span className="text-[#E76F2E]">SEARCH</span>
+            </h1>
+            <p className="text-[10px] font-bold text-[#6B5E57] uppercase tracking-[0.25em] mt-2 italic">
+              Audit all ingested citizen voices across 250 Delhi MCD Wards
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Search bar */}
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+      {/* Search bar console — Light Mode */}
+      <div className="bg-[#FAF5ED]/50 border border-[#3E2C23]/5 relative overflow-hidden flex flex-col md:flex-row gap-4 items-stretch p-4 rounded-[28px] shadow-sm">
+        <div className="relative flex-1 group/input">
+          <Search size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-[#6B5E57]/60 group-focus-within/input:text-[#E76F2E] transition-colors" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && doSearch(true)}
-            placeholder="Search voices, keywords, topics…"
-            className="w-full bg-slate-800 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            placeholder="SEARCH VOICES, KEYWORDS, TOPICS…"
+            className="w-full bg-white border-2 border-[#3E2C23]/5 rounded-xl pl-14 pr-10 py-4 text-xs text-[#3E2C23] placeholder-slate-200 focus:outline-none focus:border-[#E76F2E]/30 transition-all font-black uppercase tracking-widest italic"
           />
           {query && (
             <button
               onClick={() => { setQuery(''); setResults([]); setSearched(false); }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+              className="absolute right-5 top-1/2 -translate-y-1/2 text-[#6B5E57]/60 hover:text-[#3E2C23] transition-colors"
             >
-              <X size={14} />
+              <X size={16} />
             </button>
           )}
         </div>
 
         <button
           onClick={() => setShowFilters((p) => !p)}
-          className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-colors ${
+          className={`flex items-center gap-3 px-6 py-4 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all italic ${
             showFilters || activeFilterCount > 0
-              ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-              : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'
+              ? 'bg-[#E76F2E]/10 border-[#E76F2E]/30 text-[#E76F2E] shadow-sm'
+              : 'bg-white border-[#3E2C23]/5 text-[#6B5E57] hover:bg-[#FAF5ED] hover:text-[#3E2C23]'
           }`}
         >
-          <SlidersHorizontal size={15} />
+          <SlidersHorizontal size={16} />
           Filters
           {activeFilterCount > 0 && (
-            <span className="bg-blue-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+            <span className="bg-[#E76F2E] text-white text-[8px] rounded-md px-1.5 py-0.5 mcd-glow-saffron">
               {activeFilterCount}
             </span>
           )}
@@ -178,224 +186,118 @@ export default function SearchPage() {
         <button
           onClick={() => doSearch(true)}
           disabled={loading}
-          className="flex items-center gap-2 px-5 py-3 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 rounded-xl text-sm font-medium"
+          className="flex items-center gap-3 px-8 py-4 bg-gradient-saffron hover:scale-[1.02] disabled:opacity-30 disabled:scale-100 rounded-xl text-[10px] font-black text-white mcd-glow-saffron transition-all shadow-sm uppercase tracking-widest italic"
         >
-          {loading ? <Loader2 size={15} className="animate-spin" /> : <Search size={15} />}
-          Search
+          {loading ? <Loader2 size={18} className="animate-spin" /> : <Search size={18} />}
+          SEARCH
         </button>
 
         {query.trim() && results.length > 0 && (
           <button
             onClick={doSummarize}
             disabled={summarizing}
-            className="flex items-center gap-2 px-5 py-3 bg-purple-500 hover:bg-purple-600 disabled:opacity-50 rounded-xl text-sm font-medium"
+            className="flex items-center gap-3 px-8 py-4 bg-white hover:bg-[#FAF5ED] text-[#6B5E57] border border-[#3E2C23]/10 rounded-xl text-[10px] font-black transition-all shadow-sm uppercase tracking-widest italic"
           >
-            {summarizing ? <Loader2 size={15} className="animate-spin" /> : <Sparkles size={15} />}
-            AI Summary
+            {summarizing ? <Loader2 size={20} className="animate-spin" /> : <Sparkles size={20} className="text-[#E76F2E]" />}
+            AI SYNC
           </button>
         )}
       </div>
 
-      {/* AI Summary Card */}
-      {summary && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-purple-900/40 to-slate-800 rounded-xl border border-purple-500/30 p-5"
-        >
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Sparkles size={16} className="text-purple-400" />
-              <h3 className="font-bold text-purple-200">AI Summary</h3>
-            </div>
-            <button onClick={() => setSummary(null)} className="text-slate-500 hover:text-white">
-              <X size={16} />
-            </button>
-          </div>
-          <p className="text-sm text-slate-200 leading-relaxed mb-3">{summary.summary}</p>
-          {summary.key_themes.length > 0 && (
-            <div className="mb-3">
-              <p className="text-xs text-slate-400 mb-1.5">Key Themes</p>
-              <div className="flex flex-wrap gap-2">
-                {summary.key_themes.map((theme, i) => (
-                  <span key={i} className="px-2.5 py-1 bg-purple-500/20 text-purple-300 rounded-full text-xs">
-                    {theme}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-          {summary.sentiment_analysis && (
-            <div className="mb-3">
-              <p className="text-xs text-slate-400 mb-1">Sentiment Analysis</p>
-              <p className="text-xs text-slate-300">{summary.sentiment_analysis}</p>
-            </div>
-          )}
-          <div className="flex items-center gap-4 text-xs text-slate-400">
-            <span>{summary.entry_count} voices analyzed</span>
-            <span className={`font-medium ${
-              summary.sentiment_overview === 'positive' ? 'text-emerald-400' :
-              summary.sentiment_overview === 'negative' ? 'text-red-400' :
-              'text-yellow-400'
-            }`}>
-              Overall: {summary.sentiment_overview}
-            </span>
-            <span>
-              {summary.sentiment_distribution.positive}+ / {summary.sentiment_distribution.neutral}~ / {summary.sentiment_distribution.negative}−
-            </span>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Filters panel */}
       {showFilters && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          className="bg-slate-800 rounded-xl border border-slate-700 p-4 space-y-3"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">Sentiment</label>
-              <select
-                value={sentiment}
-                onChange={(e) => setSentiment(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
-              >
-                <option value="">Any</option>
-                <option value="positive">Positive</option>
-                <option value="neutral">Neutral</option>
-                <option value="negative">Negative</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">Source</label>
-              <select
-                value={source}
-                onChange={(e) => setSource(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
-              >
-                <option value="">Any</option>
-                <option value="twitter">Twitter</option>
-                <option value="news">News</option>
-                <option value="reddit">Reddit</option>
-                <option value="citizen">Citizen</option>
-                <option value="survey">Survey</option>
-                <option value="csv">CSV Upload</option>
-                <option value="manual">Manual</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs text-slate-400 mb-1">Language</label>
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
-              >
-                <option value="">Any</option>
-                <option value="en">English</option>
-                <option value="hi">Hindi</option>
-                <option value="ta">Tamil</option>
-                <option value="te">Telugu</option>
-                <option value="bn">Bengali</option>
-                <option value="mr">Marathi</option>
-                <option value="kn">Kannada</option>
-                <option value="ml">Malayalam</option>
-                <option value="gu">Gujarati</option>
-              </select>
-            </div>
+        <div className="bg-[#FAF5ED]/50 border border-[#3E2C23]/5 rounded-[32px] p-8 -mt-8 flex flex-wrap gap-6 items-end italic shadow-sm">
+          <div className="flex-1 min-w-[140px]">
+            <label className="text-[9px] font-black text-[#6B5E57] uppercase tracking-widest block mb-3 pl-1">Sentiment Filter</label>
+            <select value={sentiment} onChange={e => setSentiment(e.target.value)} className="w-full bg-white border-2 border-[#3E2C23]/5 rounded-xl px-4 py-3 text-[10px] font-black uppercase text-[#3E2C23] focus:outline-none focus:border-[#E76F2E]/30">
+              <option value="">All Emotional Signals</option>
+              <option value="positive">Positive Only</option>
+              <option value="negative">Negative Only</option>
+              <option value="neutral">Neutral Hubs</option>
+            </select>
           </div>
-          {activeFilterCount > 0 && (
-            <button
-              onClick={clearFilters}
-              className="text-xs text-slate-400 hover:text-white flex items-center gap-1"
-            >
-              <X size={12} /> Clear all filters
-            </button>
-          )}
-        </motion.div>
-      )}
-
-      {/* Results count */}
-      {searched && !loading && (
-        <p className="text-sm text-slate-400">
-          {results.length === 0 ? 'No results found' : `Showing ${results.length} result${results.length !== 1 ? 's' : ''}`}
-        </p>
-      )}
-
-      {/* Initial empty state */}
-      {!searched && (
-        <div className="flex flex-col items-center justify-center py-20 text-slate-600 gap-3">
-          <Search size={48} className="opacity-20" />
-          <p className="text-sm">Enter a query to search across all ingested voices</p>
-          <p className="text-xs text-slate-700">Supports full-text search + sentiment, source, language filters</p>
+          <div className="flex-1 min-w-[140px]">
+            <label className="text-[9px] font-black text-[#6B5E57] uppercase tracking-widest block mb-3 pl-1">Data Source</label>
+            <select value={source} onChange={e => setSource(e.target.value)} className="w-full bg-white border-2 border-[#3E2C23]/5 rounded-xl px-4 py-3 text-[10px] font-black uppercase text-[#3E2C23] focus:outline-none focus:border-[#E76F2E]/30">
+              <option value="">All Sync Channels</option>
+              <option value="twitter">X (Twitter)</option>
+              <option value="grievance">Portal Data</option>
+              <option value="whatsapp">Support Logs</option>
+            </select>
+          </div>
+          <button onClick={clearFilters} className="px-6 py-3.5 text-[9px] font-black text-[#6B5E57] uppercase tracking-widest hover:text-red-500 transition-colors">Clear Matrix</button>
         </div>
       )}
 
-      {/* Result cards */}
-      <div className="space-y-3">
+      {/* Results summary bar — Light Mode */}
+      {searched && !loading && (
+        <div className="flex items-center gap-4 px-6 italic">
+           <div className="w-1.5 h-1.5 rounded-full bg-[#E76F2E] shadow-[0_0_8px_rgba(255,153,51,0.5)]" />
+           <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#6B5E57]">
+             {results.length === 0 ? 'No records detected' : `Intelligence Matrix: Loaded ${results.length} unique ward signals`}
+           </p>
+        </div>
+      )}
+
+      {/* Result cards - Waterfall Grid — Light Mode */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {results.map((entry) => (
           <motion.div
             key={entry.id}
-            initial={{ opacity: 0, y: 6 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`bg-slate-800 rounded-xl p-4 border ${SENTIMENT_BORDER[entry.sentiment] ?? 'border-slate-700'}`}
+            className={`bg-white rounded-[32px] p-8 border hover:shadow-xl transition-all group relative overflow-hidden shadow-sm ${entry.sentiment === 'positive' ? 'border-emerald-100' : entry.sentiment === 'negative' ? 'border-red-100' : 'border-[#3E2C23]/5'}`}
           >
-            <p className="text-sm text-slate-200 leading-relaxed mb-2">
-              {entry.text}
+            <div className={`absolute top-0 right-0 w-32 h-32 blur-[60px] opacity-10 rounded-full transition-all group-hover:opacity-20 ${entry.sentiment === 'positive' ? 'bg-emerald-500' : entry.sentiment === 'negative' ? 'bg-red-500' : 'bg-slate-300'}`} />
+            
+            <p className="text-lg text-slate-700 leading-[1.6] font-medium mb-8 italic relative z-10 antialiased">
+              "{entry.text}"
             </p>
-            <div className="flex items-center flex-wrap gap-2 text-xs">
-              <span className={`px-2 py-0.5 rounded-full font-medium ${SENTIMENT_BADGE[entry.sentiment] ?? ''}`}>
+            <div className="flex flex-wrap items-center gap-3 relative z-10">
+              <span className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm ${
+                entry.sentiment === 'positive' ? 'bg-emerald-50/50 text-emerald-600 border border-emerald-100' : 
+                entry.sentiment === 'negative' ? 'bg-red-50/50 text-red-600 border border-red-100' : 'bg-[#FAF5ED] text-[#6B5E57] border border-[#3E2C23]/5'
+              }`}>
                 {entry.sentiment}
               </span>
-              <span className={`font-mono ${
-                entry.sentiment_score > 0 ? 'text-emerald-400' : entry.sentiment_score < 0 ? 'text-red-400' : 'text-yellow-400'
+              <span className={`font-black font-mono text-xs ${
+                entry.sentiment_score > 0 ? 'text-emerald-500' : entry.sentiment_score < 0 ? 'text-red-500' : 'text-yellow-500'
               }`}>
-                {entry.sentiment_score > 0 ? '+' : ''}{(entry.sentiment_score ?? 0).toFixed(3)}
+                {entry.sentiment_score > 0 ? '+' : ''}{(entry.sentiment_score ?? 0).toFixed(4)}
               </span>
-              {entry.topic && (
-                <span className="px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400">{entry.topic}</span>
-              )}
-              {entry.state && (
-                <span className="px-2 py-0.5 rounded-full bg-slate-700 text-slate-400">{entry.state}</span>
-              )}
-              {entry.source && (
-                entry.source_url ? (
-                  <a
-                    href={entry.source_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 capitalize hover:bg-purple-500/25 transition-colors"
-                    title="View original source"
-                  >
-                    {entry.source} ↗
-                  </a>
-                ) : (
-                  <span className="px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 capitalize">{entry.source}</span>
-                )
-              )}
-              {entry.language && (
-                <span className="px-2 py-0.5 rounded-full bg-slate-700/60 text-slate-500 uppercase">{entry.language}</span>
-              )}
-              {entry.ingested_at && (
-                <span className="ml-auto text-slate-600">{formatRelative(entry.ingested_at)}</span>
-              )}
+              
+              <div className="flex items-center gap-2 ml-2">
+                {entry.topic && (
+                  <span className="px-3 py-1 rounded-lg bg-[#FAF5ED] text-[#6B5E57] text-[9px] font-black uppercase tracking-widest border border-[#3E2C23]/5 italic">{entry.topic}</span>
+                )}
+                {entry.state && (
+                  <span className="px-3 py-1 rounded-lg bg-[#E76F2E]/5 text-[#E76F2E] text-[9px] font-black uppercase tracking-widest border border-[#E76F2E]/10 italic">MCD: {entry.state}</span>
+                )}
+              </div>
+
+              <div className="ml-auto flex items-center gap-4 italic opacity-80">
+                 <span className="text-[9px] font-black text-[#6B5E57]/60 uppercase tracking-widest">{entry.source}</span>
+                 <span className="text-[9px] font-black text-[#6B5E57]/60 uppercase tracking-widest border-l border-[#3E2C23]/5 pl-4">{formatRelative(entry.ingested_at || '')}</span>
+              </div>
             </div>
           </motion.div>
         ))}
+        {searched && results.length === 0 && !loading && (
+          <div className="col-span-full py-32 text-center border-2 border-dashed border-[#3E2C23]/5 rounded-[40px] italic">
+            <p className="text-[#6B5E57]/60 font-black uppercase tracking-[0.4em]">No records sync detected in specified signal range</p>
+          </div>
+        )}
       </div>
 
-      {/* Load more */}
+      {/* Load more — Light Mode */}
       {hasMore && (
-        <div className="flex justify-center pt-2">
+        <div className="flex justify-center pt-8">
           <button
             onClick={() => doSearch(false)}
             disabled={loading}
-            className="flex items-center gap-2 px-6 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium disabled:opacity-50"
+            className="flex items-center gap-3 px-10 py-5 bg-white border border-[#3E2C23]/10 hover:border-[#E76F2E]/50 text-[#6B5E57] hover:text-[#3E2C23] rounded-2xl text-base font-black transition-all shadow-sm italic"
           >
-            {loading ? <Loader2 size={15} className="animate-spin" /> : null}
-            Load more
+            {loading ? <Loader2 size={18} className="animate-spin" /> : null}
+            LOAD MORE RECORDS
           </button>
         </div>
       )}

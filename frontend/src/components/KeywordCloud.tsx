@@ -19,7 +19,7 @@ const TAG_COLORS = [
 
 export default function KeywordCloud({ keywords }: Props) {
   if (!keywords.length) {
-    return <p className="text-slate-500 text-sm text-center py-4">No keywords yet</p>;
+    return <p className="text-[#6B5E57] text-sm text-center py-4">No keywords yet</p>;
   }
 
   const maxCount = keywords[0]?.count || 1;

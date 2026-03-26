@@ -29,7 +29,7 @@ const SENTIMENT_COLORS = { positive: '#22C55E', negative: '#EF4444', neutral: '#
 function SentimentArrow({ score }: { score: number }) {
   if (score > 0.1) return <TrendingUp size={14} className="text-emerald-400 inline" />;
   if (score < -0.1) return <TrendingDown size={14} className="text-red-400 inline" />;
-  return <Minus size={14} className="text-slate-400 inline" />;
+  return <Minus size={14} className="text-[#6B5E57] inline" />;
 }
 
 function UrgencyBar({ value }: { value: number }) {
@@ -40,7 +40,7 @@ function UrgencyBar({ value }: { value: number }) {
       <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
         <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs text-slate-400 w-8 text-right">{pct}%</span>
+      <span className="text-xs text-[#6B5E57] w-8 text-right">{pct}%</span>
     </div>
   );
 }
@@ -89,7 +89,7 @@ export default function CompareView({ items }: Props) {
           { label: '🛡️ Least Urgent', winner: leastUrgent },
         ].map(({ label, winner }) => (
           <div key={label} className="bg-slate-700/40 rounded-xl p-3 border border-slate-600">
-            <div className="text-slate-400 mb-1">{label}</div>
+            <div className="text-[#6B5E57] mb-1">{label}</div>
             <div className="font-bold text-white">{winner?.name ?? '—'}</div>
           </div>
         ))}
@@ -114,10 +114,10 @@ export default function CompareView({ items }: Props) {
 
               {/* Sentiment score */}
               <div>
-                <div className="text-xs text-slate-400 mb-1">Avg Sentiment</div>
+                <div className="text-xs text-[#6B5E57] mb-1">Avg Sentiment</div>
                 <div className="text-2xl font-bold flex items-center gap-2">
                   <SentimentArrow score={item.avg_sentiment} />
-                  <span className={item.avg_sentiment > 0 ? 'text-emerald-400' : item.avg_sentiment < 0 ? 'text-red-400' : 'text-slate-400'}>
+                  <span className={item.avg_sentiment > 0 ? 'text-emerald-400' : item.avg_sentiment < 0 ? 'text-red-400' : 'text-[#6B5E57]'}>
                     {formatScore(item.avg_sentiment)}
                   </span>
                 </div>
@@ -125,13 +125,13 @@ export default function CompareView({ items }: Props) {
 
               {/* Sentiment bar */}
               <div>
-                <div className="text-xs text-slate-400 mb-1">Sentiment Split</div>
+                <div className="text-xs text-[#6B5E57] mb-1">Sentiment Split</div>
                 <div className="flex h-2 rounded-full overflow-hidden gap-0.5">
                   <div style={{ width: `${posP}%`, background: SENTIMENT_COLORS.positive }} className="rounded-l-full" />
                   <div style={{ width: `${negP}%`, background: SENTIMENT_COLORS.negative }} />
                   <div style={{ width: `${neuP}%`, background: SENTIMENT_COLORS.neutral }} className="rounded-r-full" />
                 </div>
-                <div className="flex justify-between text-[10px] mt-1 text-slate-500">
+                <div className="flex justify-between text-[10px] mt-1 text-[#6B5E57]">
                   <span className="text-emerald-400">{posP}% pos</span>
                   <span className="text-red-400">{negP}% neg</span>
                   <span>{neuP}% neu</span>
@@ -140,7 +140,7 @@ export default function CompareView({ items }: Props) {
 
               {/* Urgency */}
               <div>
-                <div className="text-xs text-slate-400 mb-1 flex items-center gap-1">
+                <div className="text-xs text-[#6B5E57] mb-1 flex items-center gap-1">
                   <AlertTriangle size={10} /> Urgency
                 </div>
                 <UrgencyBar value={item.urgency_score} />
@@ -148,13 +148,13 @@ export default function CompareView({ items }: Props) {
 
               {/* Volume */}
               <div className="flex justify-between text-sm">
-                <span className="text-slate-400">Total Voices</span>
+                <span className="text-[#6B5E57]">Total Voices</span>
                 <span className="font-semibold">{item.volume.toLocaleString()}</span>
               </div>
 
               {/* Top topics */}
               <div>
-                <div className="text-xs text-slate-400 mb-2">Top Issues</div>
+                <div className="text-xs text-[#6B5E57] mb-2">Top Issues</div>
                 <div className="flex flex-wrap gap-1">
                   {(item.top_topics || [item.top_issue]).filter(Boolean).map((t) => (
                     <span key={t} className="text-[11px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300">
@@ -162,7 +162,7 @@ export default function CompareView({ items }: Props) {
                     </span>
                   ))}
                   {!(item.top_topics?.length) && !item.top_issue && (
-                    <span className="text-slate-500 text-xs">No data</span>
+                    <span className="text-[#6B5E57] text-xs">No data</span>
                   )}
                 </div>
               </div>
@@ -173,7 +173,7 @@ export default function CompareView({ items }: Props) {
 
       {/* Sentiment score bar chart */}
       <div>
-        <h3 className="text-sm font-semibold text-slate-300 mb-3">Sentiment Score</h3>
+        <h3 className="text-sm font-semibold text-[#6B5E57]/60 mb-3">Sentiment Score</h3>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={barData} barCategoryGap="30%">
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -198,7 +198,7 @@ export default function CompareView({ items }: Props) {
 
       {/* Stacked sentiment breakdown */}
       <div>
-        <h3 className="text-sm font-semibold text-slate-300 mb-3">Voice Volume Breakdown</h3>
+        <h3 className="text-sm font-semibold text-[#6B5E57]/60 mb-3">Voice Volume Breakdown</h3>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={stackData} barCategoryGap="30%">
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
@@ -216,7 +216,7 @@ export default function CompareView({ items }: Props) {
       {/* Radar chart */}
       {items.length >= 2 && (
         <div>
-          <h3 className="text-sm font-semibold text-slate-300 mb-3">Multi-dimension Radar</h3>
+          <h3 className="text-sm font-semibold text-[#6B5E57]/60 mb-3">Multi-dimension Radar</h3>
           <ResponsiveContainer width="100%" height={280}>
             <RadarChart data={radarData}>
               <PolarGrid stroke="#334155" />

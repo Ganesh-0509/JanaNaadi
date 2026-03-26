@@ -14,7 +14,7 @@ export default function TopicCard({ topic, count, sentiment, icon, onClick }: Pr
   return (
     <div
       onClick={onClick}
-      className={`bg-slate-800 rounded-xl p-4 border border-slate-700 transition-colors ${
+      className={`bg-[#3E2C23] rounded-xl p-4 border border-[#3E2C23]/20 transition-colors ${
         onClick ? 'hover:border-blue-500/50 hover:bg-slate-700/60 cursor-pointer active:scale-95' : 'hover:border-slate-600'
       }`}
     >
@@ -34,7 +34,7 @@ export default function TopicCard({ topic, count, sentiment, icon, onClick }: Pr
         )}
       </div>
       <div className="flex items-center justify-between mt-1">
-        <div className="text-xs text-slate-400">mentions</div>
+        <div className="text-xs text-[#6B5E57]">mentions</div>
         {onClick && <div className="text-xs text-blue-400 opacity-0 group-hover:opacity-100">View →</div>}
       </div>
     </div>

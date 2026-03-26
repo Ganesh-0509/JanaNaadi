@@ -17,7 +17,7 @@ const DOMAIN_CONFIG: Record<string, { color: string; icon: string; emoji: string
 };
 
 const URGENCY_CONFIG: Record<string, { color: string; bg: string; text: string }> = {
-  low: { color: 'slate', bg: 'bg-slate-100', text: 'text-slate-700' },
+  low: { color: 'slate', bg: 'bg-[#FAF5ED]', text: 'text-slate-700' },
   moderate: { color: 'blue', bg: 'bg-blue-100', text: 'text-blue-700' },
   high: { color: 'amber', bg: 'bg-amber-100', text: 'text-amber-700' },
   critical: { color: 'red', bg: 'bg-red-100', text: 'text-red-700' },
@@ -34,10 +34,10 @@ export const DomainIntelligenceCard: React.FC<DomainCardProps> = ({ intelligence
   };
 
   const getTrendIcon = () => {
-    if (!intelligence.sentiment_trend) return <Minus size={16} className="text-slate-400" />;
+    if (!intelligence.sentiment_trend) return <Minus size={16} className="text-[#6B5E57]" />;
     if (intelligence.sentiment_trend > 0.1) return <TrendingUp size={16} className="text-green-600" />;
     if (intelligence.sentiment_trend < -0.1) return <TrendingDown size={16} className="text-red-600" />;
-    return <Minus size={16} className="text-slate-400" />;
+    return <Minus size={16} className="text-[#6B5E57]" />;
   };
 
   return (
@@ -63,7 +63,7 @@ export const DomainIntelligenceCard: React.FC<DomainCardProps> = ({ intelligence
       {/* Risk Score */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-slate-600">Risk Score</span>
+          <span className="text-sm text-[#6B5E57]">Risk Score</span>
           <span className={`text-2xl font-bold ${getRiskColor(intelligence.risk_score)}`}>
             {(intelligence.risk_score * 100).toFixed(0)}%
           </span>
@@ -81,8 +81,8 @@ export const DomainIntelligenceCard: React.FC<DomainCardProps> = ({ intelligence
       </div>
 
       {/* Sentiment Trend */}
-      <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-200">
-        <span className="text-sm text-slate-600">Sentiment Trend</span>
+      <div className="flex items-center justify-between mb-4 pb-4 border-b border-[#3E2C23]/10">
+        <span className="text-sm text-[#6B5E57]">Sentiment Trend</span>
         <div className="flex items-center gap-1">
           {getTrendIcon()}
           <span className="text-sm font-medium text-slate-700">
@@ -97,7 +97,7 @@ export const DomainIntelligenceCard: React.FC<DomainCardProps> = ({ intelligence
       {/* Key Factors */}
       {intelligence.key_factors && intelligence.key_factors.length > 0 && (
         <div className="mb-3">
-          <div className="text-xs font-semibold text-slate-600 mb-2">Key Factors</div>
+          <div className="text-xs font-semibold text-[#6B5E57] mb-2">Key Factors</div>
           <div className="space-y-1">
             {intelligence.key_factors.slice(0, 3).map((factor, idx) => (
               <div key={idx} className="flex items-start gap-2">
@@ -111,14 +111,14 @@ export const DomainIntelligenceCard: React.FC<DomainCardProps> = ({ intelligence
 
       {/* Entity Count */}
       {intelligence.entity_ids && intelligence.entity_ids.length > 0 && (
-        <div className="flex items-center justify-between text-xs text-slate-500 mt-3 pt-3 border-t border-slate-100">
+        <div className="flex items-center justify-between text-xs text-[#6B5E57] mt-3 pt-3 border-t border-[#3E2C23]/5">
           <span>Entities Tracked</span>
           <span className="font-semibold text-slate-700">{intelligence.entity_ids.length}</span>
         </div>
       )}
 
       {/* Last Updated */}
-      <div className="text-xs text-slate-400 mt-2">
+      <div className="text-xs text-[#6B5E57] mt-2">
         Updated {new Date(intelligence.computed_at).toLocaleTimeString()}
       </div>
     </div>
@@ -140,7 +140,7 @@ export const DomainIntelligenceGrid: React.FC<DomainGridProps> = ({
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="bg-white p-5 rounded-lg shadow-sm border border-slate-200 animate-pulse">
+          <div key={i} className="bg-white p-5 rounded-lg shadow-sm border border-[#3E2C23]/10 animate-pulse">
             <div className="h-6 bg-slate-200 rounded w-3/4 mb-4" />
             <div className="h-4 bg-slate-200 rounded w-1/2 mb-2" />
             <div className="h-4 bg-slate-200 rounded w-full" />
@@ -152,10 +152,10 @@ export const DomainIntelligenceGrid: React.FC<DomainGridProps> = ({
 
   if (!intelligences || intelligences.length === 0) {
     return (
-      <div className="bg-white p-12 rounded-lg shadow-sm border border-slate-200 text-center">
-        <AlertTriangle className="mx-auto mb-4 text-slate-400" size={48} />
-        <p className="text-slate-600 mb-2">No domain intelligence data available</p>
-        <p className="text-sm text-slate-500">Start ingesting domain-specific data to generate intelligence scores</p>
+      <div className="bg-white p-12 rounded-lg shadow-sm border border-[#3E2C23]/10 text-center">
+        <AlertTriangle className="mx-auto mb-4 text-[#6B5E57]" size={48} />
+        <p className="text-[#6B5E57] mb-2">No domain intelligence data available</p>
+        <p className="text-sm text-[#6B5E57]">Start ingesting domain-specific data to generate intelligence scores</p>
       </div>
     );
   }

@@ -49,28 +49,28 @@ export default function SubmitGrievance() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-slate-800 border border-slate-700 rounded-3xl p-8 shadow-2xl relative overflow-hidden"
+            className="bg-white border border-[#3E2C23]/5 rounded-[40px] p-10 shadow-xl relative overflow-hidden italic"
           >
             {/* Decoration */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-emerald-500" />
+            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-saffron" />
             
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-blue-500/20 rounded-2xl flex items-center justify-center">
-                <MessageSquare className="text-blue-400" size={24} />
+            <div className="flex items-center gap-6 mb-10">
+              <div className="w-14 h-14 bg-[#E76F2E]/10 rounded-2xl flex items-center justify-center border border-[#E76F2E]/20 shadow-sm">
+                <MessageSquare className="text-[#E76F2E]" size={28} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">Submit a Grievance</h1>
-                <p className="text-sm text-slate-400">Share your concerns with the MCD — Delhi Government</p>
+                <h1 className="text-3xl font-black uppercase tracking-tighter text-[#3E2C23]">Submit <span className="text-[#E76F2E]">Grievance</span></h1>
+                <p className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest mt-1 italic">MUNICIPAL CORPORATION OF DELHI — OFFICIAL RECORD</p>
               </div>
             </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); setStep(2); }} className="space-y-6">
+            <form onSubmit={(e) => { e.preventDefault(); setStep(2); }} className="space-y-8">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Message (Minimum 10 words)</label>
+                <label className="block text-[10px] font-black text-[#6B5E57] uppercase tracking-widest mb-4 ml-1">Message (Minimum 20 characters)</label>
                 <textarea
                   required
-                  placeholder="Describe the issue in your area..."
-                  className="w-full bg-slate-900/50 border border-slate-700 rounded-2xl p-4 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/40 min-h-[150px] transition-all"
+                  placeholder="DESCRIBE THE ISSUE IN YOUR WARD FOR AUDIT SYNC…"
+                  className="w-full bg-[#FAF5ED] border-2 border-[#3E2C23]/5 rounded-[32px] p-6 text-[#3E2C23] focus:outline-none focus:border-[#E76F2E]/30 min-h-[180px] transition-all font-medium italic text-lg shadow-inner placeholder-slate-200"
                   value={form.text}
                   onChange={(e) => setForm({...form, text: e.target.value})}
                 />
@@ -80,9 +80,9 @@ export default function SubmitGrievance() {
                  <button
                    type="submit"
                    disabled={form.text.length < 20}
-                   className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold py-4 rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2"
+                   className="flex-1 bg-gradient-saffron hover:scale-[1.02] disabled:opacity-30 text-white font-black py-5 rounded-2xl transition-all shadow-xl mcd-glow-saffron flex items-center justify-center gap-3 uppercase tracking-tighter text-lg"
                  >
-                   Continue <Send size={18} />
+                   Continue <Send size={20} />
                  </button>
               </div>
             </form>
@@ -95,17 +95,17 @@ export default function SubmitGrievance() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="bg-slate-800 border border-slate-700 rounded-3xl p-8 shadow-2xl"
+            className="bg-white border border-[#3E2C23]/5 rounded-[40px] p-10 shadow-xl italic"
           >
-             <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-               <MapPin className="text-emerald-400" /> Regional Context
+             <h2 className="text-2xl font-black mb-10 flex items-center gap-4 text-[#3E2C23] uppercase tracking-tighter">
+               <MapPin className="text-[#E76F2E]" size={28} /> Regional Case <span className="text-[#E76F2E]">Context</span>
              </h2>
              
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
                <div>
-                 <label className="text-xs text-slate-500 uppercase tracking-widest mb-1 block">Your Zone</label>
+                 <label className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest mb-3 block ml-1">MCD Reporting Zone</label>
                  <select 
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500/40 outline-none"
+                    className="w-full bg-[#FAF5ED] border-2 border-[#3E2C23]/5 rounded-xl px-5 py-4 text-xs font-black uppercase text-[#3E2C23] focus:border-[#E76F2E]/30 outline-none transition-all shadow-sm"
                     value={form.zone}
                     onChange={(e) => setForm({...form, zone: e.target.value})}
                 >
@@ -113,9 +113,9 @@ export default function SubmitGrievance() {
                  </select>
                </div>
                <div>
-                 <label className="text-xs text-slate-500 uppercase tracking-widest mb-1 block">Category</label>
+                 <label className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest mb-3 block ml-1">Audit Category</label>
                  <select 
-                    className="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500/40 outline-none"
+                    className="w-full bg-[#FAF5ED] border-2 border-[#3E2C23]/5 rounded-xl px-5 py-4 text-xs font-black uppercase text-[#3E2C23] focus:border-[#E76F2E]/30 outline-none transition-all shadow-sm"
                     value={form.category}
                     onChange={(e) => setForm({...form, category: e.target.value})}
                 >
@@ -124,19 +124,21 @@ export default function SubmitGrievance() {
                </div>
              </div>
 
-             <div className="flex items-center gap-2 p-4 bg-blue-500/10 rounded-2xl mb-8 border border-blue-500/20">
-               <Globe className="text-blue-400" size={18} />
-               <p className="text-xs text-blue-300">Your message will be automatically translated and analyzed by the JanaNaadi Global Ontology Engine for priority tracking.</p>
+             <div className="flex items-center gap-4 p-6 bg-[#3B82F6]/5 rounded-[24px] mb-10 border border-[#3B82F6]/10 shadow-sm">
+               <Globe className="text-[#3B82F6]" size={24} />
+               <p className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest leading-relaxed">
+                 Signal ingestion active. Message will be automatically translated and vectorized for the <span className="text-[#3B82F6]">Global Ontology Engine</span>.
+               </p>
              </div>
 
              <div className="flex gap-4">
-               <button onClick={() => setStep(1)} className="px-6 py-4 bg-slate-700 rounded-2xl text-sm font-bold">Back</button>
+               <button onClick={() => setStep(1)} className="px-8 py-5 bg-[#FAF5ED] text-[#6B5E57] hover:text-[#3E2C23] border border-[#3E2C23]/5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">Back</button>
                <button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 transition-all"
+                  className="flex-1 bg-gradient-saffron hover:scale-[1.02] text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl mcd-glow-saffron uppercase tracking-tighter text-lg"
                >
-                 {loading ? <Loader2 className="animate-spin" /> : <><Send size={18}/> Submit for Analysis</>}
+                 {loading ? <Loader2 className="animate-spin" /> : <><Send size={20}/> Submit for Sync</>}
                </button>
              </div>
           </motion.div>
@@ -147,20 +149,20 @@ export default function SubmitGrievance() {
             key="step3"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-center bg-slate-800 border border-slate-700 rounded-3xl p-12 shadow-2xl"
+            className="text-center bg-white border border-[#3E2C23]/5 rounded-[40px] p-16 shadow-xl italic"
           >
-            <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle size={40} className="text-emerald-400" />
+            <div className="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-10 border border-emerald-500/20 shadow-sm">
+              <CheckCircle size={48} className="text-emerald-500" />
             </div>
-            <h1 className="text-3xl font-bold mb-2 text-white">Submitted!</h1>
-            <p className="text-slate-400 mb-8 max-w-sm mx-auto">
-              Your grievance has been ingested. It is now part of the **MCD Intelligence Graph** for Zonal decision-making.
+            <h1 className="text-4xl font-black mb-4 text-[#3E2C23] uppercase tracking-tighter italic">INGESTION <span className="text-emerald-500">COMPLETE</span></h1>
+            <p className="text-[#6B5E57] mb-12 max-w-sm mx-auto text-[10px] font-black uppercase tracking-widest leading-loose">
+              Your grievance has been vectorized. It is now part of the <span className="text-emerald-500">MCD Intelligence Graph</span> for Zonal decision-support systems.
             </p>
             <button
                onClick={() => { setStep(1); setSuccess(false); setForm({...form, text: ''}); }}
-               className="px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-full text-sm font-bold shadow-lg shadow-blue-500/30 transition-all"
+               className="px-12 py-5 bg-[#3E2C23] hover:scale-105 rounded-2xl text-[10px] font-black text-white uppercase tracking-widest shadow-xl transition-all font-mono"
             >
-              Back to Home
+              Back to Command Center
             </button>
           </motion.div>
         )}

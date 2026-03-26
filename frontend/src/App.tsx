@@ -30,10 +30,10 @@ import SubmitGrievance from './pages/SubmitGrievance';
 
 // Loading fallback component
 const PageLoader = () => (
-  <div className="flex items-center justify-center h-screen bg-slate-900">
+  <div className="flex items-center justify-center h-screen bg-[#3E2C23]">
     <div className="text-center">
       <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-      <p className="text-slate-400">Loading...</p>
+      <p className="text-[#6B5E57]">Loading...</p>
     </div>
   </div>
 );
@@ -73,7 +73,6 @@ export default function App() {
                   path="/admin/ingest"
                   element={<PrivateRoute requireAdmin><DataIngestion /></PrivateRoute>}
                 />
-                <Route path="/hotspots" element={<HotspotsPage />} />
                 <Route
                   path="/gov"
                   element={<PrivateRoute><GovDashboard /></PrivateRoute>}

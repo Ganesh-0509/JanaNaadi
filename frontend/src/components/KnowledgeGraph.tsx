@@ -202,13 +202,13 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
 
   return (
     <div className="relative">
-      <svg ref={svgRef} className="w-full border border-slate-700 rounded-lg bg-slate-900" />
+      <svg ref={svgRef} className="w-full border border-[#3E2C23]/20 rounded-lg bg-[#3E2C23]" />
       
       {/* Hover tooltip */}
       {hoveredNode && (
-        <div className="absolute top-4 left-4 bg-slate-800 p-4 rounded-lg shadow-lg border border-slate-700 max-w-xs z-10">
+        <div className="absolute top-4 left-4 bg-[#3E2C23] p-4 rounded-lg shadow-lg border border-[#3E2C23]/20 max-w-xs z-10">
           <h4 className="font-bold text-lg text-slate-100">{hoveredNode.name}</h4>
-          <p className="text-sm text-slate-300 capitalize">{hoveredNode.entity_type}</p>
+          <p className="text-sm text-[#6B5E57]/60 capitalize">{hoveredNode.entity_type}</p>
           <div className="mt-2 space-y-1 text-sm">
             <p><strong>Mentions:</strong> {hoveredNode.mention_count}</p>
             {hoveredNode.sentiment_score !== undefined && (
@@ -216,25 +216,25 @@ export const KnowledgeGraph: React.FC<KnowledgeGraphProps> = ({
                 <strong>Sentiment:</strong>{' '}
                 <span className={
                   hoveredNode.sentiment_score > 0 ? 'text-green-600' :
-                  hoveredNode.sentiment_score < 0 ? 'text-red-600' : 'text-slate-600'
+                  hoveredNode.sentiment_score < 0 ? 'text-red-600' : 'text-[#6B5E57]'
                 }>
                   {hoveredNode.sentiment_score.toFixed(2)}
                 </span>
               </p>
             )}
             {hoveredNode.description && (
-              <p className="text-xs text-slate-500 mt-2">{hoveredNode.description}</p>
+              <p className="text-xs text-[#6B5E57] mt-2">{hoveredNode.description}</p>
             )}
           </div>
         </div>
       )}
 
       {/* Legend */}
-      <div className="absolute bottom-4 right-4 bg-slate-800 p-4 rounded-lg shadow-lg border border-slate-700">
+      <div className="absolute bottom-4 right-4 bg-[#3E2C23] p-4 rounded-lg shadow-lg border border-[#3E2C23]/20">
         <h4 className="font-bold text-sm mb-2 text-slate-100">Entity Types</h4>
         <div className="space-y-1">
           {Object.entries(ENTITY_TYPE_COLORS).map(([type, color]) => (
-            <div key={type} className="flex items-center gap-2 text-xs text-slate-300">
+            <div key={type} className="flex items-center gap-2 text-xs text-[#6B5E57]/60">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
               <span className="capitalize">{type}</span>
             </div>
