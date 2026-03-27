@@ -1,4 +1,5 @@
 import { sentimentColor } from '../utils/colors';
+import { motion } from 'framer-motion';
 
 interface Props {
   topic: string;
@@ -9,34 +10,35 @@ interface Props {
 }
 
 export default function TopicCard({ topic, count, sentiment, icon, onClick }: Props) {
-  const color = sentiment ? sentimentColor(sentiment) : '#3b82f6';
+  const color = sentiment ? sentimentColor(sentiment) : '#E76F2E';
 
   return (
-    <div
+    <motion.div
       onClick={onClick}
-      className={`bg-[#3E2C23] rounded-xl p-4 border border-[#3E2C23]/20 transition-colors ${
-        onClick ? 'hover:border-blue-500/50 hover:bg-slate-700/60 cursor-pointer active:scale-95' : 'hover:border-slate-600'
+      whileHover={{ y: -4 }}
+      className={`mcd-card p-4 transition-all group ${
+        onClick ? 'cursor-pointer' : ''
       }`}
     >
-      <div className="flex items-center gap-3 mb-2">
-        <span className="text-xl">{icon || '📌'}</span>
-        <h3 className="font-semibold text-sm">{topic}</h3>
+      <div className="flex items-center gap-3 mb-3">
+        <span className="text-2xl">{icon || '📌'}</span>
+        <h3 className="font-black text-sm text-[#3E2C23] uppercase tracking-wide truncate">{topic}</h3>
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-2xl font-bold">{count}</span>
+        <span className="text-3xl font-black text-[#3E2C23]">{count}</span>
         {sentiment && (
           <span
-            className="text-xs font-medium px-2 py-1 rounded-full"
-            style={{ backgroundColor: `${color}20`, color }}
+            className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg"
+            style={{ backgroundColor: `${color}15`, color }}
           >
             {sentiment}
           </span>
         )}
       </div>
-      <div className="flex items-center justify-between mt-1">
-        <div className="text-xs text-[#6B5E57]">mentions</div>
-        {onClick && <div className="text-xs text-blue-400 opacity-0 group-hover:opacity-100">View →</div>}
+      <div className="flex items-center justify-between mt-2">
+        <div className="text-[10px] font-bold text-[#6B5E57] uppercase tracking-widest">mentions</div>
+        {onClick && <div className="text-[10px] font-black text-[#E76F2E] opacity-0 group-hover:opacity-100 transition-opacity uppercase tracking-widest flex items-center gap-1">View <span className="text-lg leading-none">→</span></div>}
       </div>
-    </div>
+    </motion.div>
   );
 }

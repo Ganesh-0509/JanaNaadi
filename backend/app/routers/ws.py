@@ -100,11 +100,10 @@ def publish_voice_entry(entry: dict) -> None:
 async def _get_pulse() -> dict:
     """Build the national pulse payload (same data as /api/public/national-pulse)."""
     try:
-        sb = get_supabase_admin()
+        _ensure_caches()
         snapshot = await get_or_compute_snapshot("national", None, period_hours=24)
-        topics = {t["id"]: t["name"] for t in (sb.table("topic_taxonomy").select("id, name").execute().data or [])}
         top_3 = [
-            {"topic": topics.get(t["topic_id"], "Unknown"), "count": t["count"]}
+            {"topic": _topic_names.get(t["topic_id"], "Unknown"), "count": t["count"]}
             for t in snapshot.get("top_topics", [])[:3]
         ]
         return {
@@ -219,7 +218,10 @@ async def websocket_live(websocket: WebSocket):
 
         # 3. Keep connection alive — wait for pings
         while True:
-            data = await websocket.receive_text()
+            try:
+                data = await asyncio.wait_for(websocket.receive_text(), timeout=60.0)
+            except asyncio.TimeoutError:
+                continue
             if data == "ping":
                 await websocket.send_text(json.dumps({"type": "pong"}))
     except WebSocketDisconnect:

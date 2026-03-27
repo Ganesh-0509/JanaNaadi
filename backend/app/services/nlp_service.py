@@ -1,43 +1,24 @@
-"""NLP service — sentiment + entity extraction in ONE Bytez call per article.
+"""NLP service: one-pass analysis with local-first execution and entity-cache population."""
 
-KEY CHANGE: Previously nlp_service and entity_service each made a separate
-Bytez call per article (2 calls/article). Now both are merged into a single
-combined prompt. entity_service.extract_entities() reads from the cache that
-this service populates — zero extra API calls for entities.
-
-Call flow:
-  analyze_text(text)
-    → 1 Bytez call  (sentiment + entities + relationships combined)
-    → stores entity result in _entity_cache keyed by text hash
-    → returns NLPAnalysisResult as before
-
-  extract_entities(text)  [called later by entity_service]
-    → checks _entity_cache first (ALWAYS a hit now)
-    → returns cached result, 0 additional API calls
-"""
-
+import asyncio
 import hashlib
 import logging
+from typing import Any
+
 from app.models.schemas import NLPAnalysisResult
 
 logger = logging.getLogger("jananaadi.nlp")
 
-# ── Shared cache (populated here, read by entity_service) ─────────────────────
-# Import the same cache dict that entity_service uses so both modules share it.
-# entity_service.py already has: _entity_cache = {}
-# We import it here. If the import order causes issues, just define the cache
-# in this file and import it into entity_service instead.
 try:
     from app.services.entity_service import _entity_cache
 except ImportError:
-    _entity_cache = {}  # fallback if circular import — entity_service will still cache itself
+    _entity_cache = {}
 
-# ── Combined prompt ────────────────────────────────────────────────────────────
-COMBINED_PROMPT = """Analyze this text. Return ONLY valid JSON, no markdown.
+_COMBINED_PROMPT = """Analyze this text and return ONLY valid JSON.
 
 Text: "{text}"
 
-{{
+{
   "sentiment": "positive|negative|neutral",
   "sentiment_score": 0.0,
   "confidence": 0.8,
@@ -49,132 +30,174 @@ Text: "{text}"
   "language_name": "English",
   "english_translation": null,
   "entities": [
-    {{"name": "string", "type": "person|organization|location|event|policy|technology", "description": "string", "sentiment": "positive|negative|neutral"}}
+    {"name": "string", "type": "person|organization|location|event|policy|technology|infrastructure", "description": "string", "sentiment": "positive|negative|neutral"}
   ],
   "relationships": [
-    {{"source": "string", "target": "string", "type": "supports|opposes|impacts|related_to|causes", "context": "string"}}
+    {"source": "string", "target": "string", "type": "supports|opposes|impacts|related_to|causes|part_of", "context": "string"}
   ]
-}}"""
+}
+"""
 
-async def _call_llm(text: str) -> dict:
-    """Try LLM based on settings: Local (Ollama) first if enabled, else Bytez, then Gemini."""
+
+def _text_hash(text: str) -> str:
+    """Use same hash strategy as entity_service to guarantee cache hits."""
+    return hashlib.md5(text[:1500].encode("utf-8", errors="ignore")).hexdigest()
+
+
+def _normalize_analysis(result: dict[str, Any], text: str) -> NLPAnalysisResult:
+    sentiment = str(result.get("sentiment", "neutral")).lower().strip()
+    if sentiment not in {"positive", "negative", "neutral"}:
+        sentiment = "neutral"
+
+    score = float(result.get("sentiment_score", 0.0) or 0.0)
+    confidence = float(result.get("confidence", 0.4) or 0.4)
+    urgency = float(result.get("urgency", 0.0) or 0.0)
+
+    primary = (result.get("primary_topic") or "Other").strip()
+    secondary = result.get("secondary_topics") or []
+    topics = [primary] + [t for t in secondary if isinstance(t, str) and t.strip() and t != primary]
+
+    keywords = result.get("keywords") or []
+    if not isinstance(keywords, list):
+        keywords = []
+    keywords = [str(k).strip() for k in keywords if str(k).strip()][:20]
+
+    language = str(result.get("language", "en") or "en")
+    language_name = str(result.get("language_name", "English") or "English")
+    translation = result.get("english_translation")
+
+    return NLPAnalysisResult(
+        sentiment=sentiment,
+        sentiment_score=max(min(score, 1.0), -1.0),
+        confidence=max(min(confidence, 1.0), 0.0),
+        topics=topics if topics else ["Other"],
+        keywords=keywords,
+        language=language,
+        language_name=language_name,
+        translation=translation,
+        urgency=max(min(urgency, 1.0), 0.0),
+    )
+
+
+def _keyword_fallback(text: str) -> NLPAnalysisResult:
+    text_lower = text.lower()
+    pos_words = {
+        "good", "great", "excellent", "thank", "happy", "improved", "clean",
+        "better", "wonderful", "appreciate", "development", "progress", "benefit",
+    }
+    neg_words = {
+        "bad", "terrible", "worst", "corrupt", "broken", "dirty", "angry", "fail",
+        "crisis", "flood", "drought", "accident", "protest", "scam", "pollution",
+        "shortage", "unemployment", "inflation",
+    }
+
+    words = set(text_lower.replace("\n", " ").split())
+    pos = len(words & pos_words)
+    neg = len(words & neg_words)
+
+    if pos > neg:
+        sentiment, score = "positive", min(0.3 + pos * 0.08, 1.0)
+    elif neg > pos:
+        sentiment, score = "negative", max(-0.3 - neg * 0.08, -1.0)
+    else:
+        sentiment, score = "neutral", 0.0
+
+    return NLPAnalysisResult(
+        sentiment=sentiment,
+        sentiment_score=score,
+        confidence=0.35,
+        topics=["Other"],
+        keywords=[],
+        language="en",
+        language_name="English",
+        translation=None,
+        urgency=0.0,
+    )
+
+
+async def _analyze_with_llm(text: str) -> dict[str, Any]:
     from app.core.settings import get_settings
 
     settings = get_settings()
+    prompt = _COMBINED_PROMPT.format(text=text)
 
-    prompt = COMBINED_PROMPT.format(text=text)
-    cache_key = hashlib.sha256(prompt.encode()).hexdigest()
-    if not hasattr(analyze_text, "_nlp_cache"):
-        analyze_text._nlp_cache = {}
-    cache = analyze_text._nlp_cache
-    if cache_key in cache:
-        logger.info("NLP cache HIT for text")
-        return cache[cache_key]
-
-    # 1. Try local LLM (Ollama)
-    try:
+    # Local-first mode
+    if settings.use_local_llm:
         from app.services.local_llm_service import generate_json
-        result = await generate_json(prompt)
-        logger.info("NLP via Ollama (local LLM)")
-        cache[cache_key] = result
-        return result
-    except Exception as e:
-        logger.warning(f"Ollama failed: {e} — trying cloud APIs fallback")
 
-    # 2. Bytez (primary cloud, 1 retry max)
+        try:
+            result = await generate_json(prompt)
+            logger.info("NLP via Ollama")
+            return result
+        except Exception as e:
+            if not settings.allow_cloud_fallback:
+                raise RuntimeError(f"Local-only NLP failed: {e}")
+            logger.warning("Ollama failed: %s - trying cloud fallback", e)
+
+    # Cloud mode (or local with fallback enabled)
     for attempt in range(2):
         try:
             from app.services.bytez_service import call_bytez
             result = await call_bytez(prompt)
-            logger.info(f"NLP via Bytez (primary), attempt {attempt+1}")
-            cache[cache_key] = result
+            logger.info("NLP via Bytez (attempt %d)", attempt + 1)
             return result
         except Exception as e:
-            logger.warning(f"Bytez failed (attempt {attempt+1}): {e}")
-            if attempt == 1:
-                logger.warning("Bytez failed twice, trying Gemini fallback")
+            logger.warning("Bytez failed (attempt %d): %s", attempt + 1, e)
 
-    # 3. Gemini (secondary cloud, no retry)
-    try:
-        from app.services.gemini_service import call_gemini
-        result = await call_gemini(prompt)
-        logger.info("NLP via Gemini (fallback)")
-        cache[cache_key] = result
-        return result
-    except Exception as e:
-        logger.warning(f"Gemini also failed: {e} — using keyword fallback")
-        raise  # let analyze_text handle the final fallback
+    from app.services.gemini_service import call_gemini
+    result = await call_gemini(prompt)
+    logger.info("NLP via Gemini fallback")
+    return result
 
 
 async def analyze_text(text: str) -> NLPAnalysisResult:
-    """Full NLP analysis — ONE API call covers sentiment + entities."""
-    import hashlib
-    prompt = COMBINED_PROMPT.format(text=text)
-    cache_key = hashlib.sha256(prompt.encode()).hexdigest()
+    """Analyze one text and populate entity cache for later entity_service reads."""
+    if not text or len(text.strip()) < 3:
+        return _keyword_fallback(text)
+
     if not hasattr(analyze_text, "_nlp_cache"):
         analyze_text._nlp_cache = {}
-    cache = analyze_text._nlp_cache
+    cache: dict[str, NLPAnalysisResult] = analyze_text._nlp_cache
+
+    cache_key = hashlib.sha256(text.encode("utf-8", errors="ignore")).hexdigest()
     if cache_key in cache:
-        logger.info("NLP cache HIT for text")
         return cache[cache_key]
 
-    # 1. Try local LLM (Ollama)
     try:
-        from app.services.local_llm_service import generate_json
-        result = await generate_json(prompt)
-        logger.info("NLP via Ollama (local LLM)")
-        cache[cache_key] = result
-        return result
-    except Exception as e:
-        logger.warning(f"Ollama failed: {e} — trying cloud APIs fallback")
+        raw = await _analyze_with_llm(text)
+        analysis = _normalize_analysis(raw, text)
 
-    # 2. Bytez (primary cloud, 1 retry max)
-    for attempt in range(2):
-        try:
-            from app.services.bytez_service import call_bytez
-            result = await call_bytez(prompt)
-            logger.info(f"NLP via Bytez (primary), attempt {attempt+1}")
-            cache[cache_key] = result
-            return result
-        except Exception as e:
-            logger.warning(f"Bytez failed (attempt {attempt+1}): {e}")
-            if attempt == 1:
-                logger.warning("Bytez failed twice, trying Gemini fallback")
+        # Populate shared entity cache using SAME key strategy as entity_service.
+        entity_key = _text_hash(text)
+        _entity_cache[entity_key] = {
+            "entities": raw.get("entities") or [],
+            "relationships": raw.get("relationships") or [],
+        }
+        if len(_entity_cache) > 2000:
+            oldest = list(_entity_cache.keys())[:200]
+            for k in oldest:
+                _entity_cache.pop(k, None)
 
-    # 3. Gemini (secondary cloud, no retry)
-    try:
-        from app.services.gemini_service import call_gemini
-        result = await call_gemini(prompt)
-        logger.info("NLP via Gemini (fallback)")
-        cache[cache_key] = result
-        return result
+        cache[cache_key] = analysis
+        if len(cache) > 5000:
+            oldest = list(cache.keys())[:500]
+            for k in oldest:
+                cache.pop(k, None)
+
+        return analysis
+
     except Exception as e:
-        logger.warning(f"Gemini also failed: {e} — using keyword fallback")
-        raise  # let analyze_text handle the final fallback
+        logger.warning("NLP failed, using keyword fallback: %s", e)
         return _keyword_fallback(text)
 
 
 async def batch_analyze(texts: list[str]) -> list[NLPAnalysisResult]:
-    """Analyze multiple texts — bounded concurrency to respect rate limits."""
-    import asyncio
+    """Analyze a batch with bounded concurrency for stability."""
 
-    _NEUTRAL_FALLBACK = NLPAnalysisResult(
-        sentiment="neutral", sentiment_score=0.0, confidence=0.0,
-        topics=["Other"], keywords=[], language="en",
-        language_name="English", translation=None, urgency=0.0,
-    )
-
-    async def _safe(text: str) -> NLPAnalysisResult:
-        try:
-            return await analyze_text(text)
-        except Exception:
-            return _NEUTRAL_FALLBACK
-
-    # Max 3 concurrent calls (down from 5) — gentler on free tier quota
     sem = asyncio.Semaphore(3)
 
     async def _guarded(text: str) -> NLPAnalysisResult:
         async with sem:
-            return await _safe(text)
+            return await analyze_text(text)
 
     return list(await asyncio.gather(*(_guarded(t) for t in texts)))

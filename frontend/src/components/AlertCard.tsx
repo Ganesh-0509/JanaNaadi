@@ -36,7 +36,7 @@ const TYPE_ICONS: Record<string, typeof AlertTriangle> = {
 const PRIORITY_STYLES: Record<string, { label: string; cls: string }> = {
   immediate:   { label: 'Immediate (24h)',  cls: 'bg-red-50 text-red-600 border border-red-100 shadow-sm' },
   short_term:  { label: '1–2 weeks',        cls: 'bg-amber-50 text-amber-600 border border-amber-100 shadow-sm' },
-  long_term:   { label: '1–3 months',       cls: 'bg-blue-50 text-blue-600 border border-blue-100 shadow-sm' },
+  long_term:   { label: '1–3 months',       cls: 'bg-[#2FA4D7]/10 text-[#2FA4D7] border border-[#2FA4D7]/20 shadow-sm' },
 };
 
 export default function AlertCard({ alert, onMarkRead, onResolve }: Props) {
@@ -204,7 +204,7 @@ export default function AlertCard({ alert, onMarkRead, onResolve }: Props) {
                             {ps.label}
                           </span>
                           <span className="flex items-center gap-2 text-[9px] font-black text-[#6B5E57] uppercase tracking-widest italic">
-                            <Building2 size={14} className="text-blue-500" /> {a.department}
+                            <Building2 size={14} className="text-[#2FA4D7]" /> {a.department}
                           </span>
                         </div>
                         <p className="text-lg font-black text-[#3E2C23] mb-3 uppercase tracking-tighter italic">{a.action}</p>

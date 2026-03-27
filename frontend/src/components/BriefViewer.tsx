@@ -63,13 +63,13 @@ export default function BriefViewer({ brief }: Props) {
     <div className="space-y-0 brief-document" id="brief-print-area">
 
       {/* ══ DOCUMENT HEADER (letterhead-style) ══ */}
-      <div className="relative overflow-hidden rounded-t-2xl border-x border-t border-blue-500/30 bg-gradient-to-r from-blue-950 via-slate-900 to-slate-900 px-6 py-5">
+      <div className="relative overflow-hidden rounded-t-2xl border-x border-t border-[#2FA4D7]/30 bg-gradient-to-r from-slate-900 via-slate-900 to-slate-800 px-6 py-5">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 via-white/50 to-green-500 opacity-70" />
         <div className="flex items-start justify-between gap-4 mt-1">
           <div className="flex items-center gap-3">
             <span className="text-3xl">🇮🇳</span>
             <div>
-              <div className="text-[10px] font-bold tracking-[0.18em] text-blue-300 uppercase">
+              <div className="text-[10px] font-bold tracking-[0.18em] text-[#2FA4D7] uppercase">
                 Government Intelligence — JanaNaadi Platform
               </div>
               <div className="text-xs font-semibold text-[#6B5E57]/60 mt-0.5">

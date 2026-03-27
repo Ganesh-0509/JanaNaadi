@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
+import { liveStreamService } from '../services/liveStreamService';
+import { getRecentVoices } from '../api/public';
 
 export interface LiveEntry {
   id: string; // local UUID for React key
@@ -16,100 +18,66 @@ export interface LiveEntry {
   receivedAt: number; // Unix ms
 }
 
-type Status = 'connecting' | 'connected' | 'disconnected';
-
 export function useLiveStream(maxEntries = 60) {
-  const [entries, setEntries] = useState<LiveEntry[]>([]);
-  const [status, setStatus] = useState<Status>('connecting');
-  const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pingTimer = useRef<ReturnType<typeof setInterval> | null>(null);
-  const unmountedRef = useRef(false);
-  const idCounter = useRef(0);
-  // Fingerprint set for dedup: entry_id → truthy, or source_id → truthy, or text-prefix
-  const seenRef = useRef<Set<string>>(new Set());
-
-  const connect = useCallback(() => {
-    if (unmountedRef.current) return;
-    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    const host = import.meta.env.VITE_API_URL
-      ? import.meta.env.VITE_API_URL.replace(/^https?/, protocol)
-      : `${protocol}://${window.location.hostname}:8000`;
-
-    setStatus('connecting');
-    seenRef.current = new Set(); // Reset dedup state on each new connection
-    const ws = new WebSocket(`${host}/ws/live`);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      if (unmountedRef.current) return;
-      setStatus('connected');
-      pingTimer.current = setInterval(() => {
-        if (ws.readyState === WebSocket.OPEN) ws.send('ping');
-      }, 20_000);
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data);
-        if (msg.type !== 'entry') return;
-
-        // Build a stable fingerprint — prefer DB entry_id, then source_id, fallback to text prefix
-        const fp: string =
-          msg.entry_id
-            ? `eid:${msg.entry_id}`
-            : msg.source_id
-            ? `sid:${msg.source_id}`
-            : `txt:${(msg.text || '').slice(0, 80)}`;
-
-        if (seenRef.current.has(fp)) return; // Already displayed — skip duplicate
-        seenRef.current.add(fp);
-        // Prevent the seen-set from growing unbounded
-        if (seenRef.current.size > maxEntries * 3) {
-          const oldest = [...seenRef.current].slice(0, maxEntries);
-          seenRef.current = new Set(oldest);
-        }
-
-        idCounter.current += 1;
-        const entry: LiveEntry = {
-          id: `e-${Date.now()}-${idCounter.current}`,
-          source_id: msg.source_id ?? null,
-          entry_id: msg.entry_id ?? null,
-          text: msg.text || '',
-          sentiment: msg.sentiment || 'neutral',
-          sentiment_score: msg.sentiment_score ?? 0,
-          topic: msg.topic ?? null,
-          state: msg.state ?? null,
-          state_id: msg.state_id ?? null,
-          source: msg.source || 'unknown',
-          language: msg.language || 'en',
-          historical: msg.historical ?? false,
-          receivedAt: Date.now(),
-        };
-        setEntries((prev) => [entry, ...prev].slice(0, maxEntries));
-      } catch {/* ignore */}
-    };
-
-    ws.onclose = () => {
-      if (pingTimer.current) clearInterval(pingTimer.current);
-      if (unmountedRef.current) return;
-      setStatus('disconnected');
-      reconnectTimer.current = setTimeout(connect, 5_000);
-    };
-
-    ws.onerror = () => { ws.close(); };
-  }, [maxEntries]);
+  const [entries, setEntries] = useState<LiveEntry[]>(() =>
+    liveStreamService.getSnapshot().entries.slice(0, maxEntries) as LiveEntry[]
+  );
+  const [status, setStatus] = useState<'connecting' | 'connected' | 'disconnected'>(
+    liveStreamService.getSnapshot().status
+  );
 
   useEffect(() => {
-    unmountedRef.current = false;
-    connect();
-    return () => {
-      unmountedRef.current = true;
-      if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
-      if (pingTimer.current) clearInterval(pingTimer.current);
-      wsRef.current?.close();
+    let cancelled = false;
+
+    const hydrateFromRecent = async () => {
+      try {
+        const existing = liveStreamService.getSnapshot().entries;
+        if (existing.length > 0) return;
+
+        const rows = await getRecentVoices(Math.min(maxEntries, 40));
+        if (cancelled || !Array.isArray(rows)) return;
+
+        const fallback: LiveEntry[] = rows.map((row: any, idx: number) => ({
+          id: `fallback-${Date.now()}-${idx}`,
+          source_id: row.source_id ?? null,
+          entry_id: row.id ?? null,
+          text: row.text ?? row.original_text ?? '',
+          sentiment: row.sentiment ?? 'neutral',
+          sentiment_score: Number(row.sentiment_score ?? 0),
+          topic: row.topic ?? null,
+          state: row.state ?? null,
+          state_id: row.state_id ?? null,
+          source: row.source ?? 'unknown',
+          language: row.language ?? 'en',
+          historical: true,
+          receivedAt: row.ingested_at ? Date.parse(row.ingested_at) || Date.now() : Date.now(),
+        }));
+
+        if (fallback.length > 0 && liveStreamService.getSnapshot().entries.length === 0) {
+          setEntries(fallback.slice(0, maxEntries));
+        }
+      } catch {
+        // Keep WS retry behavior; fallback is best-effort only.
+      }
     };
-  }, [connect]);
+
+    liveStreamService.start();
+    hydrateFromRecent();
+
+    const unsubscribe = liveStreamService.subscribe((snapshot) => {
+      setStatus(snapshot.status);
+      setEntries(snapshot.entries.slice(0, maxEntries) as LiveEntry[]);
+
+      if (snapshot.status === 'disconnected' && snapshot.entries.length === 0) {
+        hydrateFromRecent();
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [maxEntries]);
 
   return { entries, status };
 }

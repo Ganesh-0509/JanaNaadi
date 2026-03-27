@@ -4,6 +4,8 @@ import asyncio
 import re
 import json
 import os
+from collections import Counter
+from pathlib import Path
 from fastapi import APIRouter, BackgroundTasks, Request, HTTPException
 from pydantic import BaseModel, Field, field_validator
 from app.core.supabase_client import get_supabase_admin
@@ -15,12 +17,28 @@ from app.models.schemas import NationalPulse, StateRanking, TrendingTopic
 router = APIRouter(prefix="/api/public", tags=["public"])
 
 # --- Load Factual MCD Ward Data ---
-_WARDS_FILE = os.path.join(os.getcwd(), "data", "mcd_wards.json")
-try:
-    with open(_WARDS_FILE, "r") as f:
-        MCD_WARDS = json.load(f)
-except Exception:
-    MCD_WARDS = []
+def _load_mcd_wards() -> list[dict]:
+    """Load ward metadata from known project locations, independent of process CWD."""
+    candidates = [
+        Path(__file__).resolve().parents[3] / "data" / "mcd_wards.json",  # repo root/data
+        Path(__file__).resolve().parents[2] / "data" / "mcd_wards.json",  # backend/data
+        Path(os.getcwd()) / "data" / "mcd_wards.json",                    # legacy CWD lookup
+    ]
+
+    for path in candidates:
+        try:
+            if path.exists():
+                with path.open("r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    if isinstance(data, list):
+                        return data
+        except Exception:
+            continue
+
+    return []
+
+
+MCD_WARDS = _load_mcd_wards()
 
 # --- Citizen Voice models ---
 _SAFE_AREA_RE = re.compile(r"[^\w\s,.()'\-]")  # strip HTML / special chars from area
@@ -45,7 +63,7 @@ class CitizenVoiceRequest(BaseModel):
 async def national_pulse(request: Request):
     """MCD VERSION: Get the Delhi City sentiment overview."""
     # We use "national" snapshot internally to represent "MCD City Wide"
-    snapshot = await get_or_compute_snapshot("national", None, period_hours=720)
+    snapshot = await get_or_compute_snapshot("national", None, period_hours=24)
 
     total = snapshot["total_entries"]
     pos = snapshot["positive_count"]
@@ -89,11 +107,17 @@ async def state_rankings(request: Request):
     # For a real hackathon project, we compute for all 250, but for performance
     # we can focus on those with data in the last 30 days.
     # Here we simulate for a selection of 50 core wards for speed.
-    active_wards = MCD_WARDS[:100]  # Show top 100 wards for comparison
+    active_wards = MCD_WARDS[:40]  # Keep rankings fast enough for interactive use
     
     snapshots = await asyncio.gather(
-        *(get_or_compute_snapshot("ward", w["id"], period_hours=720) for w in active_wards)
+        *(get_or_compute_snapshot("ward", w["id"], period_hours=24) for w in active_wards)
     )
+
+    # If there is no 24h activity, fall back to 7-day data so rankings are still informative.
+    if snapshots and all((s.get("total_entries", 0) == 0) for s in snapshots):
+        snapshots = await asyncio.gather(
+            *(get_or_compute_snapshot("ward", w["id"], period_hours=168) for w in active_wards)
+        )
 
     rankings = []
     for ward, snapshot in zip(active_wards, snapshots):
@@ -118,8 +142,8 @@ async def state_rankings(request: Request):
 @limiter.limit("60/minute")
 async def trending_topics(request: Request):
     """MCD VERSION: Get trending topics across Delhi."""
-    snapshot_7d = await get_or_compute_snapshot("national", None, period_hours=720)
-    snapshot_24h = await get_or_compute_snapshot("national", None, period_hours=168)
+    snapshot_7d = await get_or_compute_snapshot("national", None, period_hours=168)
+    snapshot_24h = await get_or_compute_snapshot("national", None, period_hours=24)
 
     sb = get_supabase_admin()
     topics_7d = {t["topic_id"]: t["count"] for t in snapshot_7d.get("top_topics", [])}
@@ -172,7 +196,17 @@ async def area_pulse(request: Request, area: str):
     if not matched_ward:
         return {"found": False, "message": f"No MCD Ward found matching '{area}'"}
 
-    snapshot = await get_or_compute_snapshot("ward", matched_ward["id"], period_hours=720)
+    snapshot = await get_or_compute_snapshot("ward", matched_ward["id"], period_hours=168)
+
+    sb = get_supabase_admin()
+    top_issues = []
+    topic_ids = [t["topic_id"] for t in snapshot.get("top_topics", []) if t.get("topic_id") is not None]
+    if topic_ids:
+        topics_res = sb.table("topic_taxonomy").select("id, name").in_("id", topic_ids).execute()
+        topic_map = {r["id"]: r["name"] for r in topics_res.data or []}
+        for t in snapshot.get("top_topics", [])[:5]:
+            topic_name = topic_map.get(t.get("topic_id"), f"Topic {t.get('topic_id')}")
+            top_issues.append({"topic": topic_name, "count": t.get("count", 0)})
 
     return {
         "found": True,
@@ -183,7 +217,7 @@ async def area_pulse(request: Request, area: str):
         "positive": snapshot["positive_count"],
         "negative": snapshot["negative_count"],
         "neutral": snapshot["neutral_count"],
-        "top_issues": [],
+        "top_issues": top_issues,
     }
 
 
@@ -195,20 +229,24 @@ async def hotspots(request: Request, limit: int = 15):
     
     # Query sentiment entries with ward_id
     from datetime import datetime, timezone, timedelta
-    cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
     
     result = (
         sb.table("sentiment_entries")
         .select("ward_id, sentiment_score")
         .gte("ingested_at", cutoff)
-        .is_not("ward_id", "null")
+        .order("ingested_at", desc=True)
+        .limit(20000)
         .execute()
     )
 
     from collections import defaultdict
     buckets = defaultdict(list)
     for row in result.data or []:
-        buckets[row["ward_id"]].append(float(row["sentiment_score"]))
+        wid = row.get("ward_id")
+        if wid is None:
+            continue
+        buckets[wid].append(float(row.get("sentiment_score") or 0))
 
     if not buckets:
         return []
@@ -238,6 +276,118 @@ async def hotspots(request: Request, limit: int = 15):
 
     hotspot_list.sort(key=lambda x: x["urgency_score"], reverse=True)
     return hotspot_list[:limit]
+
+
+@router.get("/recent-voices")
+@limiter.limit("60/minute")
+async def recent_voices(request: Request, limit: int = 20):
+    """Return recent public-facing voices in a UI-friendly shape."""
+    sb = get_supabase_admin()
+    capped_limit = max(1, min(limit, 100))
+
+    result = (
+        sb.table("sentiment_entries")
+        .select(
+            "id, source_id, original_text, sentiment, sentiment_score, primary_topic_id, "
+            "state_id, ward_id, source, language, ingested_at"
+        )
+        .order("ingested_at", desc=True)
+        .limit(capped_limit)
+        .execute()
+    )
+
+    rows = result.data or []
+    if not rows:
+        return []
+
+    topic_ids = list({r.get("primary_topic_id") for r in rows if r.get("primary_topic_id") is not None})
+    topic_map: dict[int, str] = {}
+    if topic_ids:
+        topics = sb.table("topic_taxonomy").select("id, name").in_("id", topic_ids).execute()
+        topic_map = {t["id"]: t["name"] for t in topics.data or []}
+
+    state_ids = list({r.get("state_id") for r in rows if r.get("state_id") is not None})
+    state_map: dict[int, str] = {}
+    if state_ids:
+        try:
+            states = sb.table("states").select("id, name").in_("id", state_ids).execute()
+            state_map = {s["id"]: s["name"] for s in states.data or []}
+        except Exception:
+            state_map = {}
+
+    ward_map = {w["id"]: w["name"] for w in MCD_WARDS}
+
+    payload = []
+    for row in rows:
+        ward_id = row.get("ward_id")
+        state_id = row.get("state_id")
+        topic_id = row.get("primary_topic_id")
+        text = row.get("original_text") or ""
+        sentiment_score = float(row.get("sentiment_score") or 0)
+
+        payload.append(
+            {
+                "id": row.get("id"),
+                "source_id": row.get("source_id"),
+                "text": text,
+                "original_text": text,
+                "sentiment": row.get("sentiment") or "neutral",
+                "score": sentiment_score,
+                "sentiment_score": sentiment_score,
+                "topic": topic_map.get(topic_id, "General civic issues"),
+                "state": ward_map.get(ward_id) or state_map.get(state_id) or "Delhi",
+                "source": row.get("source") or "unknown",
+                "language": row.get("language") or "en",
+                "time": row.get("ingested_at"),
+                "ingested_at": row.get("ingested_at"),
+            }
+        )
+
+    return payload
+
+
+@router.get("/keywords")
+@limiter.limit("60/minute")
+async def keywords(request: Request, limit: int = 40, state_id: int | None = None):
+    """Return top extracted keywords from recent entries for cloud visualizations."""
+    from datetime import datetime, timezone, timedelta
+
+    sb = get_supabase_admin()
+    capped_limit = max(1, min(limit, 100))
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+
+    result = (
+        sb.table("sentiment_entries")
+        .select("state_id, ward_id, extracted_keywords, ingested_at")
+        .gte("ingested_at", cutoff)
+        .order("ingested_at", desc=True)
+        .limit(10000)
+        .execute()
+    )
+
+    rows = result.data or []
+    if state_id is not None:
+        rows = [
+            r
+            for r in rows
+            if r.get("state_id") == state_id or r.get("ward_id") == state_id
+        ]
+
+    counts: Counter[str] = Counter()
+    for row in rows:
+        kws = row.get("extracted_keywords") or []
+        if isinstance(kws, str):
+            kws = [k.strip() for k in kws.split(",") if k.strip()]
+        if not isinstance(kws, list):
+            continue
+
+        for kw in kws:
+            token = str(kw).strip().lower()
+            if len(token) < 3:
+                continue
+            counts[token] += 1
+
+    return [{"keyword": k, "count": c} for k, c in counts.most_common(capped_limit)]
 
 
 # ── Geographic hierarchy lookups ──────────────────────────────
@@ -271,7 +421,10 @@ async def mcd_news(request: Request):
     
     async def _fetch_one(f):
         try:
-            parsed = await loop.run_in_executor(None, feedparser.parse, f["url"])
+            parsed = await asyncio.wait_for(
+                loop.run_in_executor(None, feedparser.parse, f["url"]),
+                timeout=3.5,
+            )
             items = []
             for item in parsed.entries[:5]:
                 items.append({

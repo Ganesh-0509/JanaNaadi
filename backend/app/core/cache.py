@@ -32,3 +32,4 @@ def invalidate_for_entry(state_id: int | None) -> None:
     # Invalidate heatmap and general caches entirely (small and fast to rebuild)
     heatmap_cache.clear()
     general_cache.pop("state_rankings_24h", None)
+    general_cache.pop("mcd_ward_rankings_24h", None)

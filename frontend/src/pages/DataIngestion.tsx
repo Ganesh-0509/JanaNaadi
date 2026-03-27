@@ -177,7 +177,7 @@ export default function DataIngestion() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Activity size={22} className="text-blue-400" /> Data Ingestion
+            <Activity size={22} className="text-[#2FA4D7]" /> Data Ingestion
           </h1>
           <p className="text-sm text-[#6B5E57] mt-0.5">
             News, Google News &amp; Reddit ingest automatically. Status refreshes every 30 s.
@@ -185,13 +185,13 @@ export default function DataIngestion() {
         </div>
         <div className="flex items-center gap-3">
           {lastRefreshed && (
-            <span className="text-xs text-[#6B5E57] flex items-center gap-1">
+            <span className="text-xs text-[#3E2C23] flex items-center gap-1">
               <Clock size={11} /> refreshed {fmtLastRun(lastRefreshed.toISOString())}
             </span>
           )}
           <button
             onClick={() => refreshStatus()}
-            className="flex items-center gap-2 px-3 py-1.5 bg-[#3E2C23] border border-[#3E2C23]/20 rounded-lg text-sm hover:bg-slate-700"
+            className="flex items-center gap-2 px-3 py-1.5 bg-[#3E2C23] border border-[#3E2C23]/20 rounded-lg text-sm text-[#F2EBE1] hover:bg-slate-700"
           >
             <RefreshCw size={13} /> Refresh
           </button>
@@ -208,33 +208,33 @@ export default function DataIngestion() {
 
       {/* Per-source scheduler status */}
       <div className="bg-[#3E2C23] rounded-2xl p-5 border border-[#3E2C23]/20">
-        <h2 className="font-semibold mb-4 text-sm uppercase text-[#6B5E57] tracking-wide">Automatic Scheduler Status</h2>
+        <h2 className="font-semibold mb-4 text-sm uppercase text-[#F2EBE1] tracking-wide">Automatic Scheduler Status</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {(Object.entries(SOURCE_META) as [TriggerSource, typeof SOURCE_META[TriggerSource]][]).map(([key, meta]) => (
             <div key={key} className="bg-slate-700/50 rounded-xl p-3 border border-slate-600/50">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-lg">{meta.icon}</span>
                 <div>
-                  <p className="text-sm font-medium">{meta.label}</p>
-                  <p className="text-[11px] text-[#6B5E57]">{meta.interval}</p>
+                  <p className="text-sm font-medium text-[#F2EBE1]">{meta.label}</p>
+                  <p className="text-[11px] text-[#D8CCC0]">{meta.interval}</p>
                 </div>
               </div>
               <div className="space-y-1 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-[#6B5E57]">Last run</span>
-                  <span className={`font-medium ${srcLastRun[key] ? 'text-[#6B5E57]/40' : 'text-[#6B5E57]'}`}>
+                  <span className="text-[#D8CCC0]">Last run</span>
+                  <span className={`font-medium ${srcLastRun[key] ? 'text-[#F2EBE1]' : 'text-[#D8CCC0]'}`}>
                     {fmtLastRun(srcLastRun[key])}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#6B5E57]">Added last run</span>
-                  <span className={`font-medium ${(srcLastCount[key] ?? 0) > 0 ? 'text-green-400' : 'text-[#6B5E57]'}`}>
+                  <span className="text-[#D8CCC0]">Added last run</span>
+                  <span className={`font-medium ${(srcLastCount[key] ?? 0) > 0 ? 'text-green-400' : 'text-[#D8CCC0]'}`}>
                     {srcLastCount[key] != null ? `+${srcLastCount[key]}` : '—'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#6B5E57]">Today (DB)</span>
-                  <span className="font-medium text-blue-300">
+                  <span className="text-[#D8CCC0]">Today (DB)</span>
+                  <span className="font-medium text-[#2FA4D7]">
                     {key === 'gnews' ? '(→ news)' : (srcTodayCount[key] ?? 0)}
                   </span>
                 </div>
@@ -251,11 +251,11 @@ export default function DataIngestion() {
         </h2>
         <div className="flex gap-3 items-end flex-wrap">
           <div>
-            <label className="text-xs text-[#6B5E57] block mb-1">Source</label>
+            <label className="text-xs text-[#D8CCC0] block mb-1">Source</label>
             <select
               value={triggerType}
               onChange={(e) => setTriggerType(e.target.value as TriggerSource)}
-              className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm"
+              className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-[#F2EBE1]"
             >
               {(Object.entries(SOURCE_META) as [TriggerSource, typeof SOURCE_META[TriggerSource]][]).map(([key, m]) => (
                 <option key={key} value={key}>{m.icon} {m.label}</option>
@@ -284,7 +284,7 @@ export default function DataIngestion() {
             </span>
           )}
           {triggerResult === 'done' && newEntries === 0 && (
-            <span className="text-sm text-[#6B5E57]">
+            <span className="text-sm text-[#D8CCC0]">
               ⚠️ No new entries — all items were duplicates or source returned nothing
             </span>
           )}
@@ -302,7 +302,7 @@ export default function DataIngestion() {
               type="file"
               accept=".csv"
               onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
-              className="block w-full text-sm text-[#6B5E57] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-500 file:text-white hover:file:bg-blue-600"
+              className="block w-full text-sm text-[#D8CCC0] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-[#2FA4D7] file:text-white hover:file:bg-[#2896B8]"
             />
             <button
               onClick={handleCSVUpload}
@@ -317,7 +317,7 @@ export default function DataIngestion() {
               </div>
             )}
             {csvResult && (
-              <div className="bg-slate-700/50 rounded-lg p-3 text-sm">
+              <div className="bg-slate-700/50 rounded-lg p-3 text-sm text-[#F2EBE1]">
                 <div>✅ Processed: <span className="font-bold text-green-400">{csvResult.processed}</span></div>
                 {csvResult.errors > 0 && <div>⚠️ Errors: <span className="font-bold text-amber-400">{csvResult.errors}</span></div>}
               </div>
@@ -336,10 +336,10 @@ export default function DataIngestion() {
               onChange={(e) => setManualText(e.target.value)}
               placeholder="Enter citizen voice text..."
               rows={3}
-              className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-sm resize-none"
+              className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2.5 text-sm text-[#F2EBE1] resize-none"
             />
             <div className="grid grid-cols-3 gap-2">
-              <select value={manualSource} onChange={(e) => setManualSource(e.target.value)} className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm">
+              <select value={manualSource} onChange={(e) => setManualSource(e.target.value)} className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-[#F2EBE1]">
                 <option value="survey">Survey</option>
                 <option value="field">Field Report</option>
                 <option value="helpline">Helpline</option>
@@ -349,14 +349,14 @@ export default function DataIngestion() {
                   value={manualLocation}
                   onChange={(e) => setManualLocation(e.target.value)}
                   placeholder="Location hint"
-                  className="flex-1 min-w-0 bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm"
+                  className="flex-1 min-w-0 bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-[#F2EBE1]"
                 />
                 <button type="button" onClick={detectLocation} disabled={geoLocating} title="Detect my location"
-                  className="flex-shrink-0 px-2 py-2 bg-slate-600 hover:bg-blue-600 disabled:opacity-50 rounded-lg text-[#6B5E57]/60 transition-colors">
+                  className="flex-shrink-0 px-2 py-2 bg-slate-600 hover:bg-blue-600 disabled:opacity-50 rounded-lg text-[#F2EBE1] transition-colors">
                   <MapPin size={14} className={geoLocating ? 'animate-pulse' : ''} />
                 </button>
               </div>
-              <select value={manualLang} onChange={(e) => setManualLang(e.target.value)} className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm">
+              <select value={manualLang} onChange={(e) => setManualLang(e.target.value)} className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-[#F2EBE1]">
                 <option value="en">English</option>
                 <option value="hi">Hindi</option>
                 <option value="ta">Tamil</option>

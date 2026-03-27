@@ -239,10 +239,10 @@ export default function CrossDomainPage() {
                   >
                     <div className="flex items-center gap-3 flex-wrap">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <div className="font-semibold text-sm text-[#6B5E57]/40 truncate">{conn.entity_a.name}</div>
+                        <div className="font-semibold text-sm text-[#F2EBE1] truncate">{conn.entity_a.name}</div>
                         <DomainBadge domain={conn.entity_a.domain} />
-                        <span className="text-[#6B5E57] text-xs flex-shrink-0">↔</span>
-                        <div className="font-semibold text-sm text-[#6B5E57]/40 truncate">{conn.entity_b.name}</div>
+                        <span className="text-[#D8CCC0] text-xs flex-shrink-0">↔</span>
+                        <div className="font-semibold text-sm text-[#F2EBE1] truncate">{conn.entity_b.name}</div>
                         <DomainBadge domain={conn.entity_b.domain} />
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
@@ -283,7 +283,7 @@ export default function CrossDomainPage() {
                           {conn.context && (
                             <div className="md:col-span-2">
                               <div className="text-xs text-[#6B5E57] mb-1">Connection Context</div>
-                              <p className="text-[#6B5E57]/60 text-xs leading-relaxed bg-[#3E2C23]/60 rounded-lg p-3">
+                              <p className="text-[#F2EBE1] text-xs leading-relaxed bg-[#3E2C23]/60 rounded-lg p-3">
                                 {conn.context}
                               </p>
                             </div>
@@ -319,7 +319,7 @@ export default function CrossDomainPage() {
       {!summaryLoading && totalEdges === 0 && (
         <div className="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-6 text-center">
           <Network size={36} className="mx-auto text-blue-400 mb-3 opacity-60" />
-          <h3 className="font-semibold text-[#6B5E57]/40 mb-1">Intelligence Graph is Empty</h3>
+          <h3 className="font-semibold text-[#3E2C23] mb-1">Intelligence Graph is Empty</h3>
           <p className="text-sm text-[#6B5E57] mb-4 max-w-md mx-auto">
             Cross-domain connections are automatically built as domain-specific data is ingested.
             Trigger ingestion from the Data Panel to start building the intelligence graph.

@@ -40,5 +40,21 @@
     "https://economictimes.indiatimes.com/news/politics-and-nation/rssfeeds/1052732854.cms",
     "https://www.ndtv.com/world-news/rss",
     "https://timesofindia.indiatimes.com/world/rssfeeds/-2128936835.cms"
+  ],
+  "delhi": [
+    "https://timesofindia.indiatimes.com/city/delhi/rssfeeds/2147477844.cms",
+    "https://www.hindustantimes.com/feeds/rss/cities/delhi/rssfeed.xml",
+    "https://www.ndtv.com/delhi-news/rss",
+    "https://www.thehindu.com/news/cities/Delhi/feeder/default.rss",
+    "https://indianexpress.com/section/cities/delhi/feed/",
+    "https://news.google.com/rss/search?q=Delhi+ward+municipal+MCD&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+locality+residents+complaint&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+water+supply+problem&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+traffic+roads+pothole&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+power+cut+electricity&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+flooding+waterlogging&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+pollution+air+quality+AQI&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+crime+law+order&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+school+hospital+civic&hl=en-IN&gl=IN&ceid=IN:en"
   ]
 }

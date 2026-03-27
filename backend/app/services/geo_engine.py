@@ -72,7 +72,17 @@ def geolocate(text: str, hints: dict | None = None) -> dict:
             result["confidence"] = "exact"
             break
 
-    # Signal 4: Use hints from source metadata
+    # Signal 4: Match ward names directly
+    for ward in locations.get("wards", []):
+        if result["constituency_id"] and ward.get("constituency_id") != result["constituency_id"]:
+            continue
+        if re.search(r"\b" + re.escape(ward["name"].lower()) + r"\b", text_lower):
+            result["ward_id"] = ward["id"]
+            result["constituency_id"] = ward.get("constituency_id", result["constituency_id"])
+            result["confidence"] = "exact"
+            break
+
+    # Signal 5: Use hints from source metadata
     if hints:
         # Match location_hint text to state/district names
         hint_text = (hints.get("location_hint") or "").lower().strip()
@@ -93,5 +103,27 @@ def geolocate(text: str, hints: dict | None = None) -> dict:
             result["district_id"] = hints["district_id"]
         if hints.get("constituency_id") and not result["constituency_id"]:
             result["constituency_id"] = hints["constituency_id"]
+        if hints.get("ward_id") and not result["ward_id"]:
+            result["ward_id"] = hints["ward_id"]
+            result["confidence"] = "exact"
+
+    # Signal 6: Backfill hierarchy from ward/constituency IDs
+    if result["ward_id"] and not result["constituency_id"]:
+        for ward in locations.get("wards", []):
+            if ward.get("id") == result["ward_id"]:
+                result["constituency_id"] = ward.get("constituency_id")
+                break
+
+    if result["constituency_id"] and not result["district_id"]:
+        for constituency in locations.get("constituencies", []):
+            if constituency.get("id") == result["constituency_id"]:
+                result["district_id"] = constituency.get("district_id")
+                break
+
+    if result["district_id"] and not result["state_id"]:
+        for district in locations.get("districts", []):
+            if district.get("id") == result["district_id"]:
+                result["state_id"] = district.get("state_id")
+                break
 
     return result

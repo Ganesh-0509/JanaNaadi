@@ -1,14 +1,9 @@
-﻿
-"""Local LLM service ΓÇö runs inference through Ollama on localhost.
-
-Replaces all Bytez/Gemini cloud calls with a local model.
-Install: https://ollama.com
-Then:    ollama pull mistral
-"""
+﻿"""Local LLM service that runs inference through Ollama on localhost."""
 
 import json
-import re
 import logging
+import re
+
 import httpx
 
 from app.core.settings import get_settings
@@ -16,6 +11,7 @@ from app.core.settings import get_settings
 logger = logging.getLogger("jananaadi.local_llm")
 
 _client: httpx.AsyncClient | None = None
+_resolved_model: str | None = None
 
 
 def _get_client() -> httpx.AsyncClient:
@@ -24,56 +20,66 @@ def _get_client() -> httpx.AsyncClient:
         s = get_settings()
         _client = httpx.AsyncClient(
             base_url=s.ollama_base_url,
-            timeout=httpx.Timeout(
-                connect=10.0,
-                read=180.0,
-                write=10.0,
-                pool=10.0,
-            ),
+            timeout=httpx.Timeout(connect=10.0, read=180.0, write=10.0, pool=10.0),
         )
     return _client
 
 
-async def generate_json(prompt: str, max_tokens: int = 1024) -> dict:
-    """Send prompt to Ollama, force JSON output, return parsed dict."""
+async def _resolve_model_name() -> str:
+    """Resolve an available Ollama model, auto-falling back if configured one is missing."""
+    global _resolved_model
+    if _resolved_model:
+        return _resolved_model
+
     s = get_settings()
     client = _get_client()
 
-    payload = {
-        "model": s.ollama_model,
-        "messages": [{"role": "user", "content": prompt}],
-        "stream": False,
-        "format": "json",
-        "options": {
-            "num_predict": max_tokens,
-            "temperature": 0.3,
-        },
-    }
-
     try:
-        resp = await client.post("/api/chat", json=payload)
+        resp = await client.get("/api/tags")
         resp.raise_for_status()
+        models = resp.json().get("models", [])
+        installed = [m.get("name", "") for m in models if m.get("name")]
+
+        if not installed:
+            raise RuntimeError("No Ollama models installed")
+
+        requested = s.ollama_model
+        requested_family = requested.split(":")[0]
+        installed_families = {name.split(":")[0]: name for name in installed}
+
+        if requested in installed:
+            _resolved_model = requested
+            return _resolved_model
+
+        if requested_family in installed_families:
+            _resolved_model = installed_families[requested_family]
+            logger.warning(
+                "Configured Ollama model '%s' not installed; using '%s'",
+                requested,
+                _resolved_model,
+            )
+            return _resolved_model
+
+        # Prefer qwen, then mistral, then first installed model.
+        preferred = next((m for m in installed if m.startswith("qwen")), None)
+        if preferred is None:
+            preferred = next((m for m in installed if m.startswith("mistral")), None)
+        _resolved_model = preferred or installed[0]
+        logger.warning(
+            "Configured Ollama model '%s' not installed; using fallback '%s'",
+            requested,
+            _resolved_model,
+        )
+        return _resolved_model
+
     except httpx.ConnectError:
-        raise RuntimeError(
-            "Cannot connect to Ollama. Is it running? "
-            "Start it with: ollama serve"
-        )
-    except httpx.HTTPStatusError as e:
-        raise RuntimeError(
-            f"Ollama HTTP {e.response.status_code}: {e.response.text[:300]}"
-        )
+        raise RuntimeError("Cannot connect to Ollama. Ensure it is running on port 11434.")
 
-    data = resp.json()
-    text = data.get("message", {}).get("content", "").strip()
 
-    if not text:
-        raise RuntimeError("Ollama returned empty response")
-
-    # Strip markdown fences if model ignores format flag
+def _extract_json(text: str) -> dict:
     if text.startswith("```"):
         text = re.sub(r"```(?:json)?\n?", "", text).strip()
 
-    # Find outermost JSON object
     match = re.search(r"\{[\s\S]*\}", text)
     if match:
         text = match.group()
@@ -81,44 +87,63 @@ async def generate_json(prompt: str, max_tokens: int = 1024) -> dict:
     try:
         return json.loads(text)
     except json.JSONDecodeError as e:
-        logger.error(f"JSON parse failed. Raw response:\n{text[:500]}")
+        logger.error("JSON parse failed. Raw response: %s", text[:500])
         raise RuntimeError(f"Local LLM returned invalid JSON: {e}")
 
 
-async def generate_text(prompt: str, max_tokens: int = 1024) -> str:
-    """Send prompt to Ollama, return free-form text."""
-    s = get_settings()
+async def generate_json(prompt: str, max_tokens: int = 1024) -> dict:
+    """Send prompt to Ollama, force JSON output, return parsed dict."""
     client = _get_client()
+    model = await _resolve_model_name()
 
     payload = {
-        "model": s.ollama_model,
+        "model": model,
         "messages": [{"role": "user", "content": prompt}],
         "stream": False,
-        "options": {
-            "num_predict": max_tokens,
-            "temperature": 0.4,
-        },
+        "format": "json",
+        "options": {"num_predict": max_tokens, "temperature": 0.3},
     }
 
     try:
         resp = await client.post("/api/chat", json=payload)
         resp.raise_for_status()
     except httpx.ConnectError:
-        raise RuntimeError(
-            "Cannot connect to Ollama. Is it running? "
-            "Start it with: ollama serve"
-        )
+        raise RuntimeError("Cannot connect to Ollama. Is it running? Start with: ollama serve")
     except httpx.HTTPStatusError as e:
-        raise RuntimeError(
-            f"Ollama HTTP {e.response.status_code}: {e.response.text[:300]}"
-        )
+        raise RuntimeError(f"Ollama HTTP {e.response.status_code}: {e.response.text[:300]}")
 
     data = resp.json()
     text = data.get("message", {}).get("content", "").strip()
-
     if not text:
         raise RuntimeError("Ollama returned empty response")
 
+    return _extract_json(text)
+
+
+async def generate_text(prompt: str, max_tokens: int = 1024) -> str:
+    """Send prompt to Ollama, return free-form text."""
+    client = _get_client()
+    model = await _resolve_model_name()
+
+    payload = {
+        "model": model,
+        "messages": [{"role": "user", "content": prompt}],
+        "stream": False,
+        "options": {"num_predict": max_tokens, "temperature": 0.4},
+    }
+
+    try:
+        resp = await client.post("/api/chat", json=payload)
+        resp.raise_for_status()
+    except httpx.ConnectError:
+        raise RuntimeError("Cannot connect to Ollama. Is it running? Start with: ollama serve")
+    except httpx.HTTPStatusError as e:
+        raise RuntimeError(f"Ollama HTTP {e.response.status_code}: {e.response.text[:300]}")
+
+    data = resp.json()
+    text = data.get("message", {}).get("content", "").strip()
+    if not text:
+        raise RuntimeError("Ollama returned empty response")
     return text
 
 
@@ -131,21 +156,21 @@ async def check_health() -> dict:
         resp = await client.get("/api/tags")
         resp.raise_for_status()
         models = resp.json().get("models", [])
-        model_names = [m.get("name", "").split(":")[0] for m in models]
-        target = s.ollama_model.split(":")[0]
-        available = target in model_names
-
+        installed = [m.get("name") for m in models if m.get("name")]
+        resolved = await _resolve_model_name()
         return {
             "ollama_reachable": True,
             "model_requested": s.ollama_model,
-            "model_available": available,
-            "installed_models": [m.get("name") for m in models],
-            "hint": None if available else f"Run: ollama pull {s.ollama_model}",
+            "model_resolved": resolved,
+            "model_available": resolved in installed,
+            "installed_models": installed,
+            "hint": None,
         }
     except httpx.ConnectError:
         return {
             "ollama_reachable": False,
             "model_requested": s.ollama_model,
+            "model_resolved": None,
             "model_available": False,
             "installed_models": [],
             "hint": "Start Ollama with: ollama serve",
@@ -195,6 +220,6 @@ Generate 4 specific, actionable government recommendations for this situation. R
 }}
 
 Priority must be one of: "immediate" (within 24h), "short_term" (1-2 weeks), "long_term" (1-3 months).
-Make actions specific to India's governance structure ΓÇö mention departments like PWD, BSNL, PHC, TNEB, MSEDCL, Municipal Corporation, Gram Panchayat etc. as appropriate."""
+Make actions specific to India's governance structure and mention departments like PWD, BSNL, PHC, Municipal Corporation, or Gram Panchayat where appropriate."""
 
     return await generate_json(prompt)

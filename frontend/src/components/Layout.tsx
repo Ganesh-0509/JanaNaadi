@@ -4,14 +4,16 @@ import { useAlerts } from '../hooks/useAlerts';
 import { useState } from 'react';
 import {
   Map, BarChart3, Bell, FileText, Database, LogOut, Users, Menu, X,
-  Flame, Radio, Search, LayoutDashboard, Network, Layers,
+  Flame, Radio, Search, LayoutDashboard, Network, Layers, MapPin,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const NAV_ITEMS = [
   { to: '/pulse', label: 'Community Pulse', icon: Users, public: true },
   { to: '/gov', label: 'Gov Intelligence', icon: LayoutDashboard, public: false },
   { to: '/ontology', label: 'Knowledge Graph', icon: Network, public: false },
   { to: '/cross-domain', label: 'Cross-Domain Map', icon: Layers, public: false },
+  { to: '/delhi', label: 'Delhi Intelligence', icon: MapPin, public: false },
   { to: '/map', label: 'Heatmap', icon: Map, public: false },
   { to: '/compare', label: 'Compare Wards', icon: BarChart3, public: false },
   { to: '/stream', label: 'Live Stream', icon: Radio, public: false },
@@ -128,8 +130,19 @@ export default function Layout() {
 
       {/* Main Content — Light Version */}
       <main className="flex-1 overflow-auto bg-white flex flex-col selection:bg-[#E76F2E]/20 selection:text-[#3E2C23]">
-        <div className="flex-1">
-          <Outlet />
+        <div className="flex-1 relative overflow-x-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="h-full"
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </div>
         
         {/* Footer — Subtle Light */}

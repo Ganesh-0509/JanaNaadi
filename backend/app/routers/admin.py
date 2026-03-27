@@ -114,9 +114,9 @@ async def trigger_single_domain(
 ):
     """Trigger ingestion for a single domain only (useful for testing).
 
-    domain: one of defense, climate, technology, economics, geopolitics, society
+    domain: one of defense, climate, technology, economics, geopolitics, society, delhi
     """
-    VALID_DOMAINS = {"defense", "climate", "technology", "economics", "geopolitics", "society"}
+    VALID_DOMAINS = {"defense", "climate", "technology", "economics", "geopolitics", "society", "delhi"}
     if domain not in VALID_DOMAINS:
         from fastapi import HTTPException
         raise HTTPException(
@@ -141,7 +141,7 @@ async def trigger_single_domain(
                     location_hint=entry.get("location_hint"),
                     source_id=entry.get("source_id"),
                     source_url=entry.get("source_url"),
-                    domain=domain,
+                    domain="general" if domain == "delhi" else domain,
                 )
                 if result:
                     count += 1

@@ -200,7 +200,7 @@ export default function AnalysisView() {
           className="bg-purple-500/10 border border-purple-500/30 rounded-2xl p-5"
         >
           <p className="text-xs font-semibold text-purple-400 uppercase tracking-wide mb-2">✨ AI Policy Summary</p>
-          <p className="text-[#6B5E57]/40 text-sm leading-relaxed">{aiSummary}</p>
+          <p className="text-[#F2EBE1] text-sm leading-relaxed">{aiSummary}</p>
         </motion.div>
       )}
 
@@ -219,7 +219,7 @@ export default function AnalysisView() {
             key={t}
             onClick={() => setTab(t)}
             className={`px-4 py-2 rounded-lg text-sm font-medium capitalize ${
-              tab === t ? 'bg-blue-500 text-white' : 'text-[#6B5E57] hover:text-white'
+              tab === t ? 'bg-blue-500 text-white' : 'text-[#D8CCC0] hover:text-white'
             }`}
           >
             {t === 'sources' ? 'Sources & Languages' : t}
@@ -261,16 +261,16 @@ export default function AnalysisView() {
                     <DirIcon size={16} />
                     <span>{label} Mood</span>
                   </div>
-                  <div className="text-[#6B5E57] text-xs">
+                  <div className="text-[#D8CCC0] text-xs">
                     Predicted score in 7 days: <span className={`font-bold ${dirColor}`}>{last.forecast_score.toFixed(3)}</span>
                     <span className="ml-2 opacity-60">(range {last.lower.toFixed(2)} → {last.upper.toFixed(2)})</span>
                   </div>
-                  <div className="ml-auto text-xs text-[#6B5E57] hidden md:block">AI linear forecast · 30-day history</div>
+                  <div className="ml-auto text-xs text-[#D8CCC0] hidden md:block">AI linear forecast · 30-day history</div>
                 </div>
               );
             })()}
             {trendLoading ? (
-              <div className="text-[#6B5E57] text-center py-10">Loading trend...</div>
+              <div className="text-[#D8CCC0] text-center py-10">Loading trend...</div>
             ) : (
               <TrendChart data={trendData} forecastData={forecastData} />
             )}
@@ -317,8 +317,8 @@ export default function AnalysisView() {
                     {srcData.map((d) => (
                       <div key={d.name} className="flex items-center gap-1.5 text-sm">
                         <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }} />
-                        <span className="text-[#6B5E57]/60">{d.name}</span>
-                        <span className="text-[#6B5E57]">({Math.round((d.value / totalVoices) * 100)}%)</span>
+                        <span className="text-[#D8CCC0]">{d.name}</span>
+                        <span className="text-[#F2EBE1]">({Math.round((d.value / totalVoices) * 100)}%)</span>
                       </div>
                     ))}
                   </div>
@@ -340,8 +340,8 @@ export default function AnalysisView() {
                   {langData.map(([code, count], i) => (
                     <div key={code}>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-[#6B5E57]/60">{LANG_LABELS[code] || code}</span>
-                        <span className="text-[#6B5E57]">{count as number} voices</span>
+                        <span className="text-[#D8CCC0]">{LANG_LABELS[code] || code}</span>
+                        <span className="text-[#F2EBE1]">{count as number} voices</span>
                       </div>
                       <div className="w-full bg-slate-700 rounded-full h-2.5">
                         <div
@@ -355,7 +355,7 @@ export default function AnalysisView() {
                     </div>
                   ))}
                   {langData.length === 0 && (
-                    <div className="text-[#6B5E57] text-center py-4">No language data</div>
+                    <div className="text-[#D8CCC0] text-center py-4">No language data</div>
                   )}
                 </div>
               );

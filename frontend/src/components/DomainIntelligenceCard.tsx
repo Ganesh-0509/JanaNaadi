@@ -8,7 +8,7 @@ interface DomainCardProps {
 }
 
 const DOMAIN_CONFIG: Record<string, { color: string; icon: string; emoji: string }> = {
-  geopolitics: { color: 'blue', icon: '🌍', emoji: '🌍' },
+  geopolitics: { color: 'teal', icon: '🌍', emoji: '🌍' },
   economics: { color: 'green', icon: '💰', emoji: '💰' },
   defense: { color: 'red', icon: '🛡️', emoji: '🛡️' },
   climate: { color: 'emerald', icon: '🌱', emoji: '🌱' },
@@ -18,7 +18,7 @@ const DOMAIN_CONFIG: Record<string, { color: string; icon: string; emoji: string
 
 const URGENCY_CONFIG: Record<string, { color: string; bg: string; text: string }> = {
   low: { color: 'slate', bg: 'bg-[#FAF5ED]', text: 'text-slate-700' },
-  moderate: { color: 'blue', bg: 'bg-blue-100', text: 'text-blue-700' },
+  moderate: { color: 'teal', bg: 'bg-[#2FA4D7]/10', text: 'text-[#2FA4D7]' },
   high: { color: 'amber', bg: 'bg-amber-100', text: 'text-amber-700' },
   critical: { color: 'red', bg: 'bg-red-100', text: 'text-red-700' },
 };

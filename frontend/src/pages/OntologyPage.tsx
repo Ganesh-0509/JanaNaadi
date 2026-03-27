@@ -113,11 +113,11 @@ export const OntologyPage: React.FC = () => {
         {/* Filters Sidebar */}
         <div className="lg:col-span-1 space-y-8">
           <div className="mcd-card border-white/5 bg-[#161B2E]/50">
-            <h3 className="text-xl font-black uppercase tracking-tighter mb-8 italic text-white/40">CONSOLE <span className="text-[#E76F2E]">FILTERS</span></h3>
+            <h3 className="text-xl font-black uppercase tracking-tighter mb-8 italic text-[#F7F7F7]">CONSOLE <span className="text-[#E76F2E]">FILTERS</span></h3>
 
             {/* Search */}
             <div className="mb-8">
-              <label className="text-[10px] font-black text-[#6B5E57] uppercase tracking-[0.2em] block mb-4 ml-1">Entity Intelligence Search</label>
+              <label className="text-[10px] font-black text-[#D8CCC0] uppercase tracking-[0.2em] block mb-4 ml-1">Entity Intelligence Search</label>
               <div className="relative group/input">
                 <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#6B5E57] group-focus-within/input:text-[#E76F2E] transition-colors" size={18} />
                 <input
@@ -125,18 +125,18 @@ export const OntologyPage: React.FC = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Query Name..."
-                  className="w-full bg-[#F5E9D8] border-2 border-white/5 rounded-2xl pl-16 pr-6 py-4 text-sm text-white font-black uppercase focus:border-[#E76F2E]/40 transition-all placeholder-slate-800"
+                  className="w-full bg-[#F5E9D8] border-2 border-[#3E2C23]/15 rounded-2xl pl-16 pr-6 py-4 text-sm text-[#3E2C23] font-black uppercase focus:border-[#E76F2E]/40 transition-all placeholder-[#6B5E57]"
                 />
               </div>
             </div>
 
             {/* Entity Type Filter */}
             <div className="mb-8">
-              <label className="text-[10px] font-black text-[#6B5E57] uppercase tracking-[0.2em] block mb-4 ml-1">Entity Intelligence Type</label>
+              <label className="text-[10px] font-black text-[#D8CCC0] uppercase tracking-[0.2em] block mb-4 ml-1">Entity Intelligence Type</label>
               <select
                 value={selectedEntityType}
                 onChange={(e) => setSelectedEntityType(e.target.value)}
-                className="w-full bg-[#F5E9D8] border-2 border-white/5 rounded-2xl px-6 py-4 text-sm text-white font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer"
+                className="w-full bg-[#F5E9D8] border-2 border-[#3E2C23]/15 rounded-2xl px-6 py-4 text-sm text-[#3E2C23] font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer"
               >
                 <option value="">Detect All Types…</option>
                 {ENTITY_TYPES.map(type => (
@@ -147,11 +147,11 @@ export const OntologyPage: React.FC = () => {
 
             {/* Domain Filter */}
             <div className="mb-8">
-              <label className="text-[10px] font-black text-[#6B5E57] uppercase tracking-[0.2em] block mb-4 ml-1">Intelligence Area</label>
+              <label className="text-[10px] font-black text-[#D8CCC0] uppercase tracking-[0.2em] block mb-4 ml-1">Intelligence Area</label>
               <select
                 value={selectedDomain}
                 onChange={(e) => setSelectedDomain(e.target.value)}
-                className="w-full bg-[#F5E9D8] border-2 border-white/5 rounded-2xl px-6 py-4 text-sm text-white font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer"
+                className="w-full bg-[#F5E9D8] border-2 border-[#3E2C23]/15 rounded-2xl px-6 py-4 text-sm text-[#3E2C23] font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer"
               >
                 <option value="">Global Domain Sync…</option>
                 {DOMAINS.map(domain => (
@@ -163,7 +163,7 @@ export const OntologyPage: React.FC = () => {
             {/* Min Mentions Slider */}
             <div className="mb-10">
               <div className="flex items-center justify-between mb-4">
-                 <label className="text-[10px] font-black text-[#6B5E57] uppercase tracking-[0.2em] ml-1">Intensity Threshold</label>
+                 <label className="text-[10px] font-black text-[#D8CCC0] uppercase tracking-[0.2em] ml-1">Intensity Threshold</label>
                  <span className="text-xs font-mono font-black text-[#E76F2E]">{minMentions}x</span>
               </div>
               <input
@@ -193,15 +193,15 @@ export const OntologyPage: React.FC = () => {
           {/* Top Entities */}
           {stats && stats.top_entities.length > 0 && (
             <div className="mcd-card border-white/5 bg-[#161B2E]/50">
-              <h3 className="text-xl font-black uppercase tracking-tighter mb-8 italic text-white/40">HIGH <span className="text-[#E76F2E]">DENSITY</span> NODES</h3>
+              <h3 className="text-xl font-black uppercase tracking-tighter mb-8 italic text-[#F7F7F7]">HIGH <span className="text-[#E76F2E]">DENSITY</span> NODES</h3>
               <div className="space-y-4">
                 {stats.top_entities.slice(0, 10).map((entity, idx) => (
                   <div key={entity.id} className="flex items-center justify-between text-[11px] font-black uppercase tracking-tight group hover:translate-x-1 transition-transform cursor-pointer">
-                    <span className="text-[#6B5E57] group-hover:text-[#E76F2E]/60 mr-4 font-mono">{String(idx + 1).padStart(2, '0')}</span>
-                    <span className="text-[#6B5E57]/40 truncate flex-1 group-hover:text-white transition-colors">
+                    <span className="text-[#D8CCC0] group-hover:text-[#E76F2E] mr-4 font-mono">{String(idx + 1).padStart(2, '0')}</span>
+                    <span className="text-[#F2EBE1] truncate flex-1 group-hover:text-white transition-colors">
                       {entity.name}
                     </span>
-                    <span className="text-white/20 ml-2 font-mono group-hover:text-[#E76F2E] transition-colors">{entity.mention_count}x</span>
+                    <span className="text-[#D8CCC0] ml-2 font-mono group-hover:text-[#E76F2E] transition-colors">{entity.mention_count}x</span>
                   </div>
                 ))}
               </div>
@@ -221,7 +221,7 @@ export const OntologyPage: React.FC = () => {
           ) : filteredNodes && filteredLinks ? (
             <div className="bg-[#3E2C23] p-4 rounded-lg border border-[#3E2C23]/20">
               <div className="mb-4 flex items-center justify-between">
-                <div className="text-sm text-[#6B5E57]">
+                <div className="text-sm text-[#E8E8E8]">
                   Showing {filteredNodes.length} entities, {filteredLinks.length} relationships
                 </div>
                 {selectedEntity && (
@@ -244,7 +244,7 @@ export const OntologyPage: React.FC = () => {
             </div>
           ) : (
             <div className="bg-[#3E2C23] p-12 rounded-lg border border-[#3E2C23]/20 text-center">
-              <p className="text-[#6B5E57]">No data available. Start ingesting domain-specific data to build the knowledge graph.</p>
+              <p className="text-[#E8E8E8]">No data available. Start ingesting domain-specific data to build the knowledge graph.</p>
             </div>
           )}
 
@@ -255,12 +255,12 @@ export const OntologyPage: React.FC = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div>
-                  <div className="text-sm text-[#6B5E57]">Type</div>
-                  <div className="font-medium text-[#6B5E57]/40 capitalize">{selectedEntity.entity_type}</div>
+                  <div className="text-sm text-[#D8CCC0]">Type</div>
+                  <div className="font-medium text-[#F2EBE1] capitalize">{selectedEntity.entity_type}</div>
                 </div>
                 <div>
-                  <div className="text-sm text-[#6B5E57]">Mentions</div>
-                  <div className="font-medium text-[#6B5E57]/40">{selectedEntity.mention_count}</div>
+                  <div className="text-sm text-[#D8CCC0]">Mentions</div>
+                  <div className="font-medium text-[#F2EBE1]">{selectedEntity.mention_count}</div>
                 </div>
                 <div>
                   <div className="text-sm text-[#6B5E57]">Sentiment</div>
@@ -276,17 +276,17 @@ export const OntologyPage: React.FC = () => {
 
               {selectedEntity.description && (
                 <div className="mb-6">
-                  <div className="text-sm text-[#6B5E57] mb-1">Description</div>
-                  <p className="text-[#6B5E57]/60">{selectedEntity.description}</p>
+                  <div className="text-sm text-[#D8CCC0] mb-1">Description</div>
+                  <p className="text-[#F2EBE1]">{selectedEntity.description}</p>
                 </div>
               )}
 
               {selectedEntity.aliases && selectedEntity.aliases.length > 0 && (
                 <div className="mb-6">
-                  <div className="text-sm text-[#6B5E57] mb-2">Also Known As</div>
+                  <div className="text-sm text-[#D8CCC0] mb-2">Also Known As</div>
                   <div className="flex flex-wrap gap-2">
                     {selectedEntity.aliases.map((alias, idx) => (
-                      <span key={idx} className="bg-slate-700 px-3 py-1 rounded-full text-sm text-[#6B5E57]/40">
+                      <span key={idx} className="bg-slate-700 px-3 py-1 rounded-full text-sm text-[#F2EBE1]">
                         {alias}
                       </span>
                     ))}
@@ -296,7 +296,7 @@ export const OntologyPage: React.FC = () => {
 
               {entityDetails.relationships && entityDetails.relationships.length > 0 && (
                 <div>
-                  <div className="text-sm text-[#6B5E57] mb-3">
+                  <div className="text-sm text-[#D8CCC0] mb-3">
                     Relationships ({entityDetails.relationships.length})
                   </div>
                   <div className="space-y-3">
@@ -306,15 +306,15 @@ export const OntologyPage: React.FC = () => {
                           <div className="font-medium text-slate-100">
                             {rel.related_entity?.name || 'Unknown'}
                           </div>
-                          <div className="text-sm text-[#6B5E57] capitalize">
+                          <div className="text-sm text-[#D8CCC0] capitalize">
                             {rel.relationship_type.replace('_', ' ')}
                           </div>
                           {rel.context && (
-                            <p className="text-xs text-[#6B5E57] mt-1">{rel.context}</p>
+                            <p className="text-xs text-[#D8CCC0] mt-1">{rel.context}</p>
                           )}
                         </div>
                         <div className="text-right">
-                          <div className="text-xs text-[#6B5E57]">
+                          <div className="text-xs text-[#D8CCC0]">
                             Strength: {(rel.strength * 100).toFixed(0)}%
                           </div>
                           {rel.sentiment && (

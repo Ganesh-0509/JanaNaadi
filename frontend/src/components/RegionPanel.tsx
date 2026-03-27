@@ -194,7 +194,7 @@ export default function RegionPanel({ region, onClose }: Props) {
         {/* Action Button */}
         <Link
           to={`/analysis/${region.type || 'state'}/${region.id}`}
-          className="block w-full text-center py-3 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-semibold text-sm transition-colors"
+          className="block w-full text-center py-3 rounded-xl bg-[#2FA4D7] hover:bg-[#2896B8] text-white font-semibold text-sm transition-colors"
         >
           View Detailed Analysis
         </Link>

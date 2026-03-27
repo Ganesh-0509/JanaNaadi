@@ -37,6 +37,12 @@ async def get_entities(
     
     if min_mentions > 0:
         query = query.gte("mention_count", min_mentions)
+
+    # NOTE: `domain` is accepted by API contract but is currently a no-op here.
+    # Entities table does not store a first-class domain column, so filtering by
+    # domain would require joining through mentions/entries or adding a domain
+    # attribute to entities.
+    # TODO: implement efficient domain filtering once entity-domain mapping exists.
     
     query = query.order("mention_count", desc=True).limit(limit)
     

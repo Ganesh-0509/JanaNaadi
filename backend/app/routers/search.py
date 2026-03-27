@@ -1,10 +1,10 @@
 """Search endpoints."""
 
 from fastapi import APIRouter, Query, Request
+from app.core.settings import get_settings
 from app.core.supabase_client import get_supabase_admin
 from app.core.rate_limiter import limiter
 from app.models.schemas import SentimentEntryBrief
-from app.services.bytez_service import call_bytez_model
 
 router = APIRouter(prefix="/api/search", tags=["search"])
 
@@ -186,8 +186,14 @@ Format as JSON:
         ai_result = cache[cache_key]
     else:
         try:
-            # OPTIMIZATION: Reduced token limit 400→300 (25% savings)
-            result_text = await call_bytez_model(prompt, max_tokens=300)
+            # Prefer Ollama locally; use cloud fallback only if configured.
+            settings = get_settings()
+            if settings.use_local_llm:
+                from app.services.local_llm_service import generate_text
+                result_text = await generate_text(prompt, max_tokens=300)
+            else:
+                from app.services.bytez_service import call_bytez_model
+                result_text = await call_bytez_model(prompt, max_tokens=300)
             import json
             ai_result = json.loads(result_text)
             cache[cache_key] = ai_result

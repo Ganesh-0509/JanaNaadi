@@ -179,7 +179,7 @@ export default function PolicyBriefs() {
            <Sparkles size={200} className="text-white" />
         </div>
         
-        <h2 className="text-xl font-black uppercase tracking-tighter mb-10 italic text-white/40 flex items-center gap-4">
+        <h2 className="text-xl font-black uppercase tracking-tighter mb-10 italic text-[#F7F7F7] flex items-center gap-4">
           <Zap size={20} className="text-[#E76F2E]" />
           INITIALIZE <span className="text-[#E76F2E]">AI GENERATION</span>
         </h2>
@@ -190,7 +190,7 @@ export default function PolicyBriefs() {
             <select
               value={genScope}
               onChange={(e) => changeScope(e.target.value)}
-              className="w-full bg-[#F5E9D8] border-2 border-white/5 rounded-2xl px-6 py-4 text-sm text-white font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer"
+              className="w-full bg-[#F5E9D8] border-2 border-[#3E2C23]/15 rounded-2xl px-6 py-4 text-sm text-[#3E2C23] font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer"
             >
               <option value="state">Global Ward Matrix</option>
               <option value="district">MCD Zone</option>
@@ -205,7 +205,7 @@ export default function PolicyBriefs() {
               <select
                 value={genScopeId}
                 onChange={(e) => setGenScopeId(e.target.value)}
-                className="w-full bg-[#F5E9D8] border-2 border-white/5 rounded-2xl px-6 py-4 text-sm text-white font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer"
+                className="w-full bg-[#F5E9D8] border-2 border-[#3E2C23]/15 rounded-2xl px-6 py-4 text-sm text-[#3E2C23] font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer"
               >
                 <option value="">Select Platform Entity…</option>
                 {states.map((s) => (
@@ -220,7 +220,7 @@ export default function PolicyBriefs() {
                 <select
                   value={selStateId}
                   onChange={(e) => handleStateSelect(e.target.value)}
-                  className="w-full bg-[#F5E9D8] border-2 border-white/5 rounded-2xl px-6 py-4 text-sm text-white font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer"
+                  className="w-full bg-[#F5E9D8] border-2 border-[#3E2C23]/15 rounded-2xl px-6 py-4 text-sm text-[#3E2C23] font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer"
                 >
                   <option value="">Select Platform Area…</option>
                   {states.map((s) => (
@@ -238,7 +238,7 @@ export default function PolicyBriefs() {
                     value={genScope === 'district' ? genScopeId : selDistrictId}
                     onChange={(e) => handleDistrictSelect(e.target.value)}
                     disabled={loadingDistricts || districts.length === 0}
-                    className="w-full bg-[#F5E9D8] border-2 border-white/5 rounded-2xl px-6 py-4 text-sm text-white font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer disabled:opacity-30"
+                    className="w-full bg-[#F5E9D8] border-2 border-[#3E2C23]/15 rounded-2xl px-6 py-4 text-sm text-[#3E2C23] font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer disabled:opacity-30"
                   >
                     <option value="">{districts.length === 0 ? 'No districts found' : 'Select target district…'}</option>
                     {districts.map((d) => (
@@ -258,7 +258,7 @@ export default function PolicyBriefs() {
                     value={genScope === 'constituency' ? genScopeId : selConstId}
                     onChange={(e) => handleConstSelect(e.target.value)}
                     disabled={loadingConst || constituencies.length === 0}
-                    className="w-full bg-[#F5E9D8] border-2 border-white/5 rounded-2xl px-6 py-4 text-sm text-white font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer disabled:opacity-30"
+                    className="w-full bg-[#F5E9D8] border-2 border-[#3E2C23]/15 rounded-2xl px-6 py-4 text-sm text-[#3E2C23] font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer disabled:opacity-30"
                   >
                     <option value="">{constituencies.length === 0 ? 'No ACs detected' : 'Select target AC…'}</option>
                     {constituencies.map((c) => (
@@ -278,7 +278,7 @@ export default function PolicyBriefs() {
                     value={genScopeId}
                     onChange={(e) => setGenScopeId(e.target.value)}
                     disabled={loadingWards || wards.length === 0}
-                    className="w-full bg-[#F5E9D8] border-2 border-white/5 rounded-2xl px-6 py-4 text-sm text-white font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer disabled:opacity-30"
+                    className="w-full bg-[#F5E9D8] border-2 border-[#3E2C23]/15 rounded-2xl px-6 py-4 text-sm text-[#3E2C23] font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer disabled:opacity-30"
                   >
                     <option value="">{wards.length === 0 ? 'No wards found' : 'Select target ward…'}</option>
                     {wards.map((w) => (
@@ -305,7 +305,7 @@ export default function PolicyBriefs() {
         {/* Brief List Sidebar */}
         <div className="lg:col-span-1 space-y-8">
           <div className="mcd-card border-white/5 bg-[#161B2E]/50">
-            <h3 className="text-xl font-black uppercase tracking-tighter mb-8 italic text-white/40 flex items-center gap-4">
+            <h3 className="text-xl font-black uppercase tracking-tighter mb-8 italic text-[#F7F7F7] flex items-center gap-4">
               <Layers size={20} className="text-blue-500" />
                VALULT <span className="text-[#E76F2E]">LOGS</span>
             </h3>
@@ -316,7 +316,7 @@ export default function PolicyBriefs() {
                 value={briefSearch}
                 onChange={(e) => setBriefSearch(e.target.value)}
                 placeholder="Search vault sync…"
-                className="w-full bg-[#F5E9D8] border-2 border-white/5 rounded-xl pl-12 pr-4 py-3 text-[10px] text-white font-black uppercase focus:border-[#E76F2E]/40 transition-all placeholder-slate-800"
+                className="w-full bg-[#F5E9D8] border-2 border-[#3E2C23]/15 rounded-xl pl-12 pr-4 py-3 text-[10px] text-[#3E2C23] font-black uppercase focus:border-[#E76F2E]/40 transition-all placeholder-[#6B5E57]"
               />
             </div>
 
@@ -345,10 +345,10 @@ export default function PolicyBriefs() {
                         : 'bg-[#F5E9D8] border-white/5 hover:border-white/20'
                     }`}
                   >
-                    <div className="font-black text-sm uppercase tracking-tight text-white mb-2 group-hover:translate-x-1 transition-transform">{b.title}</div>
+                    <div className={`font-black text-sm uppercase tracking-tight mb-2 group-hover:translate-x-1 transition-transform ${selectedBrief?.id === b.id ? 'text-white' : 'text-[#3E2C23]'}`}>{b.title}</div>
                     <div className="text-[9px] font-black text-[#6B5E57] uppercase tracking-widest flex items-center gap-2">
                        <span className="text-[#E76F2E]">{b.scope_name || b.scope}</span> 
-                       <span className="text-white/10">|</span> 
+                       <span className="text-[#6B5E57]/40">|</span> 
                        {formatDate(b.generated_at)}
                     </div>
                   </button>

@@ -8,7 +8,19 @@ logger = logging.getLogger("jananaadi.briefs")
 
 
 async def _call_llm_for_brief(prompt: str) -> dict:
-    """Try Bytez first, fall back to Gemini."""
+    """Use Ollama when enabled; otherwise fall back across cloud providers."""
+    from app.core.settings import get_settings
+    settings = get_settings()
+
+    if settings.use_local_llm:
+        try:
+            from app.services.local_llm_service import generate_json
+            result = await generate_json(prompt, max_tokens=900)
+            logger.info("Brief generated via Ollama")
+            return result
+        except Exception as e:
+            logger.warning(f"Ollama failed for brief: {e}, trying cloud fallbacks")
+
     try:
         from app.services.bytez_service import call_bytez
         result = await call_bytez(prompt)
@@ -16,8 +28,17 @@ async def _call_llm_for_brief(prompt: str) -> dict:
         return result
     except Exception as e:
         logger.warning(f"Bytez failed for brief: {e}, falling back to Gemini")
-    from app.services.gemini_service import call_gemini
-    return await call_gemini(prompt)
+    try:
+        from app.services.gemini_service import call_gemini
+        return await call_gemini(prompt)
+    except Exception as e:
+        logger.warning(f"Gemini failed for brief: {e}, using deterministic fallback")
+        return {
+            "title": "Policy Brief: Local Fallback",
+            "summary": "AI providers are unavailable; generated a deterministic fallback brief from aggregated metrics.",
+            "key_findings": [],
+            "recommendations": [],
+        }
 
 
 BRIEF_PROMPT = """You are a governance analyst. Generate a policy brief based on citizen sentiment data.

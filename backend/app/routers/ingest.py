@@ -49,7 +49,7 @@ _last_run_info: dict[str, dict] = {
 async def _process_and_store(
     text: str,
     source: str,
-    location_hint: str | None = None,
+    location_hint: str | dict | None = None,
     source_id: str | None = None,
     source_url: str | None = None,
     published_at: str | None = None,
@@ -86,7 +86,13 @@ async def _process_and_store(
     nlp = await score_sentiment(text)
  
     # ── Step 3: Geolocate + topic match (unchanged) ───────────────────────────
-    geo = geolocate(text, hints={"location_hint": location_hint} if location_hint else None)
+    geo_hints = None
+    if isinstance(location_hint, dict):
+        geo_hints = location_hint
+    elif location_hint:
+        geo_hints = {"location_hint": location_hint}
+
+    geo = geolocate(text, hints=geo_hints)
     topic_id = match_topic(text, nlp.topics[0] if nlp.topics else None)
  
     # ── Step 4: Build and store the entry ─────────────────────────────────────
@@ -156,10 +162,15 @@ async def ingest_manual(
     req: ManualEntryRequest,
     user: dict = Depends(require_admin),
 ):
-    """Submit a single manual entry for processing."""
-    entry = await _process_and_store(req.text, "manual", req.location_hint)
-    if entry is None:
+    entry = await _process_and_store(
+        req.text,
+        req.source or "manual",
+        req.location_hint,
+    )
+
+    if not entry:
         return {"status": "duplicate", "entry_id": None}
+
     return {"status": "ok", "entry_id": entry["id"]}
 
 

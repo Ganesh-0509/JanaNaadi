@@ -4,6 +4,8 @@ from datetime import datetime, timedelta, timezone
 from app.core.supabase_client import get_supabase_admin
 from app.core.cache import snapshot_cache, cache_key
 
+SNAPSHOT_MAX_ROWS = 20000
+
 
 async def compute_snapshot(
     scope_type: str,
@@ -16,7 +18,7 @@ async def compute_snapshot(
     period_start = now - timedelta(hours=period_hours)
 
     query = sb.table("sentiment_entries").select(
-        "sentiment, sentiment_score, language, primary_topic_id, extracted_keywords"
+        "id, ingested_at, sentiment, sentiment_score, language, primary_topic_id, extracted_keywords"
     )
 
     if scope_type == "state" and scope_id:
@@ -28,8 +30,28 @@ async def compute_snapshot(
     elif scope_type == "ward" and scope_id:
         query = query.eq("ward_id", scope_id)
 
-    result = query.gte("ingested_at", period_start.isoformat()).execute()
+    # Read only the latest rows first (indexed path), then filter by period in-memory.
+    result = (
+        query
+        .order("id", desc=True)
+        .limit(SNAPSHOT_MAX_ROWS)
+        .execute()
+    )
     data = result.data or []
+
+    filtered = []
+    for row in data:
+        ts = row.get("ingested_at")
+        if not ts:
+            continue
+        try:
+            ts_dt = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+            if ts_dt >= period_start:
+                filtered.append(row)
+        except Exception:
+            continue
+
+    data = filtered
 
     total = len(data)
     positive = sum(1 for e in data if e["sentiment"] == "positive")

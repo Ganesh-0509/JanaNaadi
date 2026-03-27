@@ -241,10 +241,16 @@ async def summarize_region(
     )
 
     try:
-        from app.services.gemini_service import call_gemini_text
-        summary = await call_gemini_text(prompt)
+        from app.core.settings import get_settings
+        settings = get_settings()
+        if settings.use_local_llm:
+            from app.services.local_llm_service import generate_text
+            summary = await generate_text(prompt, max_tokens=500)
+        else:
+            from app.services.gemini_service import call_gemini_text
+            summary = await call_gemini_text(prompt)
     except Exception as exc:
-        _logger.warning("Gemini summarize failed: %s", exc)
+        _logger.warning("LLM summarize failed: %s", exc)
         summary = (
             f"Citizens in {name} have submitted {snapshot['total_entries']} voices with an average "
             f"sentiment score of {snapshot['avg_sentiment_score']:.2f}. "

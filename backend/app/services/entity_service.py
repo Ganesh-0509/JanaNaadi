@@ -75,15 +75,11 @@ async def extract_entities(text: str, entry_id: str | None = None) -> dict:
         logger.debug(f"Entity cache HIT {text_hash[:8]} — 0 API calls")
         return _entity_cache[text_hash]
 
-    # ── Cache miss (fallback — only during isolated testing) ──────────────────
+    # Cache miss fallback path (rare): try local LLM first.
     logger.warning(
-        f"Entity cache MISS {text_hash[:8]} — making direct Bytez call. "
-        "This should not happen during normal ingestion (nlp_service should "
-        "have already populated the cache)."
+        "Entity cache MISS %s - fallback extraction path used",
+        text_hash[:8],
     )
-
-    if not _check_api_limit():
-        return {"entities": [], "relationships": []}
 
     prompt = f"""Extract entities and relationships from this text. Return ONLY valid JSON.
 
@@ -97,6 +93,37 @@ async def extract_entities(text: str, entry_id: str | None = None) -> dict:
 }}
 
 Text: {text[:1500]}"""
+
+    # 1) Local LLM fallback
+    try:
+        from app.core.settings import get_settings
+        from app.services.local_llm_service import generate_json
+
+        settings = get_settings()
+        result = await generate_json(prompt, max_tokens=600)
+        result.setdefault("entities", [])
+        result.setdefault("relationships", [])
+
+        _entity_cache[text_hash] = result
+        if len(_entity_cache) > 1000:
+            del _entity_cache[list(_entity_cache.keys())[0]]
+
+        return result
+    except Exception as e:
+        logger.warning("Entity local fallback failed: %s", e)
+
+    # 2) Optional cloud fallback when explicitly enabled
+    try:
+        from app.core.settings import get_settings
+        settings = get_settings()
+    except Exception:
+        settings = None
+
+    if not settings or not settings.allow_cloud_fallback:
+        return {"entities": [], "relationships": []}
+
+    if not _check_api_limit():
+        return {"entities": [], "relationships": []}
 
     for attempt in range(2):
         try:

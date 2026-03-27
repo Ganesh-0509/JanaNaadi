@@ -80,7 +80,7 @@ export default function AlertCenter() {
               key={f}
               onClick={() => setFilter(f)}
               className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
-                filter === f ? 'bg-[#E76F2E] text-white mcd-glow-saffron shadow-lg' : 'bg-white/5 text-[#6B5E57] hover:text-white border border-white/5'
+                filter === f ? 'bg-[#E76F2E] text-white mcd-glow-saffron shadow-lg' : 'bg-white/5 text-[#E8E8E8] hover:text-white border border-white/15'
               }`}
             >
               {f}
@@ -97,7 +97,7 @@ export default function AlertCenter() {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="bg-[#F5E9D8] border-2 border-white/5 rounded-xl px-5 py-2 text-[10px] text-white font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer"
+            className="bg-[#F5E9D8] border-2 border-[#3E2C23]/15 rounded-xl px-5 py-2 text-[10px] text-[#3E2C23] font-black uppercase focus:border-[#E76F2E]/40 transition-all appearance-none cursor-pointer"
           >
             {alertTypes.map((t) => (
               <option key={t} value={t}>{t === 'all' ? 'All Alerts Matrix' : t.replace(/_/g, ' ')}</option>
@@ -116,7 +116,7 @@ export default function AlertCenter() {
         <div className="mcd-glass rounded-[60px] border border-white/5 border-dashed p-40 text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
           <CheckCheck size={80} className="mx-auto text-emerald-500/20 mb-8" />
-          <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-4 italic text-white/40">SYSTEMS <span className="text-emerald-500/50">STABLE</span></h2>
+          <h2 className="text-2xl font-black text-[#F7F7F7] uppercase tracking-tighter mb-4 italic">SYSTEMS <span className="text-emerald-400">STABLE</span></h2>
           <p className="text-[#6B5E57] font-black uppercase tracking-[0.4em] text-[10px]">No critical discrepancies detected in active reality sync</p>
         </div>
       ) : (

@@ -37,7 +37,7 @@ export default function LiveTicker({ entries = 0 }: { entries?: number }) {
         <span className="text-[#6B5E57]">|</span>
         <span className="text-sm text-[#6B5E57]/60">Real-time multilingual sentiment analysis across 22+ Indian languages</span>
         <span className="text-[#6B5E57]">|</span>
-        <span className="text-sm text-[#6B5E57]/60">Powered by <strong className="text-blue-400">JanaNaadi AI</strong></span>
+        <span className="text-sm text-[#6B5E57]/60">Powered by <strong className="text-[#2FA4D7]">JanaNaadi AI</strong></span>
         <span className="text-[#6B5E57]">|</span>
         <span className="text-sm text-[#6B5E57]/60">Booth → Ward → Constituency → District → State</span>
       </div>

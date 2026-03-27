@@ -19,6 +19,19 @@ const ZOOM_LEVELS: Record<string, number> = {
   ward: 11,
 };
 
+const STATE_NAME_ALIASES: Record<string, string> = {
+  'Andaman & Nicobar Island': 'Andaman and Nicobar Islands',
+  'Arunanchal Pradesh': 'Arunachal Pradesh',
+  'Jammu & Kashmir': 'Jammu and Kashmir',
+  'NCT of Delhi': 'Delhi',
+  'Dadra and Nagar Haveli': 'Dadra and Nagar Haveli and Daman and Diu',
+};
+
+const canonicalStateName = (name: string): string => {
+  const trimmed = (name || '').trim();
+  return STATE_NAME_ALIASES[trimmed] || trimmed;
+};
+
 function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap();
   useEffect(() => {
@@ -82,15 +95,30 @@ export default function HeatmapView() {
   // Load GeoJSON for state-level choropleth
   useEffect(() => {
     fetch('/geojson/india_states.geojson')
-      .then((r) => r.json())
-      .then(setGeoData)
-      .catch((e) => console.error('GeoJSON load error:', e));
+      .then((res) => {
+        if (!res.ok) throw new Error('GeoJSON not found');
+        return res.json();
+      })
+      .then((data) => {
+        if (data?.features?.length > 0) {
+          setGeoData(data);
+        } else {
+          console.warn('india_states.geojson is empty - map outlines will not render');
+        }
+      })
+      .catch((err) => console.error('Failed to load map data:', err));
   }, []);
 
   // Build a lookup from state name → heatmap data
   const stateDataMap = useMemo(() => {
     const map = new Map<string, any>();
-    activeData.forEach((d) => map.set(d.name, d));
+    activeData.forEach((d) => {
+      const key = canonicalStateName(d.name);
+      map.set(key, d);
+      if (key !== d.name) {
+        map.set(d.name, d);
+      }
+    });
     return map;
   }, [activeData]);
 
@@ -103,7 +131,8 @@ export default function HeatmapView() {
         ...f,
         properties: {
           ...f.properties,
-          ...(stateDataMap.get(f.properties.name) || {}),
+          name: f.properties.ST_NM || f.properties.name || f.properties.NAME_1 || 'Unknown',
+          ...(stateDataMap.get(canonicalStateName(f.properties.ST_NM || f.properties.name || f.properties.NAME_1 || 'Unknown')) || stateDataMap.get(f.properties.ST_NM || f.properties.name || f.properties.NAME_1 || 'Unknown') || {}),
         },
       })),
     };
@@ -209,7 +238,7 @@ export default function HeatmapView() {
               <button
                 onClick={() => navigateTo(i)}
                 className={`hover:text-blue-400 ${
-                  i === breadcrumbs.length - 1 ? 'text-white font-medium' : 'text-[#6B5E57]'
+                  i === breadcrumbs.length - 1 ? 'text-white font-medium' : 'text-[#D8CCC0]'
                 }`}
               >
                 {crumb.name}
@@ -223,7 +252,7 @@ export default function HeatmapView() {
           <button
             onClick={() => setHeatMode('sentiment')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              heatMode === 'sentiment' ? 'bg-blue-500 text-white' : 'text-[#6B5E57] hover:text-white'
+              heatMode === 'sentiment' ? 'bg-blue-500 text-white' : 'text-[#D8CCC0] hover:text-white'
             }`}
           >
             <TrendingDown size={12} /> Sentiment
@@ -231,7 +260,7 @@ export default function HeatmapView() {
           <button
             onClick={() => setHeatMode('urgency')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              heatMode === 'urgency' ? 'bg-red-500 text-white' : 'text-[#6B5E57] hover:text-white'
+              heatMode === 'urgency' ? 'bg-red-500 text-white' : 'text-[#D8CCC0] hover:text-white'
             }`}
           >
             <Zap size={12} /> Urgency
@@ -241,7 +270,7 @@ export default function HeatmapView() {
         {/* Timeline Slider */}
         <div className="absolute bottom-4 right-4 z-[500] bg-[#3E2C23]/90 backdrop-blur rounded-xl px-4 py-3 border border-[#3E2C23]/20 w-64">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-[#6B5E57]/60">Timeline</span>
+            <span className="text-xs font-semibold text-[#D8CCC0]">Timeline</span>
             <span className={`text-xs font-bold ${isLive ? 'text-green-400' : 'text-amber-400'}`}>
               {isLive ? '● LIVE' : sliderToDate(timelineDay)}
             </span>
@@ -254,12 +283,12 @@ export default function HeatmapView() {
             onChange={(e) => handleSliderChange(Number(e.target.value))}
             className="w-full accent-blue-500 cursor-pointer"
           />
-          <div className="flex justify-between text-xs text-[#6B5E57] mt-1">
+          <div className="flex justify-between text-xs text-[#D8CCC0] mt-1">
             <span>-30d</span>
             <span>Today</span>
           </div>
           {loadingHistory && (
-            <div className="text-xs text-[#6B5E57] text-center mt-1 animate-pulse">Loading…</div>
+            <div className="text-xs text-[#D8CCC0] text-center mt-1 animate-pulse">Loading…</div>
           )}
         </div>
 

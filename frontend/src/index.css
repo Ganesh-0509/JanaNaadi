@@ -2,32 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 :root {
   --color-bg: #F5E9D8; /* Creamy Ivory */
-  --color-surface: #FAF5ED; /* Lighter Ivory */
+  --color-surface: #FAF5ED; /* Light Ivory */
   --color-text: #3E2C23; /* Dark Espresso Brown */
-  --color-muted: #6B5E57; /* Muted Cocoa */
-  --color-accent: #E76F2E; /* Vibrant Sunset Orange */
+  --color-text-secondary: #6B5E57; /* Muted Cocoa */
+  --color-muted: #8E8178; /* Warm Muted Brown */
+  --color-accent: #E76F2E; /* Sunset Orange */
   --color-accent-600: #D15E26;
   --color-accent-700: #BA5221;
-  --color-teal: #2FA4D7; /* Deep Sky Blue */
+  --color-teal: #2FA4D7; /* Interface Teal */
   --color-positive: #22C55E;
   --color-neutral: #EAB308;
   --color-negative: #EF4444;
-  --color-border: rgba(62, 44, 35, 0.15);
+  --color-border: rgba(62, 44, 35, 0.12);
   --color-card-bg: #FFFFFF;
+  --color-gold: #D4AF37;
+  --color-green: #138808;
+}
+
+/* 3D Background Canvas */
+#canvas-3d {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
 }
 
 .mcd-glass {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(231, 111, 46, 0.15);
-  box-shadow: 0 10px 30px -10px rgba(62, 44, 35, 0.1);
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(62, 44, 35, 0.1);
+  box-shadow: 0 10px 30px -10px rgba(62, 44, 35, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .mcd-card {
@@ -36,27 +47,46 @@
   border-radius: 2rem;
   padding: 2rem;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4px 20px -5px rgba(62, 44, 35, 0.08);
+  position: relative;
+  overflow: hidden;
 }
 
 .mcd-card:hover {
-  border-color: rgba(231, 111, 46, 0.3);
-  box-shadow: 0 20px 40px -15px rgba(231, 111, 46, 0.12);
-  transform: translateY(-4px);
+  border-color: rgba(231, 111, 46, 0.35);
+  box-shadow: 0 20px 44px -18px rgba(62, 44, 35, 0.16);
+  transform: translateY(-6px) scale(1.02);
 }
 
 .mcd-glow-saffron {
-  box-shadow: 0 0 40px -10px rgba(231, 111, 46, 0.2);
+  box-shadow: 0 0 40px -10px rgba(255, 153, 51, 0.8);
+  transition: box-shadow 0.3s ease;
+}
+
+.mcd-glow-saffron:hover {
+  box-shadow: 0 0 60px -10px rgba(255, 153, 51, 1);
 }
 
 .text-gradient-saffron {
-  background: linear-gradient(135deg, #E76F2E 0%, #BA5221 100%);
+  background: linear-gradient(135deg, #FF9933 0%, #FFB84D 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-india {
+  background: linear-gradient(135deg, #FF9933 0%, #138808 50%, #1A5490 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .bg-gradient-saffron {
-  background: linear-gradient(135deg, #E76F2E 0%, #BA5221 100%);
+  background: linear-gradient(135deg, #FF9933 0%, #FFB84D 100%);
+}
+
+.bg-gradient-india {
+  background: linear-gradient(135deg, #FF9933 0%, #138808 50%, #1A5490 100%);
 }
 
 .entrance-anim {
@@ -66,6 +96,27 @@
 @keyframes entrance {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow-pulse {
+  0% { box-shadow: 0 0 20px rgba(255, 153, 51, 0.4); }
+  50% { box-shadow: 0 0 40px rgba(255, 153, 51, 0.8); }
+  100% { box-shadow: 0 0 20px rgba(255, 153, 51, 0.4); }
+}
+
+@keyframes float-movement {
+  0% { transform: translateY(0px) translateX(0px); }
+  33% { transform: translateY(-20px) translateX(10px); }
+  66% { transform: translateY(-10px) translateX(-10px); }
+  100% { transform: translateY(0px) translateX(0px); }
+}
+
+.glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.float-movement {
+  animation: float-movement 6s ease-in-out infinite;
 }
 
 body {
@@ -78,16 +129,40 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Base text defaults */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text);
+}
+
+p {
+  color: var(--color-text-secondary);
+}
+
+a {
+  color: var(--color-accent);
+}
+
 /* Leaflet overrides for light theme */
 .leaflet-container {
   background: var(--color-surface);
 }
 
 .leaflet-popup-content-wrapper {
-  background: #FFFFFF;
+  background: var(--color-card-bg);
   color: var(--color-text);
   border-radius: 12px;
   box-shadow: 0 10px 20px rgba(62, 44, 35, 0.1);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection color with good contrast */
+::selection {
+  background-color: rgba(255, 153, 51, 0.3);
+  color: var(--color-text);
 }
 
 .leaflet-popup-tip {
