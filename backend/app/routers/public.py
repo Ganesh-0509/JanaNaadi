@@ -280,7 +280,7 @@ async def hotspots(request: Request, limit: int = 15):
 
 @router.get("/recent-voices")
 @limiter.limit("60/minute")
-async def recent_voices(request: Request, limit: int = 20):
+async def recent_voices(request: Request, limit: int = 20, delhi_only: bool = True):
     """Return recent public-facing voices in a UI-friendly shape."""
     sb = get_supabase_admin()
     capped_limit = max(1, min(limit, 100))
@@ -297,6 +297,9 @@ async def recent_voices(request: Request, limit: int = 20):
     )
 
     rows = result.data or []
+    if delhi_only:
+        rows = [r for r in rows if r.get("ward_id") is not None]
+
     if not rows:
         return []
 
@@ -336,6 +339,8 @@ async def recent_voices(request: Request, limit: int = 20):
                 "sentiment_score": sentiment_score,
                 "topic": topic_map.get(topic_id, "General civic issues"),
                 "state": ward_map.get(ward_id) or state_map.get(state_id) or "Delhi",
+                "ward_id": ward_id,
+                "ward": ward_map.get(ward_id),
                 "source": row.get("source") or "unknown",
                 "language": row.get("language") or "en",
                 "time": row.get("ingested_at"),

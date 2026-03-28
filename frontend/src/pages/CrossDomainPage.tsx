@@ -18,7 +18,7 @@ function StrengthBar({ value }: { value: number }) {
       <div className="flex-1 h-1.5 bg-slate-700 rounded-full overflow-hidden">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-xs text-[#6B5E57] w-8 text-right">{pct}%</span>
+      <span className="text-xs text-content-secondary w-8 text-right">{pct}%</span>
     </div>
   );
 }
@@ -26,9 +26,9 @@ function StrengthBar({ value }: { value: number }) {
 function DomainBadge({ domain }: { domain: string }) {
   const cfg = DOMAIN_CONFIG[domain] ?? {
     label: domain,
-    color: 'text-[#6B5E57]',
-    bg: 'bg-slate-700/40',
-    border: 'border-slate-600',
+    color: 'text-content-secondary',
+    bg: 'bg-surface-muted/60',
+    border: 'border-white/20',
     icon: '⚙️',
   };
   return (
@@ -85,14 +85,14 @@ export default function CrossDomainPage() {
               </span>
             </div>
             <h1 className="text-2xl font-bold text-white">Cross-Domain Intelligence Map</h1>
-            <p className="text-sm text-[#6B5E57] mt-1 max-w-xl">
+            <p className="text-sm text-content-secondary mt-1 max-w-xl">
               Unified view of how entities across Geopolitics, Economics, Defense, Climate,
               Technology & Society are interconnected — the core of the Global Ontology Graph.
             </p>
           </div>
           <div className="flex flex-col items-end gap-2">
             <div className="text-3xl font-bold text-blue-400">{totalEdges.toLocaleString()}</div>
-            <div className="text-xs text-[#6B5E57]">cross-domain connections</div>
+            <div className="text-xs text-content-secondary">cross-domain connections</div>
             <Link to="/ontology" className="text-xs text-blue-400 hover:underline flex items-center gap-1">
               View Full Graph <ArrowRight size={11} />
             </Link>
@@ -101,28 +101,28 @@ export default function CrossDomainPage() {
       </div>
 
       {/* ── Domain Pair Matrix ── */}
-      <div className="bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20">
+      <div className="bg-surface-base rounded-2xl p-6 border border-white/20">
         <div className="flex items-center gap-2 mb-5">
           <Layers size={18} className="text-purple-400" />
           <h2 className="font-bold">Domain Pair Connection Matrix</h2>
-          <span className="text-xs text-[#6B5E57] ml-auto">Sorted by connection count</span>
+          <span className="text-xs text-content-secondary ml-auto">Sorted by connection count</span>
         </div>
         {summaryLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="h-20 bg-slate-700/40 rounded-xl animate-pulse" />
+              <div key={i} className="h-20 bg-surface-muted/60 rounded-xl animate-pulse" />
             ))}
           </div>
         ) : pairs.length === 0 ? (
-          <div className="text-center py-10 text-[#6B5E57]">
+          <div className="text-center py-10 text-content-secondary">
             <AlertTriangle size={32} className="mx-auto mb-3 opacity-40" />
             <p>No cross-domain connections yet. Start ingesting domain-tagged data to build the intelligence graph.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {pairs.map((pair) => {
-              const cfgA = DOMAIN_CONFIG[pair.domain_a] ?? { label: pair.domain_a, color: 'text-[#6B5E57]', bg: 'bg-slate-700/40', icon: '⚙️' };
-              const cfgB = DOMAIN_CONFIG[pair.domain_b] ?? { label: pair.domain_b, color: 'text-[#6B5E57]', bg: 'bg-slate-700/40', icon: '⚙️' };
+              const cfgA = DOMAIN_CONFIG[pair.domain_a] ?? { label: pair.domain_a, color: 'text-content-secondary', bg: 'bg-surface-muted/60', icon: '⚙️' };
+              const cfgB = DOMAIN_CONFIG[pair.domain_b] ?? { label: pair.domain_b, color: 'text-content-secondary', bg: 'bg-surface-muted/60', icon: '⚙️' };
               const strengthPct = Math.round(pair.avg_strength * 100);
               return (
                 <motion.button
@@ -133,14 +133,14 @@ export default function CrossDomainPage() {
                     setFilterA(pair.domain_a as Domain);
                     setFilterB(pair.domain_b as Domain);
                   }}
-                  className="bg-slate-700/30 hover:bg-slate-700/60 border border-slate-600/50 hover:border-blue-500/40 rounded-xl p-4 text-left transition-all"
+                  className="bg-surface-muted/50 hover:bg-slate-700/60 border border-white/20/50 hover:border-blue-500/40 rounded-xl p-4 text-left transition-all"
                 >
                   <div className="flex items-center gap-1.5 mb-2 flex-wrap">
                     <span className={`text-sm font-semibold ${cfgA.color}`}>{cfgA.icon} {cfgA.label}</span>
-                    <span className="text-[#6B5E57] text-xs">↔</span>
+                    <span className="text-content-secondary text-xs">↔</span>
                     <span className={`text-sm font-semibold ${cfgB.color}`}>{cfgB.icon} {cfgB.label}</span>
                   </div>
-                  <div className="flex items-center justify-between text-xs text-[#6B5E57] mb-2">
+                  <div className="flex items-center justify-between text-xs text-content-secondary mb-2">
                     <span>{pair.connection_count} connections</span>
                     <span className="text-blue-400 font-semibold">avg {strengthPct}%</span>
                   </div>
@@ -158,7 +158,7 @@ export default function CrossDomainPage() {
       </div>
 
       {/* ── Connection Explorer ── */}
-      <div className="bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20">
+      <div className="bg-surface-base rounded-2xl p-6 border border-white/20">
         <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
           <h2 className="font-bold flex items-center gap-2">
             <Network size={18} className="text-blue-400" />
@@ -169,18 +169,18 @@ export default function CrossDomainPage() {
             <select
               value={filterA}
               onChange={(e) => setFilterA(e.target.value as Domain | '')}
-              className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-1.5 text-sm"
+              className="bg-slate-700 border border-white/20 rounded-lg px-3 py-1.5 text-sm"
             >
               <option value="">All Domains (A)</option>
               {DOMAINS.map((d) => (
                 <option key={d} value={d} className="capitalize">{DOMAIN_CONFIG[d]?.icon} {d}</option>
               ))}
             </select>
-            <span className="text-[#6B5E57] text-sm">↔</span>
+            <span className="text-content-secondary text-sm">↔</span>
             <select
               value={filterB}
               onChange={(e) => setFilterB(e.target.value as Domain | '')}
-              className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-1.5 text-sm"
+              className="bg-slate-700 border border-white/20 rounded-lg px-3 py-1.5 text-sm"
             >
               <option value="">All Domains (B)</option>
               {DOMAINS.map((d) => (
@@ -188,13 +188,13 @@ export default function CrossDomainPage() {
               ))}
             </select>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-[#6B5E57]">Min strength:</span>
+              <span className="text-xs text-content-secondary">Min strength:</span>
               <input
                 type="range" min={0} max={0.9} step={0.1} value={minStrength}
                 onChange={(e) => setMinStrength(parseFloat(e.target.value))}
                 className="w-20"
               />
-              <span className="text-xs text-[#6B5E57] w-6">{Math.round(minStrength * 100)}%</span>
+              <span className="text-xs text-content-secondary w-6">{Math.round(minStrength * 100)}%</span>
             </div>
             {(filterA || filterB) && (
               <button
@@ -210,18 +210,18 @@ export default function CrossDomainPage() {
         {connLoading ? (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-16 bg-slate-700/40 rounded-xl animate-pulse" />
+              <div key={i} className="h-16 bg-surface-muted/60 rounded-xl animate-pulse" />
             ))}
           </div>
         ) : conns.length === 0 ? (
-          <div className="text-center py-16 text-[#6B5E57]">
+          <div className="text-center py-16 text-content-secondary">
             <Network size={40} className="mx-auto mb-3 opacity-30" />
             <p>No connections match these filters.</p>
-            <p className="text-xs mt-1 text-[#6B5E57]">Try removing filters or ingest more domain-specific data.</p>
+            <p className="text-xs mt-1 text-content-secondary">Try removing filters or ingest more domain-specific data.</p>
           </div>
         ) : (
           <div className="space-y-2">
-            <div className="text-xs text-[#6B5E57] mb-3">
+            <div className="text-xs text-content-secondary mb-3">
               Showing {conns.length} connection{conns.length !== 1 ? 's' : ''} — click any row for details
             </div>
             <AnimatePresence>
@@ -231,7 +231,7 @@ export default function CrossDomainPage() {
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.02 }}
-                  className="bg-slate-700/30 border border-slate-600/50 hover:border-slate-500/60 rounded-xl overflow-hidden transition-all"
+                  className="bg-surface-muted/50 border border-white/20/50 hover:border-slate-500/60 rounded-xl overflow-hidden transition-all"
                 >
                   <button
                     className="w-full text-left px-4 py-3"
@@ -239,10 +239,10 @@ export default function CrossDomainPage() {
                   >
                     <div className="flex items-center gap-3 flex-wrap">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <div className="font-semibold text-sm text-[#F2EBE1] truncate">{conn.entity_a.name}</div>
+                        <div className="font-semibold text-sm text-content-primary truncate">{conn.entity_a.name}</div>
                         <DomainBadge domain={conn.entity_a.domain} />
-                        <span className="text-[#D8CCC0] text-xs flex-shrink-0">↔</span>
-                        <div className="font-semibold text-sm text-[#F2EBE1] truncate">{conn.entity_b.name}</div>
+                        <span className="text-content-secondary text-xs flex-shrink-0">↔</span>
+                        <div className="font-semibold text-sm text-content-primary truncate">{conn.entity_b.name}</div>
                         <DomainBadge domain={conn.entity_b.domain} />
                       </div>
                       <div className="flex items-center gap-3 flex-shrink-0">
@@ -250,8 +250,8 @@ export default function CrossDomainPage() {
                           <StrengthBar value={conn.strength} />
                         </div>
                         {expanded === conn.id
-                          ? <ChevronUp size={14} className="text-[#6B5E57]" />
-                          : <ChevronDown size={14} className="text-[#6B5E57]" />}
+                          ? <ChevronUp size={14} className="text-content-secondary" />
+                          : <ChevronDown size={14} className="text-content-secondary" />}
                       </div>
                     </div>
                   </button>
@@ -263,27 +263,27 @@ export default function CrossDomainPage() {
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="px-4 pb-4 border-t border-slate-600/50"
+                        className="px-4 pb-4 border-t border-white/20/50"
                       >
                         <div className="pt-3 grid md:grid-cols-2 gap-4 text-sm">
                           <div>
-                            <div className="text-xs text-[#6B5E57] mb-1">Entity A</div>
+                            <div className="text-xs text-content-secondary mb-1">Entity A</div>
                             <div className="font-medium">{conn.entity_a.name}</div>
-                            <div className="text-xs text-[#6B5E57] capitalize mt-0.5">
+                            <div className="text-xs text-content-secondary capitalize mt-0.5">
                               type: {conn.entity_a.type} · domain: {conn.entity_a.domain}
                             </div>
                           </div>
                           <div>
-                            <div className="text-xs text-[#6B5E57] mb-1">Entity B</div>
+                            <div className="text-xs text-content-secondary mb-1">Entity B</div>
                             <div className="font-medium">{conn.entity_b.name}</div>
-                            <div className="text-xs text-[#6B5E57] capitalize mt-0.5">
+                            <div className="text-xs text-content-secondary capitalize mt-0.5">
                               type: {conn.entity_b.type} · domain: {conn.entity_b.domain}
                             </div>
                           </div>
                           {conn.context && (
                             <div className="md:col-span-2">
-                              <div className="text-xs text-[#6B5E57] mb-1">Connection Context</div>
-                              <p className="text-[#F2EBE1] text-xs leading-relaxed bg-[#3E2C23]/60 rounded-lg p-3">
+                              <div className="text-xs text-content-secondary mb-1">Connection Context</div>
+                              <p className="text-content-primary text-xs leading-relaxed bg-surface-base/60 rounded-lg p-3">
                                 {conn.context}
                               </p>
                             </div>
@@ -319,8 +319,8 @@ export default function CrossDomainPage() {
       {!summaryLoading && totalEdges === 0 && (
         <div className="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-6 text-center">
           <Network size={36} className="mx-auto text-blue-400 mb-3 opacity-60" />
-          <h3 className="font-semibold text-[#3E2C23] mb-1">Intelligence Graph is Empty</h3>
-          <p className="text-sm text-[#6B5E57] mb-4 max-w-md mx-auto">
+          <h3 className="font-semibold text-content-primary mb-1">Intelligence Graph is Empty</h3>
+          <p className="text-sm text-content-secondary mb-4 max-w-md mx-auto">
             Cross-domain connections are automatically built as domain-specific data is ingested.
             Trigger ingestion from the Data Panel to start building the intelligence graph.
           </p>
@@ -341,7 +341,7 @@ export default function CrossDomainPage() {
               <Zap className="text-yellow-400" size={24} />
               MCD Strategic Simulator
             </h2>
-            <p className="text-sm text-[#6B5E57] mt-1">Simulate cross-domain impacts of policy shifts in Delhi</p>
+            <p className="text-sm text-content-secondary mt-1">Simulate cross-domain impacts of policy shifts in Delhi</p>
           </div>
           <div className="px-4 py-2 bg-indigo-500/20 text-indigo-300 rounded-lg text-xs font-bold border border-indigo-500/30">
             PREDICTIVE MODEL V1.0 (BETA)
@@ -357,7 +357,7 @@ export default function CrossDomainPage() {
                 <span className="text-red-400">-15% Performance</span>
               </label>
               <input type="range" className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500" />
-              <p className="text-[10px] text-[#6B5E57] mt-2">Simulating a strike or monsoon-related garbage accumulation.</p>
+              <p className="text-[10px] text-content-secondary mt-2">Simulating a strike or monsoon-related garbage accumulation.</p>
             </div>
             <div>
               <label className="flex justify-between text-sm font-medium mb-4">
@@ -365,13 +365,13 @@ export default function CrossDomainPage() {
                 <span className="text-emerald-400">+25% Investment</span>
               </label>
               <input type="range" className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500" />
-              <p className="text-[10px] text-[#6B5E57] mt-2">Expansion of Mohalla Clinic operating hours.</p>
+              <p className="text-[10px] text-content-secondary mt-2">Expansion of Mohalla Clinic operating hours.</p>
             </div>
           </div>
 
           {/* Results Analytics */}
-          <div className="bg-slate-950/50 rounded-2xl p-6 border border-[#3E2C23]/20 flex flex-col justify-center">
-            <h4 className="text-xs font-bold text-[#6B5E57] uppercase tracking-widest mb-6 text-center">Predicted Sentiment Ripple</h4>
+          <div className="bg-slate-950/50 rounded-2xl p-6 border border-white/20 flex flex-col justify-center">
+            <h4 className="text-xs font-bold text-content-secondary uppercase tracking-widest mb-6 text-center">Predicted Sentiment Ripple</h4>
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <span className="text-sm">Social Stability</span>
@@ -379,7 +379,7 @@ export default function CrossDomainPage() {
                   <TrendingDown size={14} /> <span>-8.2%</span>
                 </div>
               </div>
-              <div className="h-1.5 bg-[#3E2C23] rounded-full overflow-hidden">
+              <div className="h-1.5 bg-surface-base rounded-full overflow-hidden">
                 <div className="h-full bg-red-500/60 rounded-full" style={{ width: '42%' }} />
               </div>
 
@@ -389,7 +389,7 @@ export default function CrossDomainPage() {
                   <TrendingDown size={14} /> <span>-3.1%</span>
                 </div>
               </div>
-              <div className="h-1.5 bg-[#3E2C23] rounded-full overflow-hidden">
+              <div className="h-1.5 bg-surface-base rounded-full overflow-hidden">
                 <div className="h-full bg-orange-500/60 rounded-full" style={{ width: '68%' }} />
               </div>
 
@@ -399,7 +399,7 @@ export default function CrossDomainPage() {
                   <TrendingUp size={14} /> <span>+1.4%</span>
                 </div>
               </div>
-              <div className="h-1.5 bg-[#3E2C23] rounded-full overflow-hidden">
+              <div className="h-1.5 bg-surface-base rounded-full overflow-hidden">
                 <div className="h-full bg-emerald-500/60 rounded-full" style={{ width: '85%' }} />
               </div>
             </div>

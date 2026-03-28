@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import random
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,6 +21,18 @@ from app.routers import ws as ws_router
 logger = logging.getLogger("jananaadi.scheduler")
 
 scheduler = AsyncIOScheduler()
+
+
+def _bounded_minutes(minutes: int, minimum: int = 5, maximum: int = 60) -> int:
+    return max(minimum, min(maximum, int(minutes)))
+
+
+def _poll_sleep_seconds(base_minutes: int, jitter_seconds: int) -> int:
+    base = _bounded_minutes(base_minutes) * 60
+    jitter = max(0, int(jitter_seconds))
+    if jitter == 0:
+        return base
+    return max(120, base + random.randint(-jitter, jitter))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -326,6 +339,34 @@ async def _run_incident_detection():
         logger.error(f"Delhi incident detection failed: {e}")
 
 
+async def _continuous_rss_poller(stop_event: asyncio.Event):
+    """Continuous RSS polling fallback when APScheduler is disabled.
+
+    Runs with moderate interval + jitter to avoid aggressive feed hits.
+    """
+    s = get_settings()
+    logger.info(
+        "Continuous RSS poller enabled: every ~%sm (jitter ±%ss)",
+        s.rss_poll_interval_min,
+        s.rss_poll_jitter_sec,
+    )
+
+    while not stop_event.is_set():
+        try:
+            await _scheduled_news_ingestion()
+            await _scheduled_gnews_ingestion()
+        except asyncio.CancelledError:
+            return
+        except Exception as e:
+            logger.error(f"Continuous RSS poller run failed: {e}")
+
+        sleep_for = _poll_sleep_seconds(s.rss_poll_interval_min, s.rss_poll_jitter_sec)
+        try:
+            await asyncio.wait_for(stop_event.wait(), timeout=sleep_for)
+        except asyncio.TimeoutError:
+            continue
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # App lifespan
 # ─────────────────────────────────────────────────────────────────────────────
@@ -336,12 +377,39 @@ async def lifespan(app: FastAPI):
 
     # Use settings for intervals
     from app.core.settings import get_settings
+    from datetime import datetime, timezone
     s = get_settings()
+    rss_stop_event: asyncio.Event | None = None
+    rss_task: asyncio.Task | None = None
+
     if s.enable_scheduler:
+        news_interval = _bounded_minutes(s.scheduler_news_interval_min)
+        gnews_interval = _bounded_minutes(s.scheduler_gnews_interval_min)
+        reddit_interval = _bounded_minutes(s.scheduler_reddit_interval_min)
+        domain_interval = _bounded_minutes(s.scheduler_domain_interval_min)
+
         scheduler.add_job(_scheduled_domain_ingestion, "interval", minutes=s.scheduler_domain_interval_min, id="domain_ingest", max_instances=1, coalesce=True)
-        scheduler.add_job(_scheduled_news_ingestion, "interval", minutes=s.scheduler_news_interval_min, id="news_ingest", max_instances=1, coalesce=True)
-        scheduler.add_job(_scheduled_gnews_ingestion, "interval", minutes=s.scheduler_gnews_interval_min, id="gnews_ingest", max_instances=1, coalesce=True)
-        scheduler.add_job(_scheduled_reddit_ingestion, "interval", minutes=s.scheduler_reddit_interval_min, id="reddit_ingest", max_instances=1, coalesce=True)
+        scheduler.add_job(
+            _scheduled_news_ingestion,
+            "interval",
+            minutes=news_interval,
+            jitter=max(0, s.rss_poll_jitter_sec),
+            id="news_ingest",
+            max_instances=1,
+            coalesce=True,
+            next_run_time=datetime.now(timezone.utc),
+        )
+        scheduler.add_job(
+            _scheduled_gnews_ingestion,
+            "interval",
+            minutes=gnews_interval,
+            jitter=max(0, s.rss_poll_jitter_sec),
+            id="gnews_ingest",
+            max_instances=1,
+            coalesce=True,
+            next_run_time=datetime.now(timezone.utc),
+        )
+        scheduler.add_job(_scheduled_reddit_ingestion, "interval", minutes=reddit_interval, id="reddit_ingest", max_instances=1, coalesce=True)
         # Snapshots, alerts, and domain intelligence scores
         scheduler.add_job(_scheduled_snapshot, "interval", hours=1, id="snapshot", max_instances=1, coalesce=True)
         scheduler.add_job(_scheduled_alert_check, "interval", hours=6, id="alert_check", max_instances=1, coalesce=True)
@@ -351,18 +419,35 @@ async def lifespan(app: FastAPI):
 
         scheduler.start()
         logger.info(
-            f"Background scheduler started: domains({s.scheduler_domain_interval_min}m), news({s.scheduler_news_interval_min}m), "
-            f"gnews({s.scheduler_gnews_interval_min}m), reddit({s.scheduler_reddit_interval_min}m), "
+            f"Background scheduler started: domains({domain_interval}m), news({news_interval}m), "
+            f"gnews({gnews_interval}m), reddit({reddit_interval}m), "
             f"snapshot(1h), domain_scores(2h), alerts(6h), incident_detection(15m)"
         )
-        logger.info("Auto-ingestion on startup DISABLED — trigger via /api/admin/trigger-ingestion")
+        logger.info("RSS ingestion starts immediately on app boot, then continues on interval.")
     else:
-        logger.info("Background scheduler disabled (ENABLE_SCHEDULER=false). API latency mode enabled.")
+        if s.enable_rss_autopoll:
+            rss_stop_event = asyncio.Event()
+            rss_task = asyncio.create_task(_continuous_rss_poller(rss_stop_event))
+            logger.info(
+                "Background scheduler disabled; RSS autopoll fallback is active (every ~%sm, jitter ±%ss).",
+                s.rss_poll_interval_min,
+                s.rss_poll_jitter_sec,
+            )
+        else:
+            logger.info("Background scheduler disabled (ENABLE_SCHEDULER=false). API latency mode enabled.")
 
     yield
     if s.enable_scheduler:
         scheduler.shutdown(wait=False)
         logger.info("Background scheduler stopped")
+    if rss_stop_event is not None:
+        rss_stop_event.set()
+    if rss_task is not None:
+        rss_task.cancel()
+        try:
+            await rss_task
+        except asyncio.CancelledError:
+            pass
 
 
 # ─────────────────────────────────────────────────────────────────────────────

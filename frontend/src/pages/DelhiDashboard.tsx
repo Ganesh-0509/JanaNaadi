@@ -111,33 +111,33 @@ export default function DelhiDashboard() {
   });
 
   return (
-    <div className="flex h-screen bg-[#0a0f1a] text-white">
-      <div className="w-80 flex-shrink-0 border-r border-slate-700/80 flex flex-col overflow-hidden bg-[#0d1321]">
-        <div className="p-4 border-b border-slate-700/80">
+    <div className="flex h-screen bg-background-50 text-content-primary">
+      <div className="flex w-80 flex-shrink-0 flex-col overflow-hidden border-r border-[var(--color-border)] bg-surface-base">
+        <div className="border-b border-[var(--color-border)] p-4">
           <h1 className="text-lg font-bold flex items-center gap-2">
-            <Flame size={20} className="text-red-400" />
+            <Flame size={20} className="text-primary-500" />
             Delhi Incident Intelligence
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5">Ward-level chain effect tracking</p>
+          <p className="mt-0.5 text-xs text-content-secondary">Ward-level chain effect tracking</p>
         </div>
 
         {stats && (
-          <div className="grid grid-cols-2 gap-2 p-4 border-b border-slate-700/80">
-            <div className="bg-slate-800/70 rounded-lg p-3 text-center">
-              <div className="text-2xl font-bold text-red-400">{stats.active}</div>
-              <div className="text-xs text-slate-400">Active</div>
+          <div className="grid grid-cols-2 gap-2 border-b border-[var(--color-border)] p-4">
+            <div className="rounded-lg border border-[var(--color-border)] bg-background-100 p-3 text-center">
+              <div className="text-2xl font-bold text-state-danger">{stats.active}</div>
+              <div className="text-xs text-content-secondary">Active</div>
             </div>
-            <div className="bg-slate-800/70 rounded-lg p-3 text-center">
-              <div className="text-2xl font-bold text-amber-400">{stats.total}</div>
-              <div className="text-xs text-slate-400">Total</div>
+            <div className="rounded-lg border border-[var(--color-border)] bg-background-100 p-3 text-center">
+              <div className="text-2xl font-bold text-state-warning">{stats.total}</div>
+              <div className="text-xs text-content-secondary">Total</div>
             </div>
-            <div className="bg-slate-800/70 rounded-lg p-3 text-center">
-              <div className="text-2xl font-bold text-rose-400">{stats.by_severity?.critical || 0}</div>
-              <div className="text-xs text-slate-400">Critical</div>
+            <div className="rounded-lg border border-[var(--color-border)] bg-background-100 p-3 text-center">
+              <div className="text-2xl font-bold text-state-danger">{stats.by_severity?.critical || 0}</div>
+              <div className="text-xs text-content-secondary">Critical</div>
             </div>
-            <div className="bg-slate-800/70 rounded-lg p-3 text-center">
-              <div className="text-2xl font-bold text-blue-400">{stats.max_chain_depth}</div>
-              <div className="text-xs text-slate-400">Max Chain</div>
+            <div className="rounded-lg border border-[var(--color-border)] bg-background-100 p-3 text-center">
+              <div className="text-2xl font-bold text-secondary-500">{stats.max_chain_depth}</div>
+              <div className="text-xs text-content-secondary">Max Chain</div>
             </div>
           </div>
         )}
@@ -153,8 +153,8 @@ export default function DelhiDashboard() {
                 }}
                 className={`w-full text-left rounded-xl p-3 border transition-all ${
                   selectedIncident?.id === inc.id
-                    ? 'border-blue-500 bg-blue-500/10'
-                    : 'border-slate-700 bg-slate-800/80 hover:border-slate-500'
+                    ? 'border-secondary-500 bg-secondary-50'
+                    : 'border-[var(--color-border)] bg-surface-base hover:border-content-muted/50'
                 }`}
               >
                 <div className="flex items-start gap-2">
@@ -163,8 +163,8 @@ export default function DelhiDashboard() {
                     style={{ backgroundColor: INCIDENT_COLORS[inc.incident_type] || '#6b7280' }}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-white truncate">{inc.title}</p>
-                    <p className="text-xs text-slate-400">{inc.ward?.name || 'Unknown ward'}</p>
+                    <p className="truncate text-sm font-medium text-content-primary">{inc.title}</p>
+                    <p className="text-xs text-content-secondary">{inc.ward?.name || 'MCD Strategic Center'}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <span
                         className={`text-xs font-bold uppercase ${
@@ -174,13 +174,13 @@ export default function DelhiDashboard() {
                               ? 'text-amber-400'
                               : inc.severity === 'moderate'
                                 ? 'text-yellow-400'
-                                : 'text-slate-400'
+                                : 'text-content-secondary'
                         }`}
                       >
                         {inc.severity}
                       </span>
                       {inc.chain_depth > 0 && (
-                        <span className="text-xs text-purple-400 flex items-center gap-0.5">
+                        <span className="flex items-center gap-0.5 text-xs text-secondary-500">
                           <GitBranch size={10} /> depth {inc.chain_depth}
                         </span>
                       )}
@@ -191,7 +191,7 @@ export default function DelhiDashboard() {
             ))}
 
           {!loading && incidents.length === 0 && (
-            <div className="text-center text-slate-500 py-12">
+            <div className="py-12 text-center text-content-secondary">
               <Activity size={32} className="mx-auto mb-2 opacity-30" />
               <p className="text-sm">No active incidents</p>
               <p className="text-xs mt-1">Run incident detection to populate</p>
@@ -201,7 +201,7 @@ export default function DelhiDashboard() {
       </div>
 
       <div className="flex-1 relative">
-        <MapContainer center={DELHI_CENTER} zoom={DELHI_ZOOM} className="h-full w-full" style={{ background: '#0f172a' }}>
+        <MapContainer center={DELHI_CENTER} zoom={DELHI_ZOOM} className="h-full w-full" style={{ background: '#f7f1e8' }}>
           <TileLayer
             url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
             attribution="&copy; OpenStreetMap &copy; CARTO"
@@ -277,11 +277,11 @@ export default function DelhiDashboard() {
             initial={{ x: 320, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 320, opacity: 0 }}
-            className="w-80 flex-shrink-0 border-l border-slate-700 overflow-y-auto p-4 space-y-4 bg-[#0d1321]"
+            className="w-80 flex-shrink-0 overflow-y-auto space-y-4 border-l border-[var(--color-border)] bg-surface-base p-4"
           >
             <div>
               <h3 className="font-bold text-lg">{selectedIncident.title}</h3>
-              <p className="text-xs text-slate-400">{selectedIncident.ward?.name}</p>
+              <p className="text-xs text-content-secondary">{selectedIncident.ward?.name}</p>
               <span
                 className={`text-xs font-bold uppercase mt-1 inline-block ${
                   selectedIncident.severity === 'critical'
@@ -297,7 +297,7 @@ export default function DelhiDashboard() {
 
             {(chainTree.chain?.length || 0) > 0 && (
               <div>
-                <h4 className="text-xs font-bold uppercase text-slate-400 mb-2 flex items-center gap-1">
+                <h4 className="mb-2 flex items-center gap-1 text-xs font-bold uppercase text-content-secondary">
                   <GitBranch size={12} /> Chain Effects ({chainTree.total_affected_wards || 0} wards)
                 </h4>
                 <ChainNode effects={chainTree.chain || []} depth={0} />
@@ -309,7 +309,7 @@ export default function DelhiDashboard() {
                 setSelectedIncident(null);
                 setChainTree(null);
               }}
-              className="w-full py-2 text-xs text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
+              className="w-full rounded-lg bg-background-100 py-2 text-xs text-content-secondary transition-colors hover:bg-background-200 hover:text-content-primary"
             >
               Close
             </button>
@@ -322,14 +322,14 @@ export default function DelhiDashboard() {
 
 function ChainNode({ effects, depth }: { effects: ChainNodeData[]; depth: number }) {
   return (
-    <div className={`space-y-2 ${depth > 0 ? 'ml-4 pl-3 border-l border-slate-700' : ''}`}>
+    <div className={`space-y-2 ${depth > 0 ? 'ml-4 border-l border-[var(--color-border)] pl-3' : ''}`}>
       {effects.map((effect, index) => (
-        <div key={`${effect.incident?.title || 'effect'}-${index}`} className="bg-slate-800/70 rounded-lg p-3 border border-slate-700">
-          <p className="text-xs font-medium text-white">{effect.incident?.title || 'Effect'}</p>
-          <p className="text-xs text-slate-400 mt-0.5">
+        <div key={`${effect.incident?.title || 'effect'}-${index}`} className="rounded-lg border border-[var(--color-border)] bg-background-100 p-3">
+          <p className="text-xs font-medium text-content-primary">{effect.incident?.title || 'Effect'}</p>
+          <p className="mt-0.5 text-xs text-content-secondary">
             {effect.incident?.ward_id ? `Ward ${effect.incident.ward_id}` : ''}
           </p>
-          <p className="text-xs text-purple-400 mt-1">
+          <p className="mt-1 text-xs text-secondary-600">
             ↳ {effect.causal_mechanism?.replace(/_/g, ' ') || 'spillover'}
             {effect.confidence ? ` (${Math.round(effect.confidence * 100)}%)` : ''}
           </p>

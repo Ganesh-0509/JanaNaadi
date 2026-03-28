@@ -24,8 +24,10 @@ export async function submitCitizenVoice(text: string, area?: string, category?:
   return data;
 }
 
-export async function getRecentVoices(limit = 20) {
-  const { data } = await client.get(`/api/public/recent-voices?limit=${limit}`);
+export async function getRecentVoices(limit = 20, delhiOnly = true) {
+  const { data } = await client.get('/api/public/recent-voices', {
+    params: { limit, delhi_only: delhiOnly },
+  });
   return data;
 }
 

@@ -51,65 +51,67 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <FilterProvider>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/login" element={<Login />} />
-              <Route element={<Layout />}>
-                <Route path="/pulse" element={<PublicDashboard />} />
-                <Route
-                  path="/map"
-                  element={<PrivateRoute><HeatmapView /></PrivateRoute>}
-                />
-                <Route
-                  path="/analysis/:type/:id"
-                  element={<PrivateRoute><AnalysisView /></PrivateRoute>}
-                />
-                <Route
-                  path="/compare"
-                  element={<PrivateRoute><ComparisonPage /></PrivateRoute>}
-                />
-                <Route
-                  path="/alerts"
-                  element={<PrivateRoute requireAdmin><AlertCenter /></PrivateRoute>}
-                />
-                <Route
-                  path="/briefs"
-                  element={<PrivateRoute requireAdmin><PolicyBriefs /></PrivateRoute>}
-                />
-                <Route
-                  path="/admin/ingest"
-                  element={<PrivateRoute requireAdmin><DataIngestion /></PrivateRoute>}
-                />
-                <Route
-                  path="/gov"
-                  element={<PrivateRoute><GovDashboard /></PrivateRoute>}
-                />
-                <Route
-                  path="/stream"
-                  element={<PrivateRoute><StreamPage /></PrivateRoute>}
-                />
-                <Route
-                  path="/search"
-                  element={<PrivateRoute><SearchPage /></PrivateRoute>}
-                />
-                <Route
-                  path="/ontology"
-                  element={<PrivateRoute><OntologyPage /></PrivateRoute>}
-                />
-                <Route
-                  path="/cross-domain"
-                  element={<PrivateRoute><CrossDomainPage /></PrivateRoute>}
-                />
-                <Route
-                  path="/delhi"
-                  element={<PrivateRoute><DelhiDashboard /></PrivateRoute>}
-                />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/submit" element={<SubmitGrievance />} />
-              </Route>
-            </Routes>
-          </Suspense>
+          <div className="mcd-readable">
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/login" element={<Login />} />
+                <Route element={<Layout />}>
+                  <Route path="/pulse" element={<PublicDashboard />} />
+                  <Route
+                    path="/map"
+                    element={<PrivateRoute><HeatmapView /></PrivateRoute>}
+                  />
+                  <Route
+                    path="/analysis/:type/:id"
+                    element={<PrivateRoute><AnalysisView /></PrivateRoute>}
+                  />
+                  <Route
+                    path="/compare"
+                    element={<PrivateRoute><ComparisonPage /></PrivateRoute>}
+                  />
+                  <Route
+                    path="/alerts"
+                    element={<PrivateRoute requireAdmin><AlertCenter /></PrivateRoute>}
+                  />
+                  <Route
+                    path="/briefs"
+                    element={<PrivateRoute requireAdmin><PolicyBriefs /></PrivateRoute>}
+                  />
+                  <Route
+                    path="/admin/ingest"
+                    element={<PrivateRoute requireAdmin><DataIngestion /></PrivateRoute>}
+                  />
+                  <Route
+                    path="/gov"
+                    element={<PrivateRoute><GovDashboard /></PrivateRoute>}
+                  />
+                  <Route
+                    path="/stream"
+                    element={<PrivateRoute><StreamPage /></PrivateRoute>}
+                  />
+                  <Route
+                    path="/search"
+                    element={<PrivateRoute><SearchPage /></PrivateRoute>}
+                  />
+                  <Route
+                    path="/ontology"
+                    element={<PrivateRoute><OntologyPage /></PrivateRoute>}
+                  />
+                  <Route
+                    path="/cross-domain"
+                    element={<PrivateRoute><CrossDomainPage /></PrivateRoute>}
+                  />
+                  <Route
+                    path="/delhi"
+                    element={<PrivateRoute><DelhiDashboard /></PrivateRoute>}
+                  />
+                  <Route path="/about" element={<AboutPage />} />
+                  <Route path="/submit" element={<SubmitGrievance />} />
+                </Route>
+              </Routes>
+            </Suspense>
+          </div>
         </FilterProvider>
       </AuthProvider>
     </BrowserRouter>

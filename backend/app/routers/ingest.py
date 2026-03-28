@@ -35,6 +35,42 @@ def _retry_supabase_query(query_fn, max_retries=3):
                 logger.error(f"Supabase connection failed after {max_retries} attempts")
                 raise
 
+
+# Valid domains for sentiment entries (matches database schema)
+VALID_DOMAINS = {"geopolitics", "economics", "defense", "climate", "technology", "society", "general"}
+
+# Map domain values to allowed set
+DOMAIN_MAPPING = {
+    "infrastructure": "society",
+    "civic": "society",
+    "municipal": "society",
+    "water": "society",
+    "electricity": "society",
+    "sanitation": "society",
+    "transportation": "society",
+    "health": "society",
+    "education": "society",
+}
+
+
+def _normalize_domain(domain: str | None) -> str | None:
+    """Normalize domain to database-allowed values."""
+    if not domain:
+        return None
+    
+    d = domain.strip().lower()
+    
+    # Check if exact match
+    if d in VALID_DOMAINS:
+        return d
+    
+    # Check mapping table
+    if d in DOMAIN_MAPPING:
+        return DOMAIN_MAPPING[d]
+    
+    # Default to society for civic-related issues, otherwise general
+    return "society" if any(civic in d for civic in ["ward", "mcd", "civic", "municipal"]) else "general"
+
 # Tracks the result of the last ingestion run for each source so the status
 # endpoint can report actual counts rather than just "triggered".
 _last_run_info: dict[str, dict] = {
@@ -110,7 +146,7 @@ async def _process_and_store(
         "confidence": nlp.confidence,
         "primary_topic_id": topic_id,
         "extracted_keywords": nlp.keywords,
-        "domain": domain,
+        "domain": _normalize_domain(domain),
         "state_id": geo.get("state_id"),
         "district_id": geo.get("district_id"),
         "constituency_id": geo.get("constituency_id"),
@@ -145,7 +181,7 @@ async def _process_and_store(
             entry_id=entry["id"],
             text=text,
             sentiment=nlp.sentiment,
-            domain=domain,
+            domain=_normalize_domain(domain),
         )
     except Exception as e:
         # Entity extraction failure must never break ingestion

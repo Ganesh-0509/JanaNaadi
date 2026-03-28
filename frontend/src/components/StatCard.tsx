@@ -5,9 +5,19 @@ interface Props {
   label: string;
   value: string | number;
   icon?: string;
-  trend?: number; // positive = up, negative = down
-  color?: string;
+  trend?: number;
+  color?: 'primary' | 'secondary' | 'accent' | 'success' | 'warning' | 'danger' | 'info';
 }
+
+const colorMap: Record<string, string> = {
+  primary: 'text-primary-700',
+  secondary: 'text-secondary-700',
+  accent: 'text-accent-700',
+  success: 'text-state-success',
+  warning: 'text-state-warning',
+  danger: 'text-state-danger',
+  info: 'text-state-info',
+};
 
 function useCountUp(end: number, duration = 1200) {
   const [value, setValue] = useState(0);
@@ -20,7 +30,7 @@ function useCountUp(end: number, duration = 1200) {
     const startTime = performance.now();
     const step = (now: number) => {
       const progress = Math.min((now - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
       setValue(Math.round(start + (end - start) * eased));
       if (progress < 1) requestAnimationFrame(step);
     };
@@ -32,26 +42,27 @@ function useCountUp(end: number, duration = 1200) {
 
 export default function StatCard({ label, value, icon, trend, color }: Props) {
   const numericValue = typeof value === 'string' ? parseFloat(value.replace(/[^0-9.-]/g, '')) : value;
-  const isNumeric = !isNaN(numericValue) && typeof value !== 'string';
+  const isNumeric = !isNaN(numericValue);
   const { value: animatedValue, ref } = useCountUp(isNumeric ? numericValue : 0);
+  const displayColor = color ? colorMap[color] : 'text-content-primary';
 
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="mcd-card group z-10"
+      className="mcd-card !p-6"
     >
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm text-[#6B5E57]">{label}</span>
-        {icon && <span className="text-xl">{icon}</span>}
+      <div className="mb-3 flex items-center justify-between relative z-10">
+        <span className="text-sm font-semibold text-content-muted">{label}</span>
+        {icon && <span className="text-2xl opacity-80">{icon}</span>}
       </div>
-      <div className="text-3xl font-bold" style={{ color }}>
+      <div className={`text-3xl font-bold tracking-tight relative z-10 ${displayColor}`}>
         {isNumeric ? animatedValue.toLocaleString() : value}
       </div>
       {trend !== undefined && (
-        <div className={`text-xs mt-1 ${trend >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+        <div className={`mt-2 text-xs font-semibold ${trend >= 0 ? 'text-state-success' : 'text-state-danger'}`}>
           {trend >= 0 ? '↑' : '↓'} {Math.abs(trend).toFixed(1)}% from last period
         </div>
       )}

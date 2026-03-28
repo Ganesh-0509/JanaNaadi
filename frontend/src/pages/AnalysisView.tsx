@@ -39,7 +39,6 @@ export default function AnalysisView() {
   const { filters } = useFilters();
   const rawId = id || '0';
   const scope = type || 'state';
-  // State IDs can be codes like "TN", "AP" — keep as string for API
   const isNumericId = /^\d+$/.test(rawId);
   const numericId = isNumericId ? Number(rawId) : undefined;
 
@@ -145,15 +144,15 @@ export default function AnalysisView() {
 
   if (loading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="space-y-6 bg-background-50 p-6 text-content-primary">
         <div>
-          <div className="h-8 w-48 bg-slate-700/50 rounded-lg animate-pulse" />
-          <div className="h-4 w-32 bg-slate-700/50 rounded-lg animate-pulse mt-2" />
+          <div className="h-8 w-48 animate-pulse rounded-lg bg-background-200" />
+          <div className="mt-2 h-4 w-32 animate-pulse rounded-lg bg-background-200" />
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)}
         </div>
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid gap-6 md:grid-cols-2">
           <CardSkeleton />
           <CardSkeleton />
         </div>
@@ -163,8 +162,8 @@ export default function AnalysisView() {
 
   if (!analysis) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-[#6B5E57]">No data found for this region</div>
+      <div className="flex h-full items-center justify-center">
+        <div className="text-content-secondary">No data found for this region</div>
       </div>
     );
   }
@@ -174,52 +173,48 @@ export default function AnalysisView() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="p-6 space-y-6"
+      className="space-y-6 bg-background-50 p-6 text-content-primary"
     >
-      {/* Header */}
-      <div className="flex items-start justify-between flex-wrap gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">{analysis.name}</h1>
-          <p className="text-sm text-[#6B5E57] capitalize">{scope} Analysis</p>
+          <p className="text-sm capitalize text-content-secondary">{scope} Analysis</p>
         </div>
         <button
           onClick={handleSummarize}
           disabled={summarizing}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 rounded-xl text-sm font-medium transition-colors"
+          className="flex items-center gap-2 rounded-xl bg-primary-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-600 disabled:opacity-50"
         >
           {summarizing ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
           {summarizing ? 'Analyzing...' : 'Summarize Issues'}
         </button>
       </div>
 
-      {/* AI Summary */}
       {aiSummary && (
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-purple-500/10 border border-purple-500/30 rounded-2xl p-5"
+          className="rounded-2xl border border-secondary-200 bg-secondary-50 p-5"
         >
-          <p className="text-xs font-semibold text-purple-400 uppercase tracking-wide mb-2">✨ AI Policy Summary</p>
-          <p className="text-[#F2EBE1] text-sm leading-relaxed">{aiSummary}</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-secondary-700">AI Policy Summary</p>
+          <p className="text-sm leading-relaxed text-content-primary">{aiSummary}</p>
         </motion.div>
       )}
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Avg Sentiment" value={formatScore(analysis.avg_sentiment)} color={analysis.avg_sentiment > 0 ? '#22C55E' : '#EF4444'} />
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <StatCard label="Avg Sentiment" value={formatScore(analysis.avg_sentiment)} color={analysis.avg_sentiment > 0 ? 'success' : 'danger'} />
         <StatCard label="Total Voices" value={formatNumber(analysis.sentiment_distribution?.total || 0)} icon="📊" />
         <StatCard label="Top Issue" value={analysis.topic_breakdown?.[0]?.topic || '—'} icon="🔥" />
         <StatCard label="Sources" value={Object.keys(analysis.source_distribution || {}).length} icon="📡" />
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 bg-[#3E2C23] rounded-lg p-1 w-fit">
+      <div className="flex w-fit gap-1 rounded-lg border border-[var(--color-border)] bg-surface-muted p-1">
         {(['overview', 'sources', 'voices'] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium capitalize ${
-              tab === t ? 'bg-blue-500 text-white' : 'text-[#D8CCC0] hover:text-white'
+            className={`rounded-lg px-4 py-2 text-sm font-medium capitalize ${
+              tab === t ? 'bg-secondary-500 text-white' : 'text-content-secondary hover:text-content-primary'
             }`}
           >
             {t === 'sources' ? 'Sources & Languages' : t}
@@ -227,12 +222,10 @@ export default function AnalysisView() {
         ))}
       </div>
 
-      {/* Tab Content */}
       {tab === 'overview' && (
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* Gauge */}
-          <div className="bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20 flex flex-col items-center">
-            <h3 className="font-bold mb-4">Distribution</h3>
+        <div className="grid gap-6 md:grid-cols-3">
+          <div className="flex flex-col items-center rounded-2xl border border-[var(--color-border)] bg-surface-base p-6">
+            <h3 className="mb-4 font-bold">Distribution</h3>
             <SentimentGauge
               positive={analysis.sentiment_distribution?.positive || 0}
               negative={analysis.sentiment_distribution?.negative || 0}
@@ -241,36 +234,34 @@ export default function AnalysisView() {
             />
           </div>
 
-          {/* Trend Chart */}
-          <div className="md:col-span-2 bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20">
-            <h3 className="font-bold mb-4">Sentiment Trend</h3>
-            {/* Forecast Insight Banner */}
+          <div className="rounded-2xl border border-[var(--color-border)] bg-surface-base p-6 md:col-span-2">
+            <h3 className="mb-4 font-bold">Sentiment Trend</h3>
             {forecastData.length > 0 && (() => {
               const last = forecastData[forecastData.length - 1];
               const first = forecastData[0];
               const delta = last.forecast_score - first.forecast_score;
               const isRising = delta > 0.02;
               const isFalling = delta < -0.02;
-              const dirColor = isRising ? 'text-emerald-400' : isFalling ? 'text-red-400' : 'text-yellow-400';
-              const dirBg = isRising ? 'bg-emerald-500/10 border-emerald-500/20' : isFalling ? 'bg-red-500/10 border-red-500/20' : 'bg-yellow-500/10 border-yellow-500/20';
+              const dirColor = isRising ? 'text-emerald-600' : isFalling ? 'text-red-600' : 'text-amber-600';
+              const dirBg = isRising ? 'bg-emerald-50 border-emerald-200' : isFalling ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200';
               const DirIcon = isRising ? TrendingUp : isFalling ? TrendingDown : Minus;
               const label = isRising ? 'Rising' : isFalling ? 'Falling' : 'Stable';
               return (
-                <div className={`flex items-center gap-4 rounded-xl border px-4 py-3 mb-4 text-sm ${dirBg}`}>
+                <div className={`mb-4 flex items-center gap-4 rounded-xl border px-4 py-3 text-sm ${dirBg}`}>
                   <div className={`flex items-center gap-1.5 font-semibold ${dirColor}`}>
                     <DirIcon size={16} />
                     <span>{label} Mood</span>
                   </div>
-                  <div className="text-[#D8CCC0] text-xs">
+                  <div className="text-xs text-content-secondary">
                     Predicted score in 7 days: <span className={`font-bold ${dirColor}`}>{last.forecast_score.toFixed(3)}</span>
-                    <span className="ml-2 opacity-60">(range {last.lower.toFixed(2)} → {last.upper.toFixed(2)})</span>
+                    <span className="ml-2 opacity-60">(range {last.lower.toFixed(2)} to {last.upper.toFixed(2)})</span>
                   </div>
-                  <div className="ml-auto text-xs text-[#D8CCC0] hidden md:block">AI linear forecast · 30-day history</div>
+                  <div className="ml-auto hidden text-xs text-content-secondary md:block">AI linear forecast · 30-day history</div>
                 </div>
               );
             })()}
             {trendLoading ? (
-              <div className="text-[#D8CCC0] text-center py-10">Loading trend...</div>
+              <div className="py-10 text-center text-content-secondary">Loading trend...</div>
             ) : (
               <TrendChart data={trendData} forecastData={forecastData} />
             )}
@@ -279,10 +270,9 @@ export default function AnalysisView() {
       )}
 
       {tab === 'sources' && (
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Source Distribution */}
-          <div className="bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20">
-            <h3 className="font-bold mb-4">Source Breakdown</h3>
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="rounded-2xl border border-[var(--color-border)] bg-surface-base p-6">
+            <h3 className="mb-4 font-bold">Source Breakdown</h3>
             {(() => {
               const srcData = Object.entries(analysis.source_distribution || {}).map(([name, count]) => ({
                 name: name.charAt(0).toUpperCase() + name.slice(1),
@@ -308,7 +298,7 @@ export default function AnalysisView() {
                         ))}
                       </Pie>
                       <Tooltip
-                        contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }}
+                        contentStyle={{ background: '#FFFFFF', border: '1px solid rgba(62,44,35,0.12)', borderRadius: 8, fontSize: 12 }}
                         formatter={(val: number) => [`${val} voices`, '']}
                       />
                     </PieChart>
@@ -316,9 +306,9 @@ export default function AnalysisView() {
                   <div className="flex flex-wrap justify-center gap-3">
                     {srcData.map((d) => (
                       <div key={d.name} className="flex items-center gap-1.5 text-sm">
-                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }} />
-                        <span className="text-[#D8CCC0]">{d.name}</span>
-                        <span className="text-[#F2EBE1]">({Math.round((d.value / totalVoices) * 100)}%)</span>
+                        <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: d.color }} />
+                        <span className="text-content-secondary">{d.name}</span>
+                        <span className="text-content-primary">({Math.round((d.value / totalVoices) * 100)}%)</span>
                       </div>
                     ))}
                   </div>
@@ -327,23 +317,21 @@ export default function AnalysisView() {
             })()}
           </div>
 
-          {/* Language Distribution */}
-          <div className="bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20">
-            <h3 className="font-bold mb-4">Language Distribution</h3>
+          <div className="rounded-2xl border border-[var(--color-border)] bg-surface-base p-6">
+            <h3 className="mb-4 font-bold">Language Distribution</h3>
             {(() => {
-              const langData = Object.entries(analysis.language_breakdown || {})
-                .sort(([, a], [, b]) => (b as number) - (a as number));
+              const langData = Object.entries(analysis.language_breakdown || {}).sort(([, a], [, b]) => (b as number) - (a as number));
               const maxCount = langData.length > 0 ? (langData[0][1] as number) : 1;
               const langColors = ['#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B', '#22C55E', '#06B6D4', '#EF4444', '#F97316', '#14B8A6'];
               return (
                 <div className="space-y-3">
                   {langData.map(([code, count], i) => (
                     <div key={code}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-[#D8CCC0]">{LANG_LABELS[code] || code}</span>
-                        <span className="text-[#F2EBE1]">{count as number} voices</span>
+                      <div className="mb-1 flex justify-between text-sm">
+                        <span className="text-content-secondary">{LANG_LABELS[code] || code}</span>
+                        <span className="text-content-primary">{count as number} voices</span>
                       </div>
-                      <div className="w-full bg-slate-700 rounded-full h-2.5">
+                      <div className="h-2.5 w-full rounded-full bg-background-100">
                         <div
                           className="h-2.5 rounded-full transition-all"
                           style={{
@@ -355,25 +343,24 @@ export default function AnalysisView() {
                     </div>
                   ))}
                   {langData.length === 0 && (
-                    <div className="text-[#D8CCC0] text-center py-4">No language data</div>
+                    <div className="py-4 text-center text-content-secondary">No language data</div>
                   )}
                 </div>
               );
             })()}
           </div>
 
-          {/* Top Issues Breakdown */}
-          <div className="md:col-span-2 bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20">
-            <h3 className="font-bold mb-4">Top Issues</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div className="rounded-2xl border border-[var(--color-border)] bg-surface-base p-6 md:col-span-2">
+            <h3 className="mb-4 font-bold">Top Issues</h3>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
               {(analysis.topic_breakdown || []).map((t: any, i: number) => (
-                <div key={i} className="bg-slate-700/50 rounded-xl p-4 text-center">
-                  <div className="text-2xl font-bold text-white">{t.count}</div>
-                  <div className="text-xs text-[#6B5E57] mt-1">{t.topic}</div>
+                <div key={i} className="rounded-xl border border-[var(--color-border)] bg-background-50 p-4 text-center">
+                  <div className="text-2xl font-bold text-content-primary">{t.count}</div>
+                  <div className="mt-1 text-xs text-content-secondary">{t.topic}</div>
                 </div>
               ))}
               {(!analysis.topic_breakdown || analysis.topic_breakdown.length === 0) && (
-                <div className="col-span-full text-[#6B5E57] text-center py-4">No topic data</div>
+                <div className="col-span-full py-4 text-center text-content-secondary">No topic data</div>
               )}
             </div>
           </div>
@@ -381,13 +368,13 @@ export default function AnalysisView() {
       )}
 
       {tab === 'voices' && (
-        <div className="bg-[#3E2C23] rounded-2xl p-6 border border-[#3E2C23]/20">
-          <div className="flex items-center justify-between mb-4">
+        <div className="rounded-2xl border border-[var(--color-border)] bg-surface-base p-6">
+          <div className="mb-4 flex items-center justify-between">
             <h3 className="font-bold">Citizen Voices ({voices.length})</h3>
             <button
               onClick={exportCSV}
               disabled={voices.length === 0}
-              className="flex items-center gap-2 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 rounded-lg text-xs font-medium border border-slate-600"
+              className="flex items-center gap-2 rounded-lg border border-[var(--color-border)] bg-background-100 px-3 py-1.5 text-xs font-medium text-content-primary hover:bg-background-200 disabled:opacity-50"
             >
               <Download size={13} /> Export CSV
             </button>
@@ -398,7 +385,7 @@ export default function AnalysisView() {
               <button
                 onClick={loadMoreVoices}
                 disabled={loadingMore}
-                className="px-6 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 rounded-lg text-sm font-medium"
+                className="rounded-lg bg-secondary-500 px-6 py-2 text-sm font-medium text-white hover:bg-secondary-600 disabled:opacity-50"
               >
                 {loadingMore ? 'Loading...' : 'Load More'}
               </button>

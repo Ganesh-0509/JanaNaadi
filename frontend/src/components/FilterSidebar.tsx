@@ -38,24 +38,24 @@ export default function FilterSidebar({ open = true }: Props) {
   if (!open) return null;
 
   return (
-    <div className="w-64 flex-shrink-0 bg-[#FAF5ED] border-r border-[#3E2C23]/10 p-4 space-y-5 overflow-y-auto mcd-scrollbar selection:bg-[#E76F2E]/20">
+    <div className="w-64 flex-shrink-0 bg-[#080A0F]/80 backdrop-blur-xl border-r border-white/5 p-4 space-y-5 overflow-y-auto mcd-scrollbar selection:bg-[#E76F2E]/30 selection:text-white relative z-10 shadow-glass-lg">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="font-black text-sm text-[#3E2C23] uppercase tracking-wide">Filters</h3>
+          <h3 className="font-black text-sm text-white uppercase tracking-wide">Filters</h3>
           {activeCount > 0 && (
-            <span className="bg-[#E76F2E] text-white text-xs font-black px-1.5 py-0.5 rounded-full leading-none shadow-sm shadow-[#E76F2E]/30">
+            <span className="bg-[#E76F2E] text-white text-xs font-black px-1.5 py-0.5 rounded-full leading-none shadow-glow">
               {activeCount}
             </span>
           )}
         </div>
-        <button onClick={resetFilters} className="text-xs font-bold text-[#6B5E57] hover:text-[#E76F2E] transition-colors uppercase tracking-widest">
+        <button onClick={resetFilters} className="text-xs font-bold text-content-muted hover:text-[#00E5FF] transition-colors uppercase tracking-widest">
           Reset
         </button>
       </div>
 
       {/* Time Range */}
       <div>
-        <label className="text-[10px] text-[#6B5E57] font-black uppercase tracking-widest block mb-2">Time Range</label>
+        <label className="text-[10px] text-content-muted font-black uppercase tracking-widest block mb-2">Time Range</label>
         <div className="flex gap-1">
           {TIME_OPTIONS.map((t) => (
             <button
@@ -63,8 +63,8 @@ export default function FilterSidebar({ open = true }: Props) {
               onClick={() => setFilters({ timeRange: t })}
               className={`flex-1 py-1.5 text-xs rounded-lg font-black transition-all ${
                 filters.timeRange === t
-                  ? 'bg-[#E76F2E] text-white shadow-md mcd-glow-saffron'
-                  : 'bg-white border border-[#3E2C23]/10 text-[#6B5E57] hover:border-[#E76F2E] hover:text-[#E76F2E]'
+                  ? 'bg-[#E76F2E] text-white shadow-glow'
+                  : 'bg-surface-base/5 border border-white/10 text-content-muted hover:border-[#E76F2E]/50 hover:text-white'
               }`}
             >
               {t}
@@ -75,11 +75,11 @@ export default function FilterSidebar({ open = true }: Props) {
 
       {/* Topic */}
       <div>
-        <label className="text-[10px] text-[#6B5E57] font-black uppercase tracking-widest block mb-2">Topic</label>
+        <label className="text-[10px] text-content-muted font-black uppercase tracking-widest block mb-2">Topic</label>
         <select
           value={filters.topic || ''}
           onChange={(e) => setFilters({ topic: e.target.value || null })}
-          className="w-full bg-white border border-[#3E2C23]/10 rounded-lg px-3 py-2 text-sm text-[#3E2C23] font-medium outline-none focus:border-[#E76F2E] focus:ring-1 focus:ring-[#E76F2E]/20 transition-all shadow-sm"
+          className="w-full bg-surface-base border border-white/10 rounded-lg px-3 py-2 text-sm text-content-primary font-medium outline-none focus:border-[#E76F2E] focus:ring-1 focus:ring-[#E76F2E]/20 transition-all shadow-glass"
         >
           <option value="">All Topics</option>
           {TOPICS.map((t) => (
@@ -90,11 +90,11 @@ export default function FilterSidebar({ open = true }: Props) {
 
       {/* Source */}
       <div>
-        <label className="text-[10px] text-[#6B5E57] font-black uppercase tracking-widest block mb-2">Source</label>
+        <label className="text-[10px] text-content-muted font-black uppercase tracking-widest block mb-2">Source</label>
         <select
           value={filters.source || ''}
           onChange={(e) => setFilters({ source: e.target.value || null })}
-          className="w-full bg-white border border-[#3E2C23]/10 rounded-lg px-3 py-2 text-sm text-[#3E2C23] font-medium outline-none focus:border-[#E76F2E] focus:ring-1 focus:ring-[#E76F2E]/20 transition-all shadow-sm"
+          className="w-full bg-surface-base border border-white/10 rounded-lg px-3 py-2 text-sm text-content-primary font-medium outline-none focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF]/20 transition-all shadow-glass"
         >
           <option value="">All Sources</option>
           {SOURCES.map((s) => (
@@ -105,11 +105,11 @@ export default function FilterSidebar({ open = true }: Props) {
 
       {/* Language */}
       <div>
-        <label className="text-[10px] text-[#6B5E57] font-black uppercase tracking-widest block mb-2">Language</label>
+        <label className="text-[10px] text-content-muted font-black uppercase tracking-widest block mb-2">Language</label>
         <select
           value={filters.language || ''}
           onChange={(e) => setFilters({ language: e.target.value || null })}
-          className="w-full bg-white border border-[#3E2C23]/10 rounded-lg px-3 py-2 text-sm text-[#3E2C23] font-medium outline-none focus:border-[#E76F2E] focus:ring-1 focus:ring-[#E76F2E]/20 transition-all shadow-sm"
+          className="w-full bg-surface-base border border-white/10 rounded-lg px-3 py-2 text-sm text-content-primary font-medium outline-none focus:border-[#E76F2E] focus:ring-1 focus:ring-[#E76F2E]/20 transition-all shadow-glass"
         >
           <option value="">All Languages</option>
           {LANGUAGES.map((l) => (
@@ -120,11 +120,11 @@ export default function FilterSidebar({ open = true }: Props) {
 
       {/* Sentiment */}
       <div>
-        <label className="text-[10px] text-[#6B5E57] font-black uppercase tracking-widest block mb-2">Sentiment</label>
+        <label className="text-[10px] text-content-muted font-black uppercase tracking-widest block mb-2">Sentiment</label>
         <select
           value={filters.sentiment || ''}
           onChange={(e) => setFilters({ sentiment: e.target.value || null })}
-          className="w-full bg-white border border-[#3E2C23]/10 rounded-lg px-3 py-2 text-sm text-[#3E2C23] font-medium outline-none focus:border-[#E76F2E] focus:ring-1 focus:ring-[#E76F2E]/20 transition-all shadow-sm"
+          className="w-full bg-surface-base border border-white/10 rounded-lg px-3 py-2 text-sm text-content-primary font-medium outline-none focus:border-[#00E5FF] focus:ring-1 focus:ring-[#00E5FF]/20 transition-all shadow-glass"
         >
           <option value="">All Sentiments</option>
           {SENTIMENTS.map((s) => (

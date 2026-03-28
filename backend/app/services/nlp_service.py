@@ -16,7 +16,7 @@ except ImportError:
 
 _COMBINED_PROMPT = """Analyze this text and return ONLY valid JSON.
 
-Text: "{text}"
+Text: "__INPUT_TEXT__"
 
 {
   "sentiment": "positive|negative|neutral",
@@ -119,7 +119,8 @@ async def _analyze_with_llm(text: str) -> dict[str, Any]:
     from app.core.settings import get_settings
 
     settings = get_settings()
-    prompt = _COMBINED_PROMPT.format(text=text)
+    # Do not use str.format here because the JSON schema in the prompt contains braces.
+    prompt = _COMBINED_PROMPT.replace("__INPUT_TEXT__", text)
 
     # Local-first mode
     if settings.use_local_llm:

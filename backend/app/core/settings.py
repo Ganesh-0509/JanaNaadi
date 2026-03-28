@@ -13,8 +13,14 @@ class Settings(BaseSettings):
     scheduler_reddit_interval_min: int = 15
     scheduler_domain_interval_min: int = 15
 
+    # RSS autopoll behavior
+    # Keeps RSS ingestion active while backend is running without being too aggressive.
+    enable_rss_autopoll: bool = True
+    rss_poll_interval_min: int = 8
+    rss_poll_jitter_sec: int = 90
+
     # WebSocket history limit
-    ws_history_limit: int = 100
+    ws_history_limit: int = 300
     # Supabase
     supabase_url: str = ""
     supabase_key: str = ""  # anon key

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef } from 'react';
 
 interface ParticleType {
   x: number;
@@ -11,13 +11,13 @@ interface ParticleType {
   type: 'mandala' | 'dot' | 'line';
 }
 
-export default function IndianMandalaBackground() {
+const IndianMandalaBackground = memo(function IndianMandalaBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationIdRef = useRef<number | null>(null);
   const mouseRef = useRef({ x: 0, y: 0, active: false });
   const rotationRef = useRef(0);
   const particlesRef = useRef<ParticleType[]>([]);
-  const [isVisible, setIsVisible] = useState(true);
+  const hiddenRef = useRef(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -29,7 +29,6 @@ export default function IndianMandalaBackground() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    // Indian color palette
     const colors = {
       saffron: '#FF9933',
       white: '#FFFFFF',
@@ -41,14 +40,12 @@ export default function IndianMandalaBackground() {
       darkblue: '#0F1419',
     };
 
-    // Initialize particles
     const initializeParticles = () => {
       const particles: ParticleType[] = [];
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
 
-      // Create floating particles around the mandala
-      for (let i = 0; i < 15; i++) {
+      for (let i = 0; i < 10; i++) {
         const angle = Math.random() * Math.PI * 2;
         const distance = 200 + Math.random() * 300;
         particles.push({
@@ -67,19 +64,16 @@ export default function IndianMandalaBackground() {
 
     particlesRef.current = initializeParticles();
 
-    // Mouse tracking
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouseRef.current.y = (e.clientY / window.innerHeight) * 2 - 1;
       mouseRef.current.active = true;
 
-      // Reset after inactivity
       setTimeout(() => {
         mouseRef.current.active = false;
       }, 2000);
     };
 
-    // Touch tracking for interactivity
     const handleTouchMove = (e: TouchEvent) => {
       const touch = e.touches[0];
       mouseRef.current.x = (touch.clientX / window.innerWidth) * 2 - 1;
@@ -90,7 +84,6 @@ export default function IndianMandalaBackground() {
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('touchmove', handleTouchMove);
 
-    // Draw mandala pattern with improvements
     const drawMandala = (
       x: number,
       y: number,
@@ -113,11 +106,9 @@ export default function IndianMandalaBackground() {
         const angle = (Math.PI * 2 * i) / petals;
         ctx.rotate((Math.PI * 2) / petals);
 
-        // Draw petal with gradient
         ctx.fillStyle = color;
         ctx.globalAlpha = opacity * (0.4 + 0.6 * Math.sin(rotation + i));
 
-        // Petal shape using bezier curves
         ctx.beginPath();
         ctx.moveTo(0, innerRadius);
         ctx.bezierCurveTo(
@@ -139,7 +130,6 @@ export default function IndianMandalaBackground() {
         ctx.fill();
       }
 
-      // Decorative inner circles
       ctx.globalAlpha = opacity;
       ctx.fillStyle = color;
       for (let r = innerRadius; r < size * 0.2; r += size * 0.05) {
@@ -149,7 +139,6 @@ export default function IndianMandalaBackground() {
         ctx.fill();
       }
 
-      // Center dot
       ctx.globalAlpha = opacity * 0.9;
       ctx.fillStyle = color;
       ctx.beginPath();
@@ -159,7 +148,6 @@ export default function IndianMandalaBackground() {
       ctx.restore();
     };
 
-    // Draw geometric patterns with improved visuals
     const drawGeometry = () => {
       ctx.save();
       ctx.strokeStyle = colors.saffron;
@@ -169,7 +157,6 @@ export default function IndianMandalaBackground() {
       const centerY = canvas.height / 2;
       const maxRadius = Math.max(canvas.width, canvas.height) * 0.7;
 
-      // Concentric circles with rotation
       for (let r = maxRadius * 0.1; r < maxRadius; r += maxRadius * 0.12) {
         ctx.globalAlpha = 0.04 + (0.08 * Math.sin(rotationRef.current * 0.0008 + r * 0.002));
         ctx.beginPath();
@@ -177,7 +164,6 @@ export default function IndianMandalaBackground() {
         ctx.stroke();
       }
 
-      // Radial lines with gradient effect
       for (let i = 0; i < 24; i++) {
         const angle = (Math.PI * 2 * i) / 24 + rotationRef.current * 0.00008;
         const x1 = centerX + Math.cos(angle) * maxRadius * 0.15;
@@ -193,7 +179,6 @@ export default function IndianMandalaBackground() {
         ctx.stroke();
       }
 
-      // Triangular grid pattern
       const w = 80;
       for (let x = -w; x < canvas.width + w; x += w) {
         for (let y = -w; y < canvas.height + w; y += w) {
@@ -211,17 +196,14 @@ export default function IndianMandalaBackground() {
       ctx.restore();
     };
 
-    // Update and draw particles
     const updateParticles = () => {
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
 
       particlesRef.current.forEach((particle) => {
-        // Movement
         particle.x += particle.vx;
         particle.y += particle.vy;
 
-        // Attraction to center with damping
         const dx = centerX - particle.x;
         const dy = centerY - particle.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -231,13 +213,11 @@ export default function IndianMandalaBackground() {
         particle.vx *= 0.99;
         particle.vy *= 0.99;
 
-        // Bounce off edges
         if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
         if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
         particle.x = Math.max(0, Math.min(canvas.width, particle.x));
         particle.y = Math.max(0, Math.min(canvas.height, particle.y));
 
-        // Draw particle
         ctx.fillStyle = particle.color;
         ctx.globalAlpha = particle.opacity;
         ctx.beginPath();
@@ -246,24 +226,25 @@ export default function IndianMandalaBackground() {
       });
     };
 
-    // Animation loop
     let mouseInfluence = 0;
     const animate = () => {
-      // Clear with semi-transparent background
-      ctx.fillStyle = 'rgba(15, 20, 25, 0.92)';
+      if (hiddenRef.current) {
+        animationIdRef.current = requestAnimationFrame(animate);
+        return;
+      }
+
+      ctx.fillStyle = 'rgba(11, 15, 25, 1)'; // Deep Obsidian bg-background-200
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const centerX = canvas.width / 2;
       const centerY = canvas.height / 2;
       const baseSize = Math.min(canvas.width, canvas.height) * 0.08;
 
-      // Smooth mouse influence
       const targetInfluence = mouseRef.current.active
         ? Math.sqrt(mouseRef.current.x ** 2 + mouseRef.current.y ** 2) * 0.15
         : 0;
       mouseInfluence += (targetInfluence - mouseInfluence) * 0.1;
 
-      // Draw background geometry
       drawGeometry();
 
       // Draw main rotating mandalas with varying speeds
@@ -297,15 +278,12 @@ export default function IndianMandalaBackground() {
         1
       );
 
-      // Draw particles
       updateParticles();
 
-      // Mouse interactive glow
       if (mouseRef.current.active) {
         const particleX = centerX + mouseRef.current.x * (canvas.width * 0.25);
         const particleY = centerY + mouseRef.current.y * (canvas.height * 0.25);
 
-        // Large glow effect
         const glow = ctx.createRadialGradient(particleX, particleY, 10, particleX, particleY, 150);
         glow.addColorStop(0, `rgba(212, 175, 55, ${0.3 * mouseInfluence})`);
         glow.addColorStop(0.5, `rgba(255, 153, 51, ${0.15 * mouseInfluence})`);
@@ -313,7 +291,6 @@ export default function IndianMandalaBackground() {
         ctx.fillStyle = glow;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Cursor circle
         ctx.strokeStyle = colors.gold;
         ctx.globalAlpha = 0.4 * mouseInfluence;
         ctx.lineWidth = 2;
@@ -322,7 +299,6 @@ export default function IndianMandalaBackground() {
         ctx.stroke();
       }
 
-      // Center glow effect
       const centerGlow = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 250 + mouseInfluence * 100);
       centerGlow.addColorStop(0, `rgba(255, 153, 51, ${0.12 + mouseInfluence * 0.08})`);
       centerGlow.addColorStop(1, 'rgba(255, 153, 51, 0)');
@@ -335,16 +311,14 @@ export default function IndianMandalaBackground() {
 
     animate();
 
-    // Handle window resize
     const handleResize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       particlesRef.current = initializeParticles();
     };
 
-    // Handle visibility
     const handleVisibilityChange = () => {
-      setIsVisible(!document.hidden);
+      hiddenRef.current = document.hidden;
     };
 
     window.addEventListener('resize', handleResize);
@@ -365,7 +339,9 @@ export default function IndianMandalaBackground() {
     <canvas
       ref={canvasRef}
       className="fixed top-0 left-0 w-full h-full z-0 cursor-crosshair"
-      style={{ display: isVisible ? 'block' : 'none' }}
+      style={{ display: 'block' }}
     />
   );
-}
+});
+
+export default IndianMandalaBackground;

@@ -219,7 +219,7 @@ export default function HeatmapView() {
         {/* Mobile filter toggle */}
         <button
           onClick={() => setSidebarOpen((o) => !o)}
-          className="md:hidden absolute top-4 left-4 z-[500] flex items-center gap-2 bg-[#3E2C23]/90 backdrop-blur border border-[#3E2C23]/20 rounded-lg px-3 py-2 text-sm font-medium"
+          className="md:hidden absolute top-4 left-4 z-[500] flex items-center gap-2 bg-surface-base/90 backdrop-blur border border-white/20 rounded-lg px-3 py-2 text-sm font-medium"
         >
           <SlidersHorizontal size={14} />
           Filters
@@ -231,14 +231,14 @@ export default function HeatmapView() {
         </button>
 
         {/* Breadcrumbs */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 md:left-4 md:translate-x-0 z-[500] bg-[#3E2C23]/90 backdrop-blur rounded-lg px-4 py-2 flex items-center gap-2 text-sm border border-[#3E2C23]/20">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 md:left-4 md:translate-x-0 z-[500] bg-surface-base/90 backdrop-blur rounded-lg px-4 py-2 flex items-center gap-2 text-sm border border-white/20">
           {breadcrumbs.map((crumb, i) => (
             <span key={i} className="flex items-center gap-2">
-              {i > 0 && <span className="text-[#6B5E57]">›</span>}
+              {i > 0 && <span className="text-content-secondary">›</span>}
               <button
                 onClick={() => navigateTo(i)}
                 className={`hover:text-blue-400 ${
-                  i === breadcrumbs.length - 1 ? 'text-white font-medium' : 'text-[#D8CCC0]'
+                  i === breadcrumbs.length - 1 ? 'text-white font-medium' : 'text-content-secondary'
                 }`}
               >
                 {crumb.name}
@@ -248,11 +248,11 @@ export default function HeatmapView() {
         </div>
 
         {/* Mode Toggle — Sentiment vs Urgency */}
-        <div className="absolute top-4 right-4 z-[500] flex gap-1 bg-[#3E2C23]/90 backdrop-blur rounded-lg p-1 border border-[#3E2C23]/20">
+        <div className="absolute top-4 right-4 z-[500] flex gap-1 bg-surface-base/90 backdrop-blur rounded-lg p-1 border border-white/20">
           <button
             onClick={() => setHeatMode('sentiment')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              heatMode === 'sentiment' ? 'bg-blue-500 text-white' : 'text-[#D8CCC0] hover:text-white'
+              heatMode === 'sentiment' ? 'bg-blue-500 text-white' : 'text-content-secondary hover:text-white'
             }`}
           >
             <TrendingDown size={12} /> Sentiment
@@ -260,7 +260,7 @@ export default function HeatmapView() {
           <button
             onClick={() => setHeatMode('urgency')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              heatMode === 'urgency' ? 'bg-red-500 text-white' : 'text-[#D8CCC0] hover:text-white'
+              heatMode === 'urgency' ? 'bg-red-500 text-white' : 'text-content-secondary hover:text-white'
             }`}
           >
             <Zap size={12} /> Urgency
@@ -268,9 +268,9 @@ export default function HeatmapView() {
         </div>
 
         {/* Timeline Slider */}
-        <div className="absolute bottom-4 right-4 z-[500] bg-[#3E2C23]/90 backdrop-blur rounded-xl px-4 py-3 border border-[#3E2C23]/20 w-64">
+        <div className="absolute bottom-4 right-4 z-[500] bg-surface-base/90 backdrop-blur rounded-xl px-4 py-3 border border-white/20 w-64">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-[#D8CCC0]">Timeline</span>
+            <span className="text-xs font-semibold text-content-secondary">Timeline</span>
             <span className={`text-xs font-bold ${isLive ? 'text-green-400' : 'text-amber-400'}`}>
               {isLive ? '● LIVE' : sliderToDate(timelineDay)}
             </span>
@@ -283,12 +283,12 @@ export default function HeatmapView() {
             onChange={(e) => handleSliderChange(Number(e.target.value))}
             className="w-full accent-blue-500 cursor-pointer"
           />
-          <div className="flex justify-between text-xs text-[#D8CCC0] mt-1">
+          <div className="flex justify-between text-xs text-content-secondary mt-1">
             <span>-30d</span>
             <span>Today</span>
           </div>
           {loadingHistory && (
-            <div className="text-xs text-[#D8CCC0] text-center mt-1 animate-pulse">Loading…</div>
+            <div className="text-xs text-content-secondary text-center mt-1 animate-pulse">Loading…</div>
           )}
         </div>
 
@@ -299,7 +299,7 @@ export default function HeatmapView() {
 
         {/* Loading */}
         {loading && (
-          <div className="absolute top-4 right-4 z-[500] bg-[#3E2C23]/90 backdrop-blur rounded-lg px-4 py-2 text-sm border border-[#3E2C23]/20">
+          <div className="absolute top-4 right-4 z-[500] bg-surface-base/90 backdrop-blur rounded-lg px-4 py-2 text-sm border border-white/20">
             Loading...
           </div>
         )}

@@ -4,6 +4,34 @@ import asyncio
 
 logger = logging.getLogger("jananaadi.inference")
 
+ALLOWED_RELATIONSHIP_TYPES = {
+    "supports",
+    "opposes",
+    "impacts",
+    "related_to",
+    "part_of",
+    "causes",
+    "mentioned_in",
+    "located_in",
+    "cross_domain_impact",
+}
+
+RELATIONSHIP_TYPE_ALIASES = {
+    "affects": "impacts",
+    "influences": "impacts",
+    "drives": "causes",
+    "threatens": "impacts",
+    "strains": "impacts",
+    "enables": "supports",
+    "enhances": "supports",
+}
+
+
+def _normalize_relationship_type(rel_type: str | None) -> str:
+    candidate = (rel_type or "related_to").strip().lower()
+    mapped = RELATIONSHIP_TYPE_ALIASES.get(candidate, candidate)
+    return mapped if mapped in ALLOWED_RELATIONSHIP_TYPES else "related_to"
+
 # ── ENHANCED DOMAIN INFERENCE RULES ─────────────────────────────────
 # Format: (domain_a, domain_b) → (relationship_type, confidence)
 # Confidence range: 0.65-0.80 (validated domain knowledge)
@@ -47,13 +75,13 @@ def infer_relationship(domain_a: str, domain_b: str) -> Tuple[str, float]:
     key = (domain_a, domain_b)
     if key in DOMAIN_RULES:
         rel_type, confidence = DOMAIN_RULES[key]
-        return rel_type, confidence
+        return _normalize_relationship_type(rel_type), confidence
     
     # Try reverse direction
     key_rev = (domain_b, domain_a)
     if key_rev in DOMAIN_RULES:
         rel_type, confidence = DOMAIN_RULES[key_rev]
-        return rel_type, confidence
+        return _normalize_relationship_type(rel_type), confidence
     
     # Default fallback
     return "related_to", 0.50
@@ -116,7 +144,7 @@ async def generate_inferred_edges(
                 # Check if edge exists
                 existing = await db_retry(
                     lambda sb: sb.table("entity_relationships")
-                    .select("id, confidence, evidence_entry_ids")
+                    .select("id, confidence")
                     .eq("source_entity_id", id_a)
                     .eq("target_entity_id", id_b)
                     .eq("relationship_type", rel_type)
@@ -130,22 +158,16 @@ async def generate_inferred_edges(
                     rel_id = existing.data[0]["id"]
                     current_conf = existing.data[0].get("confidence", 0.6)
                     new_conf = (current_conf + confidence) / 2
-                    
-                    # Append entry_id to evidence
-                    existing_evidence = existing.data[0].get("evidence_entry_ids", []) or []
-                    if entry_id and entry_id not in existing_evidence:
-                        existing_evidence.append(entry_id)
-                    
+
                     await db_retry(
                         lambda sb: sb.table("entity_relationships")
-                        .update({"confidence": round(new_conf, 2), "evidence_entry_ids": existing_evidence})
+                        .update({"confidence": round(new_conf, 2)})
                         .eq("id", rel_id)
                         .execute()
                     )
                     logger.debug(f"Strengthened: {name_a}({domain_a}) → {name_b}({domain_b}) confidence: {round(new_conf, 2)}")
                 else:
                     # Create new inferred edge
-                    evidence_ids = [entry_id] if entry_id else []
                     new_edge = {
                         "source_entity_id": id_a,
                         "target_entity_id": id_b,
@@ -155,7 +177,6 @@ async def generate_inferred_edges(
                         "inferred": True,
                         "chain_depth": 1,
                         "source_entry_id": entry_id,
-                        "evidence_entry_ids": evidence_ids,
                         "context": f"Inferred: {domain_a} entity impacts {domain_b} entity (domain rule: {rel_type})",
                         "metadata": {
                             "inference_type": "domain_rule",
@@ -257,11 +278,12 @@ async def generate_multi_hop_edges() -> int:
                     # Check if edge exists
                     existing = await db_retry(
                         lambda sb: sb.table("entity_relationships")
-                        .select("id, confidence, chain_depth, evidence_entry_ids")
+                        .select("id, confidence, chain_depth")
                         .eq("source_entity_id", source_id)
                         .eq("target_entity_id", target_id)
-                        .eq("relationship_type", "indirect_impact")
+                        .eq("relationship_type", "impacts")
                         .eq("inferred", True)
+                        .eq("chain_depth", 2)
                         .limit(1)
                         .execute()
                     )
@@ -281,38 +303,14 @@ async def generate_multi_hop_edges() -> int:
                             logger.debug(f"Updated multi-hop {source_id}→{target_id} confidence: {chain_confidence}")
                     else:
                         # Create new multi-hop edge
-                        # Fetch evidence from the edges we're creating the path from
-                        edge_1_result = await db_retry(
-                            lambda sb: sb.table("entity_relationships")
-                            .select("evidence_entry_ids")
-                            .eq("source_entity_id", source_id)
-                            .eq("target_entity_id", mid_id)
-                            .limit(1)
-                            .execute()
-                        )
-                        edge_2_result = await db_retry(
-                            lambda sb: sb.table("entity_relationships")
-                            .select("evidence_entry_ids")
-                            .eq("source_entity_id", mid_id)
-                            .eq("target_entity_id", target_id)
-                            .limit(1)
-                            .execute()
-                        )
-                        
-                        # Combine evidence from both edges
-                        evidence_from_1 = edge_1_result.data[0].get("evidence_entry_ids", []) if edge_1_result and edge_1_result.data else []
-                        evidence_from_2 = edge_2_result.data[0].get("evidence_entry_ids", []) if edge_2_result and edge_2_result.data else []
-                        combined_evidence = list(set((evidence_from_1 or []) + (evidence_from_2 or [])))
-                        
                         multi_hop_edge = {
                             "source_entity_id": source_id,
                             "target_entity_id": target_id,
-                            "relationship_type": "indirect_impact",
+                            "relationship_type": "impacts",
                             "strength": 0.5,
                             "confidence": chain_confidence,
                             "inferred": True,
                             "chain_depth": 2,
-                            "evidence_entry_ids": combined_evidence,
                             "context": f"Multi-hop reasoning: indirect effects through entity chain ({first_rel} + {second_rel})",
                             "metadata": {
                                 "inference_type": "multi_hop",

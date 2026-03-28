@@ -1,26 +1,26 @@
 import React from 'react';
 import { DomainIntelligence } from '../api/ontology';
-import { Shield, TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, AlertTriangle } from 'lucide-react';
 
 interface DomainCardProps {
   intelligence: DomainIntelligence;
   onClick?: () => void;
 }
 
-const DOMAIN_CONFIG: Record<string, { color: string; icon: string; emoji: string }> = {
-  geopolitics: { color: 'teal', icon: '🌍', emoji: '🌍' },
-  economics: { color: 'green', icon: '💰', emoji: '💰' },
-  defense: { color: 'red', icon: '🛡️', emoji: '🛡️' },
-  climate: { color: 'emerald', icon: '🌱', emoji: '🌱' },
-  technology: { color: 'purple', icon: '💻', emoji: '💻' },
-  society: { color: 'amber', icon: '👥', emoji: '👥' },
+const DOMAIN_CONFIG: Record<string, { emoji: string; titleClass: string; dotClass: string }> = {
+  geopolitics: { emoji: '🌍', titleClass: 'text-sky-400', dotClass: 'bg-sky-400' },
+  economics: { emoji: '💰', titleClass: 'text-emerald-400', dotClass: 'bg-emerald-400' },
+  defense: { emoji: '🛡️', titleClass: 'text-rose-400', dotClass: 'bg-rose-400' },
+  climate: { emoji: '🌱', titleClass: 'text-lime-400', dotClass: 'bg-lime-400' },
+  technology: { emoji: '💻', titleClass: 'text-indigo-400', dotClass: 'bg-indigo-400' },
+  society: { emoji: '👥', titleClass: 'text-amber-400', dotClass: 'bg-amber-400' },
 };
 
 const URGENCY_CONFIG: Record<string, { color: string; bg: string; text: string }> = {
-  low: { color: 'slate', bg: 'bg-[#FAF5ED]', text: 'text-slate-700' },
-  moderate: { color: 'teal', bg: 'bg-[#2FA4D7]/10', text: 'text-[#2FA4D7]' },
-  high: { color: 'amber', bg: 'bg-amber-100', text: 'text-amber-700' },
-  critical: { color: 'red', bg: 'bg-red-100', text: 'text-red-700' },
+  low: { color: 'slate', bg: 'bg-slate-500/15', text: 'text-slate-300' },
+  moderate: { color: 'teal', bg: 'bg-[#2FA4D7]/20', text: 'text-[#7ACCF9]' },
+  high: { color: 'amber', bg: 'bg-amber-500/20', text: 'text-amber-300' },
+  critical: { color: 'red', bg: 'bg-red-500/20', text: 'text-red-300' },
 };
 
 export const DomainIntelligenceCard: React.FC<DomainCardProps> = ({ intelligence, onClick }) => {
@@ -43,15 +43,15 @@ export const DomainIntelligenceCard: React.FC<DomainCardProps> = ({ intelligence
   return (
     <div
       onClick={onClick}
-      className={`bg-white p-5 rounded-lg shadow-sm border-2 border-${config.color}-200 ${
-        onClick ? 'cursor-pointer hover:shadow-md' : ''
+      className={`bg-surface-base p-5 rounded-2xl shadow-sm border border-white/10 ${
+        onClick ? 'cursor-pointer hover:shadow-xl hover:border-white/20' : ''
       } transition-all`}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <span className="text-2xl">{config.emoji}</span>
-          <h3 className={`font-bold text-lg text-${config.color}-900 capitalize`}>
+          <h3 className={`font-bold text-lg capitalize ${config.titleClass}`}>
             {intelligence.domain}
           </h3>
         </div>
@@ -68,7 +68,7 @@ export const DomainIntelligenceCard: React.FC<DomainCardProps> = ({ intelligence
             {(intelligence.risk_score * 100).toFixed(0)}%
           </span>
         </div>
-        <div className="w-full bg-slate-200 rounded-full h-2">
+        <div className="w-full bg-surface-300/60 rounded-full h-2">
           <div
             className={`h-2 rounded-full ${
               intelligence.risk_score >= 0.7 ? 'bg-red-500' :
@@ -81,11 +81,11 @@ export const DomainIntelligenceCard: React.FC<DomainCardProps> = ({ intelligence
       </div>
 
       {/* Sentiment Trend */}
-      <div className="flex items-center justify-between mb-4 pb-4 border-b border-[#3E2C23]/10">
-        <span className="text-sm text-[#6B5E57]">Sentiment Trend</span>
+      <div className="flex items-center justify-between mb-4 pb-4 border-b border-white/10">
+        <span className="text-sm text-content-secondary">Sentiment Trend</span>
         <div className="flex items-center gap-1">
           {getTrendIcon()}
-          <span className="text-sm font-medium text-slate-700">
+          <span className="text-sm font-medium text-content-primary">
             {intelligence.sentiment_trend 
               ? `${(intelligence.sentiment_trend * 100).toFixed(0)}%`
               : 'Stable'
@@ -97,12 +97,12 @@ export const DomainIntelligenceCard: React.FC<DomainCardProps> = ({ intelligence
       {/* Key Factors */}
       {intelligence.key_factors && intelligence.key_factors.length > 0 && (
         <div className="mb-3">
-          <div className="text-xs font-semibold text-[#6B5E57] mb-2">Key Factors</div>
+          <div className="text-xs font-semibold text-content-secondary mb-2">Key Factors</div>
           <div className="space-y-1">
             {intelligence.key_factors.slice(0, 3).map((factor, idx) => (
               <div key={idx} className="flex items-start gap-2">
-                <div className={`w-1.5 h-1.5 rounded-full bg-${config.color}-500 mt-1.5`} />
-                <span className="text-xs text-slate-700 line-clamp-2">{factor}</span>
+                <div className={`w-1.5 h-1.5 rounded-full mt-1.5 ${config.dotClass}`} />
+                <span className="text-xs text-content-primary line-clamp-2">{factor}</span>
               </div>
             ))}
           </div>
@@ -111,14 +111,14 @@ export const DomainIntelligenceCard: React.FC<DomainCardProps> = ({ intelligence
 
       {/* Entity Count */}
       {intelligence.entity_ids && intelligence.entity_ids.length > 0 && (
-        <div className="flex items-center justify-between text-xs text-[#6B5E57] mt-3 pt-3 border-t border-[#3E2C23]/5">
+        <div className="flex items-center justify-between text-xs text-content-secondary mt-3 pt-3 border-t border-white/10">
           <span>Entities Tracked</span>
-          <span className="font-semibold text-slate-700">{intelligence.entity_ids.length}</span>
+          <span className="font-semibold text-content-primary">{intelligence.entity_ids.length}</span>
         </div>
       )}
 
       {/* Last Updated */}
-      <div className="text-xs text-[#6B5E57] mt-2">
+      <div className="text-xs text-content-secondary mt-2">
         Updated {new Date(intelligence.computed_at).toLocaleTimeString()}
       </div>
     </div>
@@ -140,7 +140,7 @@ export const DomainIntelligenceGrid: React.FC<DomainGridProps> = ({
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="bg-white p-5 rounded-lg shadow-sm border border-[#3E2C23]/10 animate-pulse">
+          <div key={i} className="bg-surface-base p-5 rounded-2xl shadow-sm border border-white/10 animate-pulse">
             <div className="h-6 bg-slate-200 rounded w-3/4 mb-4" />
             <div className="h-4 bg-slate-200 rounded w-1/2 mb-2" />
             <div className="h-4 bg-slate-200 rounded w-full" />
@@ -152,10 +152,10 @@ export const DomainIntelligenceGrid: React.FC<DomainGridProps> = ({
 
   if (!intelligences || intelligences.length === 0) {
     return (
-      <div className="bg-white p-12 rounded-lg shadow-sm border border-[#3E2C23]/10 text-center">
-        <AlertTriangle className="mx-auto mb-4 text-[#6B5E57]" size={48} />
-        <p className="text-[#6B5E57] mb-2">No domain intelligence data available</p>
-        <p className="text-sm text-[#6B5E57]">Start ingesting domain-specific data to generate intelligence scores</p>
+      <div className="bg-surface-base p-12 rounded-2xl shadow-sm border border-white/10 text-center">
+        <AlertTriangle className="mx-auto mb-4 text-content-secondary" size={48} />
+        <p className="text-content-secondary mb-2">No domain intelligence data available</p>
+        <p className="text-sm text-content-secondary">Start ingesting domain-specific data to generate intelligence scores</p>
       </div>
     );
   }

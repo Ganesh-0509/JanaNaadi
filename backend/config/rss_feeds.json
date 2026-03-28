@@ -1,82 +1,98 @@
 [
-{"name":"NDTV Latest","url":"https://feeds.feedburner.com/ndtvnews-latest","region":null,"language":"en"},
-{"name":"NDTV India","url":"https://feeds.feedburner.com/ndtvnews-india","region":null,"language":"en"},
-{"name":"NDTV Top Stories","url":"https://feeds.feedburner.com/ndtvnews-top-stories","region":null,"language":"en"},
-
-{"name":"Times of India Top","url":"https://timesofindia.indiatimes.com/rssfeedstopstories.cms","region":null,"language":"en"},
-{"name":"Times of India India","url":"https://timesofindia.indiatimes.com/rssfeeds/296589292.cms","region":null,"language":"en"},
-
-{"name":"The Hindu Top News","url":"https://www.thehindu.com/news/feeder/default.rss","region":null,"language":"en"},
-{"name":"The Hindu National","url":"https://www.thehindu.com/news/national/feeder/default.rss","region":null,"language":"en"},
-
-{"name":"Indian Express Latest","url":"https://indianexpress.com/feed/","region":null,"language":"en"},
-{"name":"Indian Express India","url":"https://indianexpress.com/section/india/feed/","region":null,"language":"en"},
-
-{"name":"Hindustan Times India","url":"https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml","region":null,"language":"en"},
-
-{"name":"Scroll","url":"https://scroll.in/feed","region":null,"language":"en"},
-{"name":"The Wire","url":"https://thewire.in/feed","region":null,"language":"en"},
-{"name":"The Print","url":"https://theprint.in/feed","region":null,"language":"en"},
-{"name":"Firstpost","url":"https://www.firstpost.com/feed","region":null,"language":"en"},
-{"name":"The Quint","url":"https://www.thequint.com/atom/all","region":null,"language":"en"},
-{"name":"India Today","url":"https://www.indiatoday.in/rss/latest.xml","region":null,"language":"en"},
-{"name":"Zee News India","url":"https://zeenews.india.com/rss/india-national-news.xml","region":null,"language":"en"},
-{"name":"ABP Live India","url":"https://news.abplive.com/news/india/feed","region":null,"language":"en"},
-
-{"name":"LiveMint","url":"https://www.livemint.com/rss/news","region":null,"language":"en"},
-{"name":"Economic Times","url":"https://economictimes.indiatimes.com/rssfeedsdefault.cms","region":null,"language":"en"},
-{"name":"Business Standard","url":"https://www.business-standard.com/rss/latest-news.rss","region":null,"language":"en"},
-
-{"name":"Outlook India","url":"https://www.outlookindia.com/rss/latest","region":null,"language":"en"},
-{"name":"NewsLaundry","url":"https://www.newslaundry.com/feed","region":null,"language":"en"},
-
-{"name":"Deccan Herald","url":"https://www.deccanherald.com/rss/top-stories.xml","region":"Karnataka","language":"en"},
-{"name":"Deccan Chronicle","url":"https://www.deccanchronicle.com/rss_feed/","region":null,"language":"en"},
-
-{"name":"Free Press Journal","url":"https://www.freepressjournal.in/feed","region":"Madhya Pradesh","language":"en"},
-{"name":"Tribune India","url":"https://www.tribuneindia.com/rss/feed.xml","region":"Punjab","language":"en"},
-
-{"name":"Telegraph India","url":"https://www.telegraphindia.com/india/rss","region":"West Bengal","language":"en"},
-{"name":"Sentinel Assam","url":"https://www.sentinelassam.com/feed/","region":"Assam","language":"en"},
-{"name":"Odisha TV","url":"https://odishatv.in/rss.xml","region":"Odisha","language":"en"},
-
-{"name":"Manorama","url":"https://www.onmanorama.com/news.rss","region":"Kerala","language":"en"},
-{"name":"Mathrubhumi","url":"https://english.mathrubhumi.com/news/feed","region":"Kerala","language":"en"},
-
-{"name":"ANI National","url":"https://aninews.in/rss/","region":null,"language":"en"},
-{"name":"DD News","url":"https://ddnews.gov.in/feed/","region":null,"language":"en"},
-{"name":"PIB Government","url":"https://www.pib.gov.in/rss.aspx","region":null,"language":"en"},
-
-{"name":"PRS Legislative","url":"https://prsindia.org/theprsblog/feed","region":null,"language":"en"},
-{"name":"ORF Policy","url":"https://www.orfonline.org/feed/","region":null,"language":"en"},
-{"name":"IDSA Strategic","url":"https://idsa.in/rss.xml","region":null,"language":"en"},
-
-
-{"name":"GNews India Politics","url":"https://news.google.com/rss/search?q=india+politics&hl=en-IN&gl=IN&ceid=IN:en","region":null,"language":"en"},
-{"name":"GNews India Economy","url":"https://news.google.com/rss/search?q=india+economy&hl=en-IN&gl=IN&ceid=IN:en","region":null,"language":"en"},
-{"name":"GNews India Education","url":"https://news.google.com/rss/search?q=india+education&hl=en-IN&gl=IN&ceid=IN:en","region":null,"language":"en"},
-{"name":"GNews India Health","url":"https://news.google.com/rss/search?q=india+health&hl=en-IN&gl=IN&ceid=IN:en","region":null,"language":"en"},
-{"name":"GNews India Agriculture","url":"https://news.google.com/rss/search?q=india+agriculture+farmers&hl=en-IN&gl=IN&ceid=IN:en","region":null,"language":"en"},
-{"name":"GNews India Infrastructure","url":"https://news.google.com/rss/search?q=india+infrastructure+roads+railway&hl=en-IN&gl=IN&ceid=IN:en","region":null,"language":"en"},
-
-
-{"name":"GNews Tamil Nadu","url":"https://news.google.com/rss/search?q=tamil+nadu+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Tamil Nadu","language":"en"},
-{"name":"GNews Karnataka","url":"https://news.google.com/rss/search?q=karnataka+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Karnataka","language":"en"},
-{"name":"GNews Kerala","url":"https://news.google.com/rss/search?q=kerala+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Kerala","language":"en"},
-{"name":"GNews Telangana","url":"https://news.google.com/rss/search?q=telangana+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Telangana","language":"en"},
-{"name":"GNews Andhra Pradesh","url":"https://news.google.com/rss/search?q=andhra+pradesh+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Andhra Pradesh","language":"en"},
-{"name":"GNews Maharashtra","url":"https://news.google.com/rss/search?q=maharashtra+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Maharashtra","language":"en"},
-{"name":"GNews Gujarat","url":"https://news.google.com/rss/search?q=gujarat+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Gujarat","language":"en"},
-{"name":"GNews Rajasthan","url":"https://news.google.com/rss/search?q=rajasthan+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Rajasthan","language":"en"},
-{"name":"GNews Uttar Pradesh","url":"https://news.google.com/rss/search?q=uttar+pradesh+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Uttar Pradesh","language":"en"},
-{"name":"GNews Bihar","url":"https://news.google.com/rss/search?q=bihar+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Bihar","language":"en"},
-{"name":"GNews West Bengal","url":"https://news.google.com/rss/search?q=west+bengal+news&hl=en-IN&gl=IN&ceid=IN:en","region":"West Bengal","language":"en"},
-{"name":"GNews Odisha","url":"https://news.google.com/rss/search?q=odisha+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Odisha","language":"en"},
-{"name":"GNews Punjab","url":"https://news.google.com/rss/search?q=punjab+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Punjab","language":"en"},
-{"name":"GNews Haryana","url":"https://news.google.com/rss/search?q=haryana+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Haryana","language":"en"},
-{"name":"GNews Delhi","url":"https://news.google.com/rss/search?q=delhi+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Delhi","language":"en"},
-{"name":"GNews MCD Delhi","url":"https://news.google.com/rss/search?q=MCD+Delhi+news+municipal&hl=en-IN&gl=IN&ceid=IN:en","region":"Delhi","language":"en"},
-{"name":"GNews Delhi Mayor","url":"https://news.google.com/rss/search?q=MCD+Mayor+Delhi+Raja+Iqbal+Singh&hl=en-IN&gl=IN&ceid=IN:en","region":"Delhi","language":"en"},
-{"name":"GNews Delhi Wards","url":"https://news.google.com/rss/search?q=Delhi+Ward+development+MCD&hl=en-IN&gl=IN&ceid=IN:en","region":"Delhi","language":"en"},
-{"name":"GNews Northeast","url":"https://news.google.com/rss/search?q=northeast+india+news&hl=en-IN&gl=IN&ceid=IN:en","region":"Assam","language":"en"}
+  {
+    "name": "Times of India Delhi",
+    "url": "https://timesofindia.indiatimes.com/city/delhi/rssfeeds/2147477844.cms",
+    "region": "Delhi",
+    "language": "en"
+  },
+  {
+    "name": "Hindustan Times Delhi",
+    "url": "https://www.hindustantimes.com/feeds/rss/cities/delhi/rssfeed.xml",
+    "region": "Delhi",
+    "language": "en"
+  },
+  {
+    "name": "Indian Express Delhi",
+    "url": "https://indianexpress.com/section/cities/delhi/feed/",
+    "region": "Delhi",
+    "language": "en"
+  },
+  {
+    "name": "NDTV Delhi",
+    "url": "https://www.ndtv.com/delhi-news/rss",
+    "region": "Delhi",
+    "language": "en"
+  },
+  {
+    "name": "The Hindu Delhi",
+    "url": "https://www.thehindu.com/news/cities/Delhi/feeder/default.rss",
+    "region": "Delhi",
+    "language": "en"
+  },
+  {
+    "name": "GNews Delhi MCD",
+    "url": "https://news.google.com/rss/search?q=MCD+Delhi+news+municipal&hl=en-IN&gl=IN&ceid=IN:en",
+    "region": "Delhi",
+    "language": "en"
+  },
+  {
+    "name": "GNews Delhi Ward Development",
+    "url": "https://news.google.com/rss/search?q=Delhi+Ward+development+MCD&hl=en-IN&gl=IN&ceid=IN:en",
+    "region": "Delhi",
+    "language": "en"
+  },
+  {
+    "name": "GNews Delhi Civic Complaints",
+    "url": "https://news.google.com/rss/search?q=Delhi+locality+residents+complaint+MCD&hl=en-IN&gl=IN&ceid=IN:en",
+    "region": "Delhi",
+    "language": "en"
+  },
+  {
+    "name": "GNews Delhi Rohini",
+    "url": "https://news.google.com/rss/search?q=Rohini+Delhi+ward+news&hl=en-IN&gl=IN&ceid=IN:en",
+    "region": "Delhi",
+    "language": "en"
+  },
+  {
+    "name": "GNews Delhi Dwarka",
+    "url": "https://news.google.com/rss/search?q=Dwarka+Delhi+ward+news&hl=en-IN&gl=IN&ceid=IN:en",
+    "region": "Delhi",
+    "language": "en"
+  },
+  {
+    "name": "GNews Delhi Karol Bagh",
+    "url": "https://news.google.com/rss/search?q=Karol+Bagh+Delhi+ward+news&hl=en-IN&gl=IN&ceid=IN:en",
+    "region": "Delhi",
+    "language": "en"
+  },
+  {
+    "name": "GNews Delhi Chandni Chowk",
+    "url": "https://news.google.com/rss/search?q=Chandni+Chowk+Delhi+ward+news&hl=en-IN&gl=IN&ceid=IN:en",
+    "region": "Delhi",
+    "language": "en"
+  },
+  {
+    "name": "GNews Delhi Okhla",
+    "url": "https://news.google.com/rss/search?q=Okhla+Delhi+ward+news&hl=en-IN&gl=IN&ceid=IN:en",
+    "region": "Delhi",
+    "language": "en"
+  },
+  {
+    "name": "GNews Delhi Wazirpur",
+    "url": "https://news.google.com/rss/search?q=Wazirpur+Delhi+ward+news&hl=en-IN&gl=IN&ceid=IN:en",
+    "region": "Delhi",
+    "language": "en"
+  },
+  {
+    "name": "GNews Delhi Shahdara",
+    "url": "https://news.google.com/rss/search?q=Shahdara+Delhi+ward+news&hl=en-IN&gl=IN&ceid=IN:en",
+    "region": "Delhi",
+    "language": "en"
+  },
+  {
+    "name": "GNews Delhi Mustafabad",
+    "url": "https://news.google.com/rss/search?q=Mustafabad+Delhi+ward+news&hl=en-IN&gl=IN&ceid=IN:en",
+    "region": "Delhi",
+    "language": "en"
+  }
 ]

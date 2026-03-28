@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
 import { X, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { SENTIMENT_COLORS } from '../utils/colors';
 import { Link } from 'react-router-dom';
 import { getRegionAnalysis } from '../api/analysis';
+
+const SENTIMENT_COLORS = {
+  positive: '#22C55E',
+  neutral: '#EAB308',
+  negative: '#EF4444',
+};
 
 interface RegionData {
   id: number;
@@ -37,7 +42,6 @@ export default function RegionPanel({ region, onClose }: Props) {
 
   if (!region) return null;
 
-  // Use analysis data if available, otherwise fall back to heatmap data
   const posCount = analysis?.sentiment_distribution?.positive ?? region.positive_count ?? 0;
   const negCount = analysis?.sentiment_distribution?.negative ?? region.negative_count ?? 0;
   const neuCount = analysis?.sentiment_distribution?.neutral ?? region.neutral_count ?? 0;
@@ -46,7 +50,6 @@ export default function RegionPanel({ region, onClose }: Props) {
   const neg = total > 0 ? Math.round((negCount / total) * 100) : 0;
   const neu = Math.max(0, 100 - pos - neg);
 
-  // Convert -1..+1 to 0..100 score
   const scoreNum = Math.round(((region.avg_sentiment + 1) / 2) * 100);
   const scoreColor = region.avg_sentiment > 0.2
     ? SENTIMENT_COLORS.positive
@@ -60,7 +63,6 @@ export default function RegionPanel({ region, onClose }: Props) {
     { name: 'Negative', value: neg || 1, color: SENTIMENT_COLORS.negative },
   ];
 
-  // Top issues from analysis
   const topIssues: { topic: string; sentiment: string }[] = (analysis?.topic_breakdown || [])
     .slice(0, 5)
     .map((t: any, i: number) => ({
@@ -72,18 +74,16 @@ export default function RegionPanel({ region, onClose }: Props) {
         : 'neutral',
     }));
 
-  // If we have dominant_topic but no analysis yet, show it
   if (topIssues.length === 0 && region.dominant_topic) {
     topIssues.push({ topic: region.dominant_topic, sentiment: 'neutral' });
   }
 
   const badgeColors: Record<string, string> = {
-    positive: 'bg-green-500',
-    neutral: 'bg-yellow-500',
-    negative: 'bg-red-500',
+    positive: 'bg-state-success text-white',
+    neutral: 'bg-state-warning text-black',
+    negative: 'bg-state-danger text-white',
   };
 
-  // Compute 7-day trend direction from analysis data
   const trend7d: number[] = analysis?.trend_7d || [];
   let trendDir: 'up' | 'down' | 'flat' = 'flat';
   if (trend7d.length >= 2) {
@@ -95,35 +95,32 @@ export default function RegionPanel({ region, onClose }: Props) {
   }
 
   return (
-    <div className="fixed right-0 top-0 h-full w-80 bg-[#3E2C23]/95 backdrop-blur-md border-l border-[#3E2C23]/20/50 shadow-2xl z-[1000] overflow-y-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-[#3E2C23]/20/50">
-        <h2 className="font-bold text-lg text-white">{region.name}</h2>
-        <button onClick={onClose} className="p-1.5 hover:bg-slate-700 rounded-full transition-colors">
+    <div className="fixed right-0 top-0 z-[1000] h-full w-80 overflow-y-auto border-l border-gray-200 bg-surface-base/95 shadow-2xl backdrop-blur-md">
+      <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+        <h2 className="text-lg font-bold text-content-primary">{region.name}</h2>
+        <button onClick={onClose} className="rounded-full p-1.5 transition-colors hover:bg-background-100">
           <X size={18} />
         </button>
       </div>
 
-      <div className="px-5 py-5 space-y-6">
-        {/* Big Sentiment Score */}
+      <div className="px-6 py-6 space-y-6">
         <div className="text-center">
-          <div className="text-6xl font-extrabold tracking-tight" style={{ color: scoreColor }}>
+          <div className="text-5xl font-bold tracking-tight" style={{ color: scoreColor }}>
             {scoreNum}
           </div>
-          <div className="text-xs text-[#6B5E57] mt-1 uppercase tracking-wider">Sentiment Score</div>
+          <div className="mt-2 text-xs uppercase tracking-wider text-content-secondary font-semibold">Sentiment Score</div>
           {trend7d.length >= 2 && (
-            <div className="flex items-center justify-center gap-1.5 mt-2">
-              {trendDir === 'up' && <TrendingUp size={16} className="text-green-400" />}
-              {trendDir === 'down' && <TrendingDown size={16} className="text-red-400" />}
-              {trendDir === 'flat' && <Minus size={16} className="text-[#6B5E57]" />}
-              <span className={`text-xs font-semibold ${trendDir === 'up' ? 'text-green-400' : trendDir === 'down' ? 'text-red-400' : 'text-[#6B5E57]'}`}>
+            <div className="flex items-center justify-center gap-2 mt-3">
+              {trendDir === 'up' && <TrendingUp size={16} className="text-state-success" />}
+              {trendDir === 'down' && <TrendingDown size={16} className="text-state-danger" />}
+              {trendDir === 'flat' && <Minus size={16} className="text-content-secondary" />}
+              <span className={`text-xs font-semibold ${trendDir === 'up' ? 'text-state-success' : trendDir === 'down' ? 'text-state-danger' : 'text-content-secondary'}`}>
                 {trendDir === 'up' ? 'Improving' : trendDir === 'down' ? 'Declining' : 'Stable'} (7d)
               </span>
             </div>
           )}
         </div>
 
-        {/* Donut Chart */}
         <div className="flex justify-center">
           <ResponsiveContainer width={180} height={180}>
             <PieChart>
@@ -144,40 +141,38 @@ export default function RegionPanel({ region, onClose }: Props) {
           </ResponsiveContainer>
         </div>
 
-        {/* Distribution Labels */}
         <div className="flex justify-center gap-6 text-center">
           <div>
-            <div className="flex items-center gap-1.5 justify-center">
-              <span className="w-2 h-2 rounded-full bg-green-500" />
-              <span className="text-xs text-[#6B5E57]">Positive</span>
+            <div className="flex items-center gap-1.5 justify-center mb-1">
+              <span className="w-2 h-2 rounded-full bg-state-success" />
+              <span className="text-xs text-content-secondary">Positive</span>
             </div>
-            <div className="text-sm font-bold text-white">{pos}%</div>
+            <div className="text-sm font-bold text-content-primary">{pos}%</div>
           </div>
           <div>
-            <div className="flex items-center gap-1.5 justify-center">
-              <span className="w-2 h-2 rounded-full bg-yellow-500" />
-              <span className="text-xs text-[#6B5E57]">Neutral</span>
+            <div className="flex items-center gap-1.5 justify-center mb-1">
+              <span className="w-2 h-2 rounded-full bg-state-warning" />
+              <span className="text-xs text-content-secondary">Neutral</span>
             </div>
-            <div className="text-sm font-bold text-white">{neu}%</div>
+            <div className="text-sm font-bold text-content-primary">{neu}%</div>
           </div>
           <div>
-            <div className="flex items-center gap-1.5 justify-center">
-              <span className="w-2 h-2 rounded-full bg-red-500" />
-              <span className="text-xs text-[#6B5E57]">Negative</span>
+            <div className="flex items-center gap-1.5 justify-center mb-1">
+              <span className="w-2 h-2 rounded-full bg-state-danger" />
+              <span className="text-xs text-content-secondary">Negative</span>
             </div>
-            <div className="text-sm font-bold text-white">{neg}%</div>
+            <div className="text-sm font-bold text-content-primary">{neg}%</div>
           </div>
         </div>
 
-        {/* Top Issues */}
         {topIssues.length > 0 && (
           <div>
-            <div className="text-xs text-[#6B5E57] uppercase tracking-wider font-semibold mb-3">Top Issues</div>
+            <div className="mb-4 text-xs font-bold uppercase tracking-wider text-content-secondary">Top Issues</div>
             <div className="space-y-2">
               {topIssues.map((issue, i) => (
-                <div key={i} className="flex items-center justify-between bg-[#3E2C23]/60 rounded-lg px-3 py-2.5 border border-[#3E2C23]/20/40">
-                  <span className="text-sm text-white font-medium">{issue.topic}</span>
-                  <span className={`text-xs px-2.5 py-0.5 rounded-full text-white font-medium ${badgeColors[issue.sentiment]}`}>
+                <div key={i} className="flex items-center justify-between rounded-lg border border-gray-200 bg-background-50 px-3 py-2.5">
+                  <span className="text-sm font-medium text-content-primary">{issue.topic}</span>
+                  <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${badgeColors[issue.sentiment]}`}>
                     {issue.sentiment}
                   </span>
                 </div>
@@ -186,21 +181,19 @@ export default function RegionPanel({ region, onClose }: Props) {
           </div>
         )}
 
-        {/* Voices Count */}
-        <div className="text-center text-sm text-[#6B5E57]">
-          <span className="font-semibold text-white">{total.toLocaleString('en-IN')}</span> voices analyzed
+        <div className="text-center text-sm text-content-secondary">
+          <span className="font-bold text-content-primary">{total.toLocaleString('en-IN')}</span> voices analyzed
         </div>
 
-        {/* Action Button */}
         <Link
           to={`/analysis/${region.type || 'state'}/${region.id}`}
-          className="block w-full text-center py-3 rounded-xl bg-[#2FA4D7] hover:bg-[#2896B8] text-white font-semibold text-sm transition-colors"
+          className="block w-full rounded-lg bg-secondary-600 py-3 text-center text-sm font-bold text-white transition-colors hover:bg-secondary-700"
         >
           View Detailed Analysis
         </Link>
 
         {loadingAnalysis && (
-          <div className="text-center text-xs text-[#6B5E57]">Loading details...</div>
+          <div className="text-center text-xs text-content-secondary">Loading details...</div>
         )}
       </div>
     </div>
