@@ -452,6 +452,79 @@ ON sentiment_entries(text_hash);
 UPDATE sentiment_entries 
 SET text_hash = md5(left(cleaned_text, 500))
 WHERE text_hash IS NULL;
+
+-- ============================================================
+-- DELHI INCIDENT CHAIN INTELLIGENCE
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS incidents (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    ward_id INTEGER REFERENCES wards(id),
+    constituency_id INTEGER REFERENCES constituencies(id),
+    district_id INTEGER REFERENCES districts(id),
+
+    incident_type TEXT NOT NULL CHECK (incident_type IN (
+        'infrastructure_failure',
+        'public_safety',
+        'environmental',
+        'civic_disruption',
+        'health',
+        'economic',
+        'political'
+    )),
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    severity TEXT NOT NULL CHECK (severity IN ('low', 'moderate', 'high', 'critical')),
+
+    source_entry_ids UUID[] DEFAULT '{}',
+    entity_ids BIGINT[] DEFAULT '{}',
+    keywords TEXT[] DEFAULT '{}',
+
+    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'contained', 'resolved', 'escalated')),
+
+    detected_at TIMESTAMPTZ DEFAULT NOW(),
+    resolved_at TIMESTAMPTZ,
+
+    parent_incident_id UUID REFERENCES incidents(id),
+    chain_depth INTEGER DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS incident_chain_effects (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    cause_incident_id UUID NOT NULL REFERENCES incidents(id) ON DELETE CASCADE,
+    effect_incident_id UUID NOT NULL REFERENCES incidents(id) ON DELETE CASCADE,
+
+    causal_mechanism TEXT NOT NULL,
+    confidence FLOAT CHECK (confidence BETWEEN 0 AND 1),
+
+    distance_km FLOAT,
+
+    cause_domain TEXT,
+    effect_domain TEXT,
+
+    detected_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS ward_adjacency (
+    ward_id_a INTEGER REFERENCES wards(id),
+    ward_id_b INTEGER REFERENCES wards(id),
+    distance_km FLOAT,
+    shared_boundary BOOLEAN DEFAULT FALSE,
+    PRIMARY KEY (ward_id_a, ward_id_b)
+);
+
+CREATE INDEX IF NOT EXISTS idx_incidents_ward ON incidents(ward_id);
+CREATE INDEX IF NOT EXISTS idx_incidents_type ON incidents(incident_type);
+CREATE INDEX IF NOT EXISTS idx_incidents_detected ON incidents(detected_at DESC);
+CREATE INDEX IF NOT EXISTS idx_incidents_status ON incidents(status);
+CREATE INDEX IF NOT EXISTS idx_chain_effects_cause ON incident_chain_effects(cause_incident_id);
+CREATE INDEX IF NOT EXISTS idx_chain_effects_effect ON incident_chain_effects(effect_incident_id);
+
+COMMENT ON TABLE incidents IS 'Ward-level incidents detected from sentiment and news streams';
+COMMENT ON TABLE incident_chain_effects IS 'Causal links between incidents (cause to effect)';
+COMMENT ON TABLE ward_adjacency IS 'Ward-to-ward geographic proximity graph for spillover modeling';
 -- 
 -- ============================================================
 -- COMPLETE! Database schema ready for JanaNaadi

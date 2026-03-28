@@ -35,6 +35,42 @@ def _retry_supabase_query(query_fn, max_retries=3):
                 logger.error(f"Supabase connection failed after {max_retries} attempts")
                 raise
 
+
+# Valid domains for sentiment entries (matches database schema)
+VALID_DOMAINS = {"geopolitics", "economics", "defense", "climate", "technology", "society", "general"}
+
+# Map domain values to allowed set
+DOMAIN_MAPPING = {
+    "infrastructure": "society",
+    "civic": "society",
+    "municipal": "society",
+    "water": "society",
+    "electricity": "society",
+    "sanitation": "society",
+    "transportation": "society",
+    "health": "society",
+    "education": "society",
+}
+
+
+def _normalize_domain(domain: str | None) -> str | None:
+    """Normalize domain to database-allowed values."""
+    if not domain:
+        return None
+    
+    d = domain.strip().lower()
+    
+    # Check if exact match
+    if d in VALID_DOMAINS:
+        return d
+    
+    # Check mapping table
+    if d in DOMAIN_MAPPING:
+        return DOMAIN_MAPPING[d]
+    
+    # Default to society for civic-related issues, otherwise general
+    return "society" if any(civic in d for civic in ["ward", "mcd", "civic", "municipal"]) else "general"
+
 # Tracks the result of the last ingestion run for each source so the status
 # endpoint can report actual counts rather than just "triggered".
 _last_run_info: dict[str, dict] = {
@@ -49,7 +85,7 @@ _last_run_info: dict[str, dict] = {
 async def _process_and_store(
     text: str,
     source: str,
-    location_hint: str | None = None,
+    location_hint: str | dict | None = None,
     source_id: str | None = None,
     source_url: str | None = None,
     published_at: str | None = None,
@@ -86,7 +122,13 @@ async def _process_and_store(
     nlp = await score_sentiment(text)
  
     # ── Step 3: Geolocate + topic match (unchanged) ───────────────────────────
-    geo = geolocate(text, hints={"location_hint": location_hint} if location_hint else None)
+    geo_hints = None
+    if isinstance(location_hint, dict):
+        geo_hints = location_hint
+    elif location_hint:
+        geo_hints = {"location_hint": location_hint}
+
+    geo = geolocate(text, hints=geo_hints)
     topic_id = match_topic(text, nlp.topics[0] if nlp.topics else None)
  
     # ── Step 4: Build and store the entry ─────────────────────────────────────
@@ -104,7 +146,7 @@ async def _process_and_store(
         "confidence": nlp.confidence,
         "primary_topic_id": topic_id,
         "extracted_keywords": nlp.keywords,
-        "domain": domain,
+        "domain": _normalize_domain(domain),
         "state_id": geo.get("state_id"),
         "district_id": geo.get("district_id"),
         "constituency_id": geo.get("constituency_id"),
@@ -139,7 +181,7 @@ async def _process_and_store(
             entry_id=entry["id"],
             text=text,
             sentiment=nlp.sentiment,
-            domain=domain,
+            domain=_normalize_domain(domain),
         )
     except Exception as e:
         # Entity extraction failure must never break ingestion
@@ -156,10 +198,15 @@ async def ingest_manual(
     req: ManualEntryRequest,
     user: dict = Depends(require_admin),
 ):
-    """Submit a single manual entry for processing."""
-    entry = await _process_and_store(req.text, "manual", req.location_hint)
-    if entry is None:
+    entry = await _process_and_store(
+        req.text,
+        req.source or "manual",
+        req.location_hint,
+    )
+
+    if not entry:
         return {"status": "duplicate", "entry_id": None}
+
     return {"status": "ok", "entry_id": entry["id"]}
 
 

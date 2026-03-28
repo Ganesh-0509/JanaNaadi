@@ -7,13 +7,20 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Scheduler intervals (minutes)
-    scheduler_news_interval_min: int = 1
-    scheduler_gnews_interval_min: int = 1
-    scheduler_reddit_interval_min: int = 1
-    scheduler_domain_interval_min: int = 1
+    enable_scheduler: bool = False
+    scheduler_news_interval_min: int = 15
+    scheduler_gnews_interval_min: int = 15
+    scheduler_reddit_interval_min: int = 15
+    scheduler_domain_interval_min: int = 15
+
+    # RSS autopoll behavior
+    # Keeps RSS ingestion active while backend is running without being too aggressive.
+    enable_rss_autopoll: bool = True
+    rss_poll_interval_min: int = 8
+    rss_poll_jitter_sec: int = 90
 
     # WebSocket history limit
-    ws_history_limit: int = 100
+    ws_history_limit: int = 300
     # Supabase
     supabase_url: str = ""
     supabase_key: str = ""  # anon key
@@ -29,7 +36,10 @@ class Settings(BaseSettings):
     # Option 2: Local LLM (Ollama) - recommended for cost savings
     use_local_llm: bool = True  # Set to True to use Ollama instead of cloud APIs
     ollama_base_url: str = "http://localhost:11434"
-    ollama_model: str = "qwen2.5-coder:7b"
+    # Default must match an installed local model to avoid cloud fallback churn.
+    ollama_model: str = "qwen2.5:7b"
+    # If False, local mode never attempts Bytez/Gemini fallback.
+    allow_cloud_fallback: bool = False
 
     # Twitter (optional)
     twitter_bearer_token: str = ""

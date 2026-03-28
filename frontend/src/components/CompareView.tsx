@@ -157,7 +157,7 @@ export default function CompareView({ items }: Props) {
                 <div className="text-xs text-[#6B5E57] mb-2">Top Issues</div>
                 <div className="flex flex-wrap gap-1">
                   {(item.top_topics || [item.top_issue]).filter(Boolean).map((t) => (
-                    <span key={t} className="text-[11px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300">
+                    <span key={t} className="text-[11px] px-2 py-0.5 rounded-full bg-[#2FA4D7]/15 text-[#2FA4D7]">
                       {t}
                     </span>
                   ))}

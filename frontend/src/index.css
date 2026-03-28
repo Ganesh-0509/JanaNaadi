@@ -2,139 +2,222 @@
 @tailwind components;
 @tailwind utilities;
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
 
-:root {
-  --color-bg: #F5E9D8; /* Creamy Ivory */
-  --color-surface: #FAF5ED; /* Lighter Ivory */
-  --color-text: #3E2C23; /* Dark Espresso Brown */
-  --color-muted: #6B5E57; /* Muted Cocoa */
-  --color-accent: #E76F2E; /* Vibrant Sunset Orange */
-  --color-accent-600: #D15E26;
-  --color-accent-700: #BA5221;
-  --color-teal: #2FA4D7; /* Deep Sky Blue */
-  --color-positive: #22C55E;
-  --color-neutral: #EAB308;
-  --color-negative: #EF4444;
-  --color-border: rgba(62, 44, 35, 0.15);
-  --color-card-bg: #FFFFFF;
+  body {
+    @apply bg-background-200 text-content-primary antialiased;
+    font-family: 'Outfit', 'Inter', 'Segoe UI', -apple-system, sans-serif;
+    line-height: 1.5;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-content-primary font-bold;
+  }
+
+  p {
+    @apply text-content-secondary;
+  }
+
+  a {
+    @apply text-primary-500 hover:text-primary-600 transition-colors;
+  }
+
+  ::selection {
+    @apply bg-primary-100 text-content-primary;
+  }
 }
 
-.mcd-glass {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(231, 111, 46, 0.15);
-  box-shadow: 0 10px 30px -10px rgba(62, 44, 35, 0.1);
+@layer components {
+  .mcd-glass {
+    @apply bg-[#080A0F]/70 border border-white/10 rounded-2xl backdrop-blur-xl shadow-glass transition-all duration-500;
+  }
+
+  .mcd-glass:hover {
+    @apply border-primary-500/30 shadow-glass-lg;
+  }
+
+  .mcd-card {
+    @apply bg-surface-base/90 border border-white/10 rounded-3xl p-8 transition-all duration-300 relative overflow-hidden shadow-base backdrop-blur-md;
+  }
+
+  .mcd-card:hover {
+    @apply -translate-y-1 shadow-lg;
+  }
+
+  .mcd-card-interactive {
+    @apply mcd-card cursor-pointer hover:-translate-y-1.5 hover:shadow-lg;
+  }
+
+  .mcd-glow-saffron {
+    @apply shadow-glow transition-shadow duration-300;
+  }
+
+  .mcd-glow-saffron:hover {
+    @apply shadow-glow-lg;
+  }
+
+  .text-gradient-saffron {
+    @apply bg-gradient-to-r from-primary-500 to-primary-400 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-india {
+    @apply bg-gradient-to-r from-primary-500 via-accent-500 to-secondary-500 bg-clip-text text-transparent;
+  }
+
+  .bg-gradient-saffron {
+    @apply bg-gradient-to-r from-primary-500 to-primary-400;
+  }
+
+  .bg-gradient-india {
+    @apply bg-gradient-to-r from-primary-500 via-accent-500 to-secondary-500;
+  }
+
+  .entrance-anim {
+    @apply animate-entrance;
+  }
+
+  .glow-pulse {
+    @apply animate-glow-pulse;
+  }
+
+  .stat-badge {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-50 text-primary-700 text-sm font-semibold;
+  }
+
+  .stat-badge.accent {
+    @apply bg-accent-50 text-accent-700;
+  }
+
+  .stat-badge.secondary {
+    @apply bg-secondary-50 text-secondary-700;
+  }
+
+  .sentiment-positive {
+    @apply text-sentiment-positive bg-sentiment-positive/10;
+  }
+
+  .sentiment-neutral {
+    @apply text-sentiment-neutral bg-sentiment-neutral/10;
+  }
+
+  .sentiment-negative {
+    @apply text-sentiment-negative bg-sentiment-negative/10;
+  }
+
+  .sentiment-critical {
+    @apply text-sentiment-critical bg-sentiment-critical/10;
+  }
 }
 
-.mcd-card {
-  background: var(--color-card-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 2rem;
-  padding: 2rem;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.02);
+@layer utilities {
+  #canvas-3d {
+    @apply fixed inset-0 z-0;
+  }
+
+  .scrollbar-custom {
+    scrollbar-width: thin;
+    scrollbar-color: #334155 transparent;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+
+  .overflow-y-auto-custom {
+    @apply overflow-y-auto scrollbar-custom;
+  }
+
+  .leaflet-container {
+    @apply bg-background-100;
+  }
+
+  .leaflet-popup-content-wrapper {
+    @apply bg-surface-base text-content-primary rounded-xl shadow-lg;
+  }
+
+  .leaflet-popup-tip {
+    @apply bg-surface-base;
+  }
+
+  @keyframes ticker-scroll {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+
+  .ticker-animate {
+    animation: ticker-scroll 30s linear infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .pulse-dot {
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  /* Readability normalization for pages using ultra-small, hyper-tracked labels. */
+  .mcd-readable [class*="text-[8px]"] {
+    font-size: 0.72rem !important;
+    line-height: 1rem !important;
+  }
+
+  .mcd-readable [class*="text-[9px]"] {
+    font-size: 0.78rem !important;
+    line-height: 1.05rem !important;
+  }
+
+  .mcd-readable [class*="text-[10px]"] {
+    font-size: 0.84rem !important;
+    line-height: 1.15rem !important;
+  }
+
+  .mcd-readable [class*="tracking-[0.6em]"] { letter-spacing: 0.22em !important; }
+  .mcd-readable [class*="tracking-[0.5em]"] { letter-spacing: 0.19em !important; }
+  .mcd-readable [class*="tracking-[0.4em]"] { letter-spacing: 0.16em !important; }
+  .mcd-readable [class*="tracking-[0.3em]"] { letter-spacing: 0.13em !important; }
+  .mcd-readable [class*="tracking-[0.25em]"] { letter-spacing: 0.11em !important; }
+  .mcd-readable [class*="tracking-[0.2em]"] { letter-spacing: 0.09em !important; }
+
+  .mcd-readable input,
+  .mcd-readable select,
+  .mcd-readable button,
+  .mcd-readable textarea {
+    letter-spacing: normal;
+  }
+
+  @keyframes float-movement {
+    0% { transform: translateY(0px) translateX(0px); }
+    33% { transform: translateY(-20px) translateX(10px); }
+    66% { transform: translateY(-10px) translateX(-10px); }
+    100% { transform: translateY(0px) translateX(0px); }
+  }
+
+  .float-movement {
+    animation: float-movement 6s ease-in-out infinite;
+  }
 }
 
-.mcd-card:hover {
-  border-color: rgba(231, 111, 46, 0.3);
-  box-shadow: 0 20px 40px -15px rgba(231, 111, 46, 0.12);
-  transform: translateY(-4px);
-}
-
-.mcd-glow-saffron {
-  box-shadow: 0 0 40px -10px rgba(231, 111, 46, 0.2);
-}
-
-.text-gradient-saffron {
-  background: linear-gradient(135deg, #E76F2E 0%, #BA5221 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.bg-gradient-saffron {
-  background: linear-gradient(135deg, #E76F2E 0%, #BA5221 100%);
-}
-
-.entrance-anim {
-  animation: entrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes entrance {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: var(--color-bg);
-  color: var(--color-text);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Leaflet overrides for light theme */
-.leaflet-container {
-  background: var(--color-surface);
-}
-
-.leaflet-popup-content-wrapper {
-  background: #FFFFFF;
-  color: var(--color-text);
-  border-radius: 12px;
-  box-shadow: 0 10px 20px rgba(62, 44, 35, 0.1);
-}
-
-.leaflet-popup-tip {
-  background: #FFFFFF;
-}
-
-/* Custom scrollbar — Light Ivory Variant */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-surface);
-}
-
-::-webkit-scrollbar-thumb {
-  background: #D8CCC0;
-  border-radius: 10px;
-}
-
-/* Live ticker animation */
-@keyframes ticker-scroll {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
-}
-
-.ticker-animate {
-  animation: ticker-scroll 30s linear infinite;
-}
-
-/* Pulse animation for live indicator */
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-.pulse-dot {
-  animation: pulse-dot 2s ease-in-out infinite;
-}
-
-/* ═══ PRINT STYLES — Policy Brief PDF export ═══ */
 @media print {
-  /* Hide everything except the brief */
-  body > * { display: none !important; }
-  body { background: white !important; color: black !important; }
+  body > * {
+    @apply hidden !important;
+  }
 
-  /* Show only the brief document area */
+  body {
+    @apply bg-white text-black !important;
+  }
   #brief-print-area, #brief-print-area * { display: block !important; visibility: visible !important; }
   #brief-print-area {
     position: fixed;
@@ -147,7 +230,6 @@ body {
     background: white !important;
   }
 
-  /* Override dark colours for print */
   #brief-print-area .bg-slate-800,
   #brief-print-area .bg-slate-900\/40,
   #brief-print-area .bg-slate-900\/70,
@@ -161,10 +243,8 @@ body {
   #brief-print-area .text-yellow-400 { color: #ca8a04 !important; }
   #brief-print-area .text-blue-300, #brief-print-area .text-blue-400 { color: #1d4ed8 !important; }
 
-  /* Borders and backgrounds */
   #brief-print-area [class*="border-l-4"] { border-left-width: 4px !important; }
   #brief-print-area [class*="rounded"] { border-radius: 4px !important; border: 1px solid #ddd !important; }
 
-  /* Page margins */
   @page { margin: 15mm; size: A4 portrait; }
 }

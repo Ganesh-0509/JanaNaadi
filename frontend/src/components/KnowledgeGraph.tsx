@@ -27,7 +27,7 @@ interface KnowledgeGraphProps {
 }
 
 const ENTITY_TYPE_COLORS: Record<string, string> = {
-  person: '#3b82f6',        // blue
+  person: '#2FA4D7',        // teal
   organization: '#8b5cf6',  // purple
   location: '#10b981',      // green
   event: '#f59e0b',         // amber

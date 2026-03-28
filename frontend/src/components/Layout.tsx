@@ -4,14 +4,16 @@ import { useAlerts } from '../hooks/useAlerts';
 import { useState } from 'react';
 import {
   Map, BarChart3, Bell, FileText, Database, LogOut, Users, Menu, X,
-  Flame, Radio, Search, LayoutDashboard, Network, Layers,
+  Flame, Radio, Search, LayoutDashboard, Network, Layers, MapPin,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const NAV_ITEMS = [
   { to: '/pulse', label: 'Community Pulse', icon: Users, public: true },
   { to: '/gov', label: 'Gov Intelligence', icon: LayoutDashboard, public: false },
   { to: '/ontology', label: 'Knowledge Graph', icon: Network, public: false },
   { to: '/cross-domain', label: 'Cross-Domain Map', icon: Layers, public: false },
+  { to: '/delhi', label: 'Delhi Intelligence', icon: MapPin, public: false },
   { to: '/map', label: 'Heatmap', icon: Map, public: false },
   { to: '/compare', label: 'Compare Wards', icon: BarChart3, public: false },
   { to: '/stream', label: 'Live Stream', icon: Radio, public: false },
@@ -29,11 +31,11 @@ export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen mcd-readable">
       {/* Mobile hamburger */}
       <button
         onClick={() => setSidebarOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-[600] bg-[#3E2C23] border border-[#3E2C23]/20 rounded-lg p-2 text-white"
+        className="md:hidden fixed top-4 left-4 z-[600] bg-surface-base border border-white/10 rounded-lg p-2 text-white shadow-glass"
       >
         <Menu size={20} />
       </button>
@@ -46,10 +48,10 @@ export default function Layout() {
         />
       )}
 
-      {/* Sidebar — Light Ivory Variant */}
+      {/* Sidebar — Cyber-Noir Variant */}
       <aside className={`
-        fixed md:static z-[800] h-full w-72 bg-[#F5E9D8] border-r border-[#3E2C23]/10 flex flex-col
-        transition-all duration-300 ease-in-out shadow-sm
+        fixed md:static z-[800] h-full w-72 bg-[#080A0F]/80 backdrop-blur-xl border-r border-white/5 flex flex-col
+        transition-all duration-300 ease-in-out shadow-glass-lg
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
         <div className="flex items-center justify-between px-8 py-10">
@@ -58,15 +60,15 @@ export default function Layout() {
               J
             </div>
             <div>
-              <div className="font-black text-lg leading-none tracking-tight uppercase text-[#3E2C23] italic">
+              <div className="font-black text-lg leading-none tracking-tight uppercase text-content-primary italic">
                 JANA<span className="text-[#E76F2E]">NAADI</span>
               </div>
-              <div className="text-[8px] font-black text-[#6B5E57] uppercase tracking-[0.2em] mt-1 italic">
+              <div className="text-[10px] font-black text-content-muted uppercase tracking-[0.12em] mt-1 italic">
                 MCD INTELLIGENCE
               </div>
             </div>
           </Link>
-          <button onClick={() => setSidebarOpen(false)} className="md:hidden text-[#6B5E57] hover:text-[#3E2C23] transition-colors">
+          <button onClick={() => setSidebarOpen(false)} className="md:hidden text-content-muted hover:text-white transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -81,16 +83,16 @@ export default function Layout() {
                 key={item.to}
                 to={item.to}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-4 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.1em] transition-all group ${
+                className={`flex items-center gap-4 px-5 py-3 rounded-xl text-xs font-black uppercase tracking-[0.06em] transition-all group ${
                   active
-                    ? 'bg-white text-[#E76F2E] font-black border-l-2 border-[#E76F2E] shadow-sm'
-                    : 'text-[#6B5E57] hover:bg-white/50 hover:text-[#E76F2E]'
+                    ? 'bg-surface-raised/50 text-[#00E5FF] font-black border-l-2 border-[#00E5FF] shadow-glow-cyan/20'
+                    : 'text-content-muted hover:bg-surface-base/5 hover:text-[#00E5FF]'
                 }`}
               >
-                <item.icon size={18} className={`${active ? 'text-[#E76F2E]' : 'group-hover:text-[#E76F2E] text-[#6B5E57]/60'} transition-colors`} />
+                <item.icon size={18} className={`${active ? 'text-[#00E5FF]' : 'group-hover:text-[#00E5FF] text-content-muted'} transition-colors`} />
                 <span className="flex-1 italic">{item.label}</span>
                 {item.to === '/alerts' && unreadCount > 0 && (
-                  <span className="ml-auto bg-[#E76F2E] text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-lg">
+                  <span className="ml-auto bg-[#E76F2E] text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-glow">
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                 )}
@@ -99,16 +101,16 @@ export default function Layout() {
           })}
         </nav>
 
-        <div className="px-5 py-8 border-t border-[#3E2C23]/5 bg-[#FAF5ED]">
+        <div className="px-5 py-8 border-t border-white/5 bg-transparent">
           {user ? (
             <div className="space-y-4">
-              <div className="px-5 py-3 bg-white rounded-xl border border-[#3E2C23]/10 shadow-sm">
-                <div className="text-[10px] font-black text-[#3E2C23] truncate uppercase tracking-tight">{user.email?.split('@')[0]}</div>
-                <div className="text-[8px] font-black text-[#E76F2E] uppercase tracking-[0.15em] mt-1 italic opacity-80">{user.role} SYNCED</div>
+              <div className="px-5 py-3 bg-surface-base/5 rounded-xl border border-white/10 shadow-glass">
+                <div className="text-xs font-black text-white truncate uppercase tracking-tight">{user.email?.split('@')[0]}</div>
+                <div className="text-[10px] font-black text-[#00E5FF] uppercase tracking-[0.1em] mt-1 italic opacity-80">{user.role} SYNCED</div>
               </div>
               <button
                 onClick={logout}
-                className="flex items-center gap-3 px-5 py-3 text-[9px] font-black text-[#6B5E57] hover:text-red-500 w-full rounded-xl hover:bg-red-50 transition-all uppercase tracking-widest italic"
+                className="flex items-center gap-3 px-5 py-3 text-[11px] font-black text-content-muted hover:text-red-400 w-full rounded-xl hover:bg-red-500/10 transition-all uppercase tracking-[0.08em] italic"
               >
                 <LogOut size={16} />
                 Terminate Session
@@ -118,7 +120,7 @@ export default function Layout() {
             <Link
               to="/login"
               onClick={() => setSidebarOpen(false)}
-              className="flex items-center justify-center gap-2 px-5 py-3 text-[10px] font-black text-[#E76F2E] bg-[#E76F2E]/5 hover:bg-[#E76F2E]/10 rounded-xl border border-[#E76F2E]/20 transition-all uppercase tracking-widest italic"
+              className="flex items-center justify-center gap-2 px-5 py-3 text-xs font-black text-[#00E5FF] bg-[#00E5FF]/5 hover:bg-[#00E5FF]/10 rounded-xl border border-[#00E5FF]/20 transition-all uppercase tracking-[0.08em] italic shadow-glow-cyan/20"
             >
               Intelligence Login
             </Link>
@@ -126,25 +128,35 @@ export default function Layout() {
         </div>
       </aside>
 
-      {/* Main Content — Light Version */}
-      <main className="flex-1 overflow-auto bg-white flex flex-col selection:bg-[#E76F2E]/20 selection:text-[#3E2C23]">
-        <div className="flex-1">
-          <Outlet />
+      {/* Main Content — Dark Version */}
+      <main className="flex-1 overflow-auto bg-background-200 flex flex-col selection:bg-[#E76F2E]/30 selection:text-white">
+        <div className="flex-1 relative overflow-x-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="h-full"
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </div>
         
-        {/* Footer — Subtle Light */}
-        <footer className="bg-[#FAF5ED] border-t border-[#3E2C23]/10 px-10 py-10 text-center">
+        {/* Footer — Cyber-Noir */}
+        <footer className="bg-[#080A0F]/80 backdrop-blur-md border-t border-white/5 px-10 py-10 text-center relative z-10">
           <div className="max-w-4xl mx-auto space-y-4">
-            <div className="flex items-center justify-center gap-8 opacity-40 grayscale opacity-10">
-               <span className="text-[9px] font-black text-[#3E2C23] uppercase tracking-[0.3em]">MCD SECURE CHANNEL</span>
-               <div className="w-1 h-1 bg-[#6B5E57] rounded-full" />
-               <span className="text-[9px] font-black text-[#3E2C23] uppercase tracking-[0.3em]">REALITY SYNC ENGINE 1.2</span>
-               <div className="w-1 h-1 bg-[#6B5E57] rounded-full" />
-               <span className="text-[9px] font-black text-[#3E2C23] uppercase tracking-[0.3em]">WARD CENSUS v2.5</span>
+            <div className="flex items-center justify-center gap-8 opacity-40">
+              <span className="text-[11px] font-black text-[#00E5FF] uppercase tracking-[0.14em] glow-pulse">MCD SECURE CHANNEL</span>
+               <div className="w-1 h-1 bg-surface-base/30 rounded-full" />
+              <span className="text-[11px] font-black text-content-muted uppercase tracking-[0.14em]">REALITY SYNC ENGINE 1.2</span>
+               <div className="w-1 h-1 bg-surface-base/30 rounded-full" />
+              <span className="text-[11px] font-black text-content-muted uppercase tracking-[0.14em]">WARD CENSUS v2.5</span>
             </div>
-            <p className="text-[9px] font-black text-[#6B5E57] uppercase tracking-[0.25em] italic">
+            <p className="text-[11px] font-black text-content-muted uppercase tracking-[0.1em] italic">
                © 2026 JANA NAADI GLOBAL — MUNICIPAL CORPORATION OF DELHI STRATEGIC UNIT
-T
             </p>
           </div>
         </footer>

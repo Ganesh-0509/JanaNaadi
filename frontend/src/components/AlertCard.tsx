@@ -19,11 +19,11 @@ interface Props {
   onResolve?: (id: string) => void;
 }
 
-const SEVERITY_COLORS: Record<string, string> = {
-  critical: '#DC2626',
-  high: '#EF4444',
-  medium: '#EAB308',
-  low: '#3B82F6',
+const SEVERITY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  critical: { bg: 'bg-state-danger/10', text: 'text-state-danger', border: 'border-state-danger/20' },
+  high: { bg: 'bg-primary-100', text: 'text-primary-700', border: 'border-primary-200' },
+  medium: { bg: 'bg-state-warning/10', text: 'text-state-warning', border: 'border-state-warning/20' },
+  low: { bg: 'bg-state-info/10', text: 'text-state-info', border: 'border-state-info/20' },
 };
 
 const TYPE_ICONS: Record<string, typeof AlertTriangle> = {
@@ -33,14 +33,14 @@ const TYPE_ICONS: Record<string, typeof AlertTriangle> = {
   urgency_high: AlertTriangle,
 };
 
-const PRIORITY_STYLES: Record<string, { label: string; cls: string }> = {
-  immediate:   { label: 'Immediate (24h)',  cls: 'bg-red-50 text-red-600 border border-red-100 shadow-sm' },
-  short_term:  { label: '1–2 weeks',        cls: 'bg-amber-50 text-amber-600 border border-amber-100 shadow-sm' },
-  long_term:   { label: '1–3 months',       cls: 'bg-blue-50 text-blue-600 border border-blue-100 shadow-sm' },
+const PRIORITY_STYLES: Record<string, { label: string; bg: string; text: string; border: string }> = {
+  immediate: { label: 'Immediate (24h)', bg: 'bg-state-danger/10', text: 'text-state-danger', border: 'border-state-danger/20' },
+  short_term: { label: '1–2 weeks', bg: 'bg-state-warning/10', text: 'text-state-warning', border: 'border-state-warning/20' },
+  long_term: { label: '1–3 months', bg: 'bg-secondary-50', text: 'text-secondary-700', border: 'border-secondary-200' },
 };
 
 export default function AlertCard({ alert, onMarkRead, onResolve }: Props) {
-  const color = SEVERITY_COLORS[alert.severity] || '#3B82F6';
+  const severityStyle = SEVERITY_COLORS[alert.severity] || SEVERITY_COLORS.low;
   const Icon = TYPE_ICONS[alert.alert_type] || AlertTriangle;
 
   const [open, setOpen] = useState(false);
@@ -49,7 +49,7 @@ export default function AlertCard({ alert, onMarkRead, onResolve }: Props) {
   const [recError, setRecError] = useState<string | null>(null);
 
   const handleRecommend = async () => {
-    if (recs) { setOpen((o) => !o); return; }
+    if (recs) { setOpen(o => !o); return; }
     setOpen(true);
     setLoading(true);
     setRecError(null);
@@ -65,69 +65,60 @@ export default function AlertCard({ alert, onMarkRead, onResolve }: Props) {
 
   return (
     <div
-      className={`bg-white rounded-[32px] border transition-all relative overflow-hidden group shadow-sm hover:shadow-xl ${
-        alert.is_read ? 'border-[#3E2C23]/5 opacity-60' : 'border-[#E76F2E]/10'
+      className={`group relative overflow-hidden rounded-3xl border bg-surface-base shadow-sm transition-all hover:shadow-lg ${
+        alert.is_read ? 'border-gray-200 opacity-60' : `border-primary-200 ${severityStyle.border}`
       }`}
     >
       {!alert.is_read && (
-        <div className="absolute top-0 left-0 w-1.5 h-full bg-[#E76F2E] shadow-sm shadow-[#E76F2E]/30" />
+        <div className="absolute left-0 top-0 h-full w-1.5 bg-primary-500 shadow-sm" />
       )}
       
-      {/* Main card body — Light Mode */}
-      <div className="p-7">
+      <div className="p-8">
         <div className="flex items-start gap-6">
-          <div
-            className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm border border-slate-50 italic"
-            style={{ backgroundColor: `${color}10`, color: color }}
-          >
+          <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm border ${severityStyle.bg} ${severityStyle.text}`}>
             <Icon size={24} />
           </div>
           
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-4">
-              <span
-                className="text-[9px] font-black uppercase px-3 py-1 rounded-lg border border-slate-50 tracking-widest shadow-sm italic opacity-80"
-                style={{ backgroundColor: `${color}15`, color: color }}
-              >
+            <div className="flex items-center gap-3 mb-4 flex-wrap">
+              <span className={`text-xs font-bold uppercase px-4 py-1.5 rounded-lg border tracking-wider shadow-sm ${severityStyle.bg} ${severityStyle.text} ${severityStyle.border}`}>
                 {alert.severity} AUDIT
               </span>
               {alert.is_strategic && (
-                <span className="text-[9px] font-black bg-[#E76F2E]/10 text-[#E76F2E] px-3 py-1 rounded-lg border border-[#E76F2E]/20 tracking-[0.1em] uppercase shadow-sm italic">
+                <span className="rounded-lg border border-primary-200 bg-primary-50 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-primary-700 shadow-sm">
                   STRATEGIC PRIORITY
                 </span>
               )}
-              <div className="h-3 w-[1px] bg-[#FAF5ED] mx-1" />
-              <span className="text-[9px] font-black text-[#6B5E57] uppercase tracking-widest italic">{formatRelative(alert.triggered_at)}</span>
+              <span className="text-xs font-semibold text-content-secondary">{formatRelative(alert.triggered_at)}</span>
             </div>
             
-            <h3 className="text-xl font-black text-[#3E2C23] uppercase tracking-tight mb-2 group-hover:text-[#E76F2E] transition-colors leading-tight italic">{alert.title}</h3>
-            <p className="text-xs font-medium text-[#6B5E57] leading-relaxed max-w-2xl mb-6 italic opacity-90">{alert.description}</p>
+            <h3 className="mb-2 text-xl font-bold text-content-primary transition-colors group-hover:text-primary-600">{alert.title}</h3>
+            <p className="mb-6 max-w-2xl text-sm text-content-secondary">{alert.description}</p>
             
-            {/* Strategic Metadata Bar — Light Mode */}
             {(alert.ac_name || alert.population_impact) && (
-              <div className="flex gap-6 mb-8 py-3 px-5 bg-[#FAF5ED]/50 rounded-[20px] border border-[#3E2C23]/5 w-fit shadow-sm">
+              <div className="mb-8 flex w-fit gap-6 rounded-2xl border border-gray-200 bg-background-100 py-4 px-6 shadow-sm">
                 {alert.ac_name && (
-                  <div className="flex items-center gap-2.5 text-[9px] font-black uppercase tracking-widest italic">
-                    <Building2 size={14} className="text-[#E76F2E]" />
-                    <span className="text-[#6B5E57] mr-1">Sector:</span>
-                    <span className="text-[#3E2C23]">{alert.ac_name}</span>
+                  <div className="flex items-center gap-2 text-xs font-semibold text-content-secondary">
+                    <Building2 size={16} className="text-primary-600" />
+                    <span>Sector:</span>
+                    <span className="text-content-primary font-bold">{alert.ac_name}</span>
                   </div>
                 )}
                 {alert.population_impact && (
-                  <div className="flex items-center gap-2.5 text-[9px] font-black uppercase tracking-widest border-l border-[#3E2C23]/5 pl-6 italic">
-                    <TrendingUp size={14} className="text-emerald-500" />
-                    <span className="text-[#6B5E57] mr-1">Impact:</span>
-                    <span className="text-[#3E2C23]">{alert.population_impact.toLocaleString()} Citizens</span>
+                  <div className="flex items-center gap-2 border-l border-gray-200 pl-6 text-xs font-semibold text-content-secondary">
+                    <TrendingUp size={16} className="text-state-success" />
+                    <span>Impact:</span>
+                    <span className="text-content-primary font-bold">{alert.population_impact.toLocaleString()} Citizens</span>
                   </div>
                 )}
               </div>
             )}
 
-            <div className="flex gap-4 flex-wrap">
+            <div className="flex gap-3 flex-wrap">
               {!alert.is_read && onMarkRead && (
                 <button
                   onClick={() => onMarkRead(alert.id)}
-                  className="text-[10px] font-black px-6 py-3 rounded-xl bg-[#FAF5ED] hover:bg-[#FAF5ED]/50 text-[#6B5E57] hover:text-[#3E2C23] transition-all uppercase tracking-widest border border-[#3E2C23]/10 italic shadow-sm"
+                  className="rounded-lg border border-gray-200 bg-background-100 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-content-secondary transition-all hover:bg-background-200 hover:text-content-primary shadow-sm"
                 >
                   Sync Read
                 </button>
@@ -135,7 +126,7 @@ export default function AlertCard({ alert, onMarkRead, onResolve }: Props) {
               {onResolve && (
                 <button
                   onClick={() => onResolve(alert.id)}
-                  className="text-[10px] font-black px-6 py-3 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100/50 transition-all uppercase tracking-widest border border-emerald-100 shadow-sm italic"
+                  className="text-xs font-bold px-5 py-2.5 rounded-lg bg-state-success/10 text-state-success hover:bg-state-success/20 transition-all uppercase tracking-wider border border-state-success/20 shadow-sm"
                 >
                   Resolve Audit
                 </button>
@@ -143,7 +134,7 @@ export default function AlertCard({ alert, onMarkRead, onResolve }: Props) {
               
               <button
                 onClick={handleRecommend}
-                className="flex items-center gap-3 text-[10px] font-black px-6 py-3 rounded-xl bg-[#E76F2E] hover:scale-[1.02] text-white transition-all uppercase tracking-widest shadow-sm mcd-glow-saffron italic"
+                className="flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition-all hover:bg-primary-700 shadow-sm"
               >
                 {loading ? <Loader2 size={14} className="animate-spin" /> : <Lightbulb size={14} />}
                 Intelligence Plan
@@ -152,7 +143,7 @@ export default function AlertCard({ alert, onMarkRead, onResolve }: Props) {
 
               <Link
                 to={`/ontology?q=${encodeURIComponent(alert.title)}`}
-                className="flex items-center gap-3 text-[10px] font-black px-6 py-3 rounded-xl bg-white border border-[#3E2C23]/10 text-[#6B5E57] hover:text-[#E76F2E] hover:border-[#E76F2E]/30 transition-all uppercase tracking-widest shadow-sm italic"
+                className="flex items-center gap-2 rounded-lg border border-gray-200 bg-surface-base px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-content-secondary transition-all hover:border-primary-200 hover:text-primary-600 shadow-sm"
               >
                 <Network size={14} />
                 Explore Graph
@@ -162,56 +153,53 @@ export default function AlertCard({ alert, onMarkRead, onResolve }: Props) {
         </div>
       </div>
 
-      {/* Expandable recommendations panel — Light Mode */}
       {open && (
-        <div className="border-t border-slate-50 px-8 pb-8 pt-8 bg-[#FAF5ED]/30">
+        <div className="border-t border-gray-200 bg-background-100 px-8 pb-8 pt-8">
           {loading && (
             <div className="flex flex-col items-center justify-center py-12 gap-4">
-              <Activity size={32} className="text-[#E76F2E] animate-pulse" />
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#6B5E57] italic">Asking Gemini for action plan...</p>
+              <Activity size={32} className="animate-pulse text-primary-600" />
+              <p className="text-xs font-bold uppercase tracking-wider text-content-secondary">Generating action plan...</p>
             </div>
           )}
           {recError && (
-            <p className="text-xs text-red-500 font-bold uppercase tracking-widest py-6 text-center italic">{recError}</p>
+            <p className="text-sm text-state-danger font-bold uppercase tracking-wider py-6 text-center">{recError}</p>
           )}
           {recs && (
-            <div className="space-y-10">
-              {/* Crisis summary — Light Mode */}
-              <div className="bg-white rounded-[32px] p-8 border border-[#3E2C23]/5 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-12 opacity-[0.02] pointer-events-none text-[#3E2C23]">
-                    <Zap size={140} />
+            <div className="space-y-8">
+              <div className="relative overflow-hidden rounded-3xl border border-gray-200 bg-surface-base p-8 shadow-sm">
+                <div className="pointer-events-none absolute right-0 top-0 p-12 text-content-primary/10">
+                  <Zap size={140} />
                 </div>
-                <div className="flex items-center gap-3 mb-6 relative z-10">
-                   <div className="w-1.5 h-6 bg-[#E76F2E] rounded-full" />
-                   <h4 className="text-[10px] font-black text-[#E76F2E] uppercase tracking-[0.3em] italic">Commissioner's Direct Brief</h4>
+                <div className="relative z-10 mb-4 flex items-center gap-3">
+                  <div className="h-1 w-6 rounded-full bg-primary-600" />
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-primary-600">Commissioner's Brief</h4>
                 </div>
-                <p className="text-lg font-black text-[#3E2C23]/90 leading-tight tracking-tight italic relative z-10 antialiased">"{recs.summary}"</p>
+                <p className="relative z-10 text-lg font-bold leading-snug text-content-primary">"{recs.summary}"</p>
               </div>
 
-              {/* Action items — Light Mode */}
               <div>
-                <h4 className="text-[10px] font-black text-[#6B5E57] uppercase tracking-[0.4em] mb-8 ml-2 italic">Strategic Action Sequence</h4>
+                <h4 className="mb-6 text-xs font-bold uppercase tracking-wider text-content-secondary">Strategic Action Sequence</h4>
                 <div className="grid md:grid-cols-2 gap-6">
                   {recs.actions.map((a, i) => {
                     const ps = PRIORITY_STYLES[a.priority] || PRIORITY_STYLES.short_term;
                     return (
-                      <div key={i} className="bg-white rounded-[32px] p-8 border border-[#3E2C23]/5 hover:border-[#E76F2E]/20 transition-all group/action relative overflow-hidden shadow-sm hover:shadow-md">
-                        <div className="absolute top-0 right-0 p-4 opacity-[0.03] group-hover/action:scale-110 transition-transform text-[#3E2C23]">
-                           <Zap size={40} />
+                      <div key={i} className="group/action relative overflow-hidden rounded-3xl border border-gray-200 bg-surface-base p-8 shadow-sm transition-all hover:border-primary-200 hover:shadow-md">
+                        <div className="absolute right-0 top-0 p-4 text-content-primary/5 transition-transform group-hover/action:scale-110">
+                          <Zap size={40} />
                         </div>
-                        <div className="flex items-center gap-4 mb-6 flex-wrap">
-                          <span className={`text-[9px] font-black px-4 py-1.5 rounded-xl uppercase tracking-widest ${ps.cls}`}>
+                        <div className="flex items-center gap-3 mb-6 flex-wrap">
+                          <span className={`text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider border ${ps.bg} ${ps.text} ${ps.border}`}>
                             {ps.label}
                           </span>
-                          <span className="flex items-center gap-2 text-[9px] font-black text-[#6B5E57] uppercase tracking-widest italic">
-                            <Building2 size={14} className="text-blue-500" /> {a.department}
+                          <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-content-secondary">
+                            <Building2 size={14} className="text-secondary-600" /> {a.department}
                           </span>
                         </div>
-                        <p className="text-lg font-black text-[#3E2C23] mb-3 uppercase tracking-tighter italic">{a.action}</p>
-                        <p className="text-xs font-medium text-[#6B5E57] mb-6 leading-relaxed italic opacity-80">Rationale: {a.rationale}</p>
-                        <div className="flex items-center gap-3 pt-6 border-t border-slate-50">
-                           <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest italic">MCD Success Metric:</span>
-                           <p className="text-xs font-black text-[#3E2C23] uppercase tracking-tight italic">{a.kpi}</p>
+                        <p className="mb-3 text-base font-bold text-content-primary">{a.action}</p>
+                        <p className="mb-6 text-sm text-content-secondary">Rationale: {a.rationale}</p>
+                        <div className="flex items-center gap-3 border-t border-gray-200 pt-6">
+                          <span className="text-xs font-bold text-state-success uppercase tracking-wider">MCD Metric:</span>
+                          <p className="text-sm font-bold text-content-primary">{a.kpi}</p>
                         </div>
                       </div>
                     );

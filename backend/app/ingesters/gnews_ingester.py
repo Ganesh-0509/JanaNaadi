@@ -1,8 +1,4 @@
-"""Google News RSS ingester — no API key required.
-
-Builds targeted RSS query URLs for every Indian state + key civic topics
-so we capture hyperlocal signals that generic national feeds miss.
-"""
+"""Google News RSS ingester — Delhi/ward scoped, no API key required."""
 
 from urllib.parse import urlencode
 import feedparser
@@ -15,56 +11,27 @@ import time
 from app.ingesters.base_ingester import BaseIngester
 
 # (query_string, region_hint)
-_STATE_QUERIES: list[tuple[str, str]] = [
-    ("Andhra Pradesh news", "Andhra Pradesh"),
-    ("Arunachal Pradesh news", "Arunachal Pradesh"),
-    ("Assam news", "Assam"),
-    ("Bihar news", "Bihar"),
-    ("Chhattisgarh news", "Chhattisgarh"),
-    ("Goa news", "Goa"),
-    ("Gujarat news", "Gujarat"),
-    ("Haryana news", "Haryana"),
-    ("Himachal Pradesh news", "Himachal Pradesh"),
-    ("Jharkhand news", "Jharkhand"),
-    ("Karnataka news", "Karnataka"),
-    ("Kerala news", "Kerala"),
-    ("Madhya Pradesh news", "Madhya Pradesh"),
-    ("Maharashtra news", "Maharashtra"),
-    ("Manipur news", "Manipur"),
-    ("Meghalaya news", "Meghalaya"),
-    ("Mizoram news", "Mizoram"),
-    ("Nagaland news", "Nagaland"),
-    ("Odisha news", "Odisha"),
-    ("Punjab news", "Punjab"),
-    ("Rajasthan news", "Rajasthan"),
-    ("Sikkim news", "Sikkim"),
-    ("Tamil Nadu news", "Tamil Nadu"),
-    ("Telangana news", "Telangana"),
-    ("Tripura news", "Tripura"),
-    ("Uttar Pradesh news", "Uttar Pradesh"),
-    ("Uttarakhand news", "Uttarakhand"),
-    ("West Bengal news", "West Bengal"),
-    ("Jammu Kashmir news", "Jammu & Kashmir"),
+_DELHI_QUERIES: list[tuple[str, str]] = [
     ("Delhi news", "Delhi"),
-]
-
-# Civic / topic level queries (no region pin — let geo_engine do the work)
-_TOPIC_QUERIES: list[tuple[str, None]] = [
-    ("India farmers agriculture protest", None),
-    ("India unemployment jobs economy", None),
-    ("India electricity water shortage", None),
-    ("India road accident flood disaster", None),
-    ("India corruption scam government", None),
-    ("India school college education fees", None),
-    ("India hospital doctor medicine", None),
-    ("India inflation prices fuel", None),
-    ("India environment pollution deforestation", None),
-    ("India women safety crime", None),
-    ("India tribal adivasi rights", None),
-    ("India dalit caste discrimination", None),
-    ("India communal violence riot", None),
-    ("India startup innovation technology", None),
-    ("India parliament bill legislation", None),
+    ("MCD Delhi municipal news", "Delhi"),
+    ("Delhi ward development MCD", "Delhi"),
+    ("Delhi civic complaints residents", "Delhi"),
+    ("Rohini Delhi ward news", "Delhi"),
+    ("Dwarka Delhi ward news", "Delhi"),
+    ("Karol Bagh Delhi ward news", "Delhi"),
+    ("Chandni Chowk Delhi ward news", "Delhi"),
+    ("Okhla Delhi ward news", "Delhi"),
+    ("Wazirpur Delhi ward news", "Delhi"),
+    ("Shahdara Delhi ward news", "Delhi"),
+    ("Mustafabad Delhi ward news", "Delhi"),
+    ("Delhi pollution AQI", "Delhi"),
+    ("Delhi waterlogging flood", "Delhi"),
+    ("Delhi water supply issue", "Delhi"),
+    ("Delhi power cut electricity", "Delhi"),
+    ("Delhi traffic pothole roads", "Delhi"),
+    ("Delhi sanitation garbage MCD", "Delhi"),
+    ("Delhi women safety crime", "Delhi"),
+    ("Delhi school hospital civic services", "Delhi"),
 ]
 
 _BASE = "https://news.google.com/rss/search"
@@ -87,10 +54,10 @@ def _build_url(query: str) -> str:
 
 
 class GNewsIngester(BaseIngester):
-    """Fetch articles from Google News RSS for Indian states and civic topics."""
+    """Fetch articles from Google News RSS for Delhi and Delhi wards."""
 
     async def fetch(self, **kwargs) -> list[dict]:
-        all_queries = _STATE_QUERIES + _TOPIC_QUERIES  # type: ignore[operator]
+        all_queries = _DELHI_QUERIES
         entries: list[dict] = []
 
         loop = asyncio.get_event_loop()

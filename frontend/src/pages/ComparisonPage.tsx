@@ -50,7 +50,7 @@ export default function ComparisonPage() {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="p-6 space-y-12 bg-white min-h-screen"
+      className="min-h-screen space-y-12 bg-background-50 p-6 text-content-primary"
     >
       {/* Header — Light Mode */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-4">
@@ -59,8 +59,8 @@ export default function ComparisonPage() {
             <GitCompare size={28} />
           </div>
           <div>
-            <h1 className="text-3xl font-black uppercase tracking-tight leading-none italic text-[#3E2C23]">WARD <span className="text-[#E76F2E]">DIFFERENTIAL</span></h1>
-            <p className="text-[10px] font-bold text-[#6B5E57] uppercase tracking-[0.25em] mt-2 italic">
+            <h1 className="text-3xl font-black uppercase tracking-tight leading-none italic text-content-primary">WARD <span className="text-primary-500">DIFFERENTIAL</span></h1>
+            <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.25em] text-content-secondary italic">
               Comparative Municipal Integrity & Reality Sync
             </p>
           </div>
@@ -68,20 +68,20 @@ export default function ComparisonPage() {
       </div>
 
       {/* Selector Console — Light Mode */}
-      <div className="mcd-card border-[#3E2C23]/5 bg-[#FAF5ED]/50 relative overflow-hidden group p-10 rounded-[40px] shadow-sm">
-        <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform text-[#3E2C23]">
+      <div className="group relative overflow-hidden rounded-[40px] border border-[var(--color-border)] bg-background-100 p-10 shadow-sm">
+        <div className="pointer-events-none absolute right-0 top-0 p-12 opacity-[0.03] text-content-primary transition-transform group-hover:scale-110">
            <Columns size={120} />
         </div>
         
         <div className="relative z-10 flex flex-wrap gap-8 items-end">
           {dropdowns.map(({ label, val, set }) => (
             <div key={label} className="flex-1 min-w-[240px]">
-              <label className="text-[9px] font-black text-[#6B5E57] uppercase tracking-widest block mb-3 ml-1 italic">{label}</label>
+              <label className="mb-3 ml-1 block text-[9px] font-black uppercase tracking-widest text-content-secondary italic">{label}</label>
               <div className="relative group/select">
                 <select
                   value={val}
                   onChange={(e) => set(e.target.value)}
-                  className="w-full bg-white border-2 border-[#3E2C23]/5 rounded-xl px-6 py-4 text-xs text-[#3E2C23] font-black uppercase focus:border-[#E76F2E]/30 transition-all appearance-none cursor-pointer group-hover/select:border-[#3E2C23]/10 tracking-widest italic"
+                  className="w-full cursor-pointer appearance-none rounded-xl border-2 border-[var(--color-border)] bg-surface-base px-6 py-4 text-xs font-black uppercase tracking-widest text-content-primary transition-all focus:border-primary-300 group-hover/select:border-content-muted/50 italic"
                 >
                   <option value="">SELECT WARD PLATFORM…</option>
                   {wards.map((w) => (
@@ -90,7 +90,7 @@ export default function ComparisonPage() {
                     </option>
                   ))}
                 </select>
-                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-[#6B5E57]/60 group-hover/select:text-[#E76F2E] transition-colors">
+                 <div className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-content-muted transition-colors group-hover/select:text-primary-500">
                    <ChevronRight size={16} className="rotate-90" />
                 </div>
               </div>
@@ -109,7 +109,7 @@ export default function ComparisonPage() {
       </div>
 
       {error && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-red-50/50 border border-red-100 rounded-3xl p-8 text-sm font-black text-red-500 uppercase tracking-[0.2em] text-center italic shadow-sm">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-3xl border border-red-100 bg-red-50/50 p-8 text-center text-sm font-black uppercase tracking-[0.2em] text-red-500 italic shadow-sm">
           {error}
         </motion.div>
       )}
@@ -118,19 +118,19 @@ export default function ComparisonPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mcd-card border-[#3E2C23]/5 bg-white p-10 rounded-[40px] shadow-sm"
+          className="rounded-[40px] border border-[var(--color-border)] bg-surface-base p-10 shadow-sm"
         >
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-12 border-b border-slate-50 pb-10 gap-6">
             <div>
-              <h2 className="text-3xl font-black uppercase tracking-tighter italic text-[#3E2C23]">Intelligence <span className="text-[#E76F2E]">Delta</span> Results</h2>
-              <p className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest mt-2 font-mono italic">Comparing {results.length} Municipal Zones</p>
+              <h2 className="text-3xl font-black uppercase tracking-tighter italic text-content-primary">Intelligence <span className="text-primary-500">Delta</span> Results</h2>
+              <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-content-secondary font-mono italic">Comparing {results.length} Municipal Zones</p>
             </div>
             <div className="flex flex-wrap gap-4">
               {results.map((r: any) => (
                 <button
                   key={r.id}
                   onClick={() => navigate(`/analysis/ward/${r.id}`)}
-                  className="flex items-center gap-3 text-[10px] font-black px-5 py-2.5 rounded-xl bg-[#FAF5ED] text-[#6B5E57] hover:bg-[#E76F2E]/10 hover:text-[#E76F2E] transition-all uppercase border border-[#3E2C23]/5 italic shadow-sm"
+                  className="flex items-center gap-3 text-[10px] font-black px-5 py-2.5 rounded-xl bg-surface-base text-content-secondary hover:bg-[#E76F2E]/10 hover:text-[#E76F2E] transition-all uppercase border border-white/10 italic shadow-sm"
                 >
                   <ExternalLink size={14} /> Audit: {r.name}
                 </button>
@@ -142,10 +142,10 @@ export default function ComparisonPage() {
       )}
 
       {!results && !comparing && (
-        <div className="bg-[#FAF5ED]/30 rounded-[60px] border border-[#3E2C23]/10 border-dashed p-40 text-center relative overflow-hidden transition-all hover:bg-[#FAF5ED]/50">
-          <div className="absolute inset-0 bg-white/[0.01] pointer-events-none" />
-          <GitCompare size={80} className="mx-auto text-[#6B5E57]/40 mb-8 opacity-50" />
-          <p className="text-[#6B5E57] font-black uppercase tracking-[0.4em] text-sm italic">Select multiple wards to engage side-by-side audit sync</p>
+        <div className="bg-surface-base/30 rounded-[60px] border border-white/15 border-dashed p-40 text-center relative overflow-hidden transition-all hover:bg-surface-base/50">
+          <div className="absolute inset-0 bg-[#E76F2E]/[0.03] pointer-events-none" />
+          <GitCompare size={80} className="mx-auto text-content-secondary/40 mb-8 opacity-50" />
+          <p className="text-content-secondary font-black uppercase tracking-[0.4em] text-sm italic">Select multiple wards to engage side-by-side audit sync</p>
         </div>
       )}
     </motion.div>

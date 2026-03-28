@@ -8,7 +8,7 @@ interface Props {
 }
 
 const TAG_COLORS = [
-  'bg-blue-500/20 text-blue-300 border-blue-500/30',
+  'bg-[#2FA4D7]/20 text-[#2FA4D7] border-[#2FA4D7]/30',
   'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
   'bg-purple-500/20 text-purple-300 border-purple-500/30',
   'bg-amber-500/20 text-amber-300 border-amber-500/30',

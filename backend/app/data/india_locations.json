@@ -1,95 +1,3000 @@
 {
   "states": [
-    {"id": 1,  "name": "Delhi",         "code": "DL", "aliases": ["new delhi", "dilli"]},
-    {"id": 2,  "name": "Tamil Nadu",    "code": "TN", "aliases": ["tamilnadu", "tn"]},
-    {"id": 3,  "name": "Maharashtra",   "code": "MH", "aliases": ["maha"]},
-    {"id": 4,  "name": "Karnataka",     "code": "KA", "aliases": ["karnataka"]},
-    {"id": 5,  "name": "Uttar Pradesh", "code": "UP", "aliases": ["up"]},
-    {"id": 6,  "name": "West Bengal",   "code": "WB", "aliases": ["bengal", "wb"]},
-    {"id": 7,  "name": "Telangana",     "code": "TS", "aliases": ["telangana"]},
-    {"id": 8,  "name": "Kerala",        "code": "KL", "aliases": ["kerala"]},
-    {"id": 9,  "name": "Gujarat",       "code": "GJ", "aliases": ["gujarat"]},
-    {"id": 10, "name": "Rajasthan",     "code": "RJ", "aliases": ["rajasthan"]},
-    {"id": 11, "name": "Madhya Pradesh","code": "MP", "aliases": ["mp"]},
-    {"id": 12, "name": "Bihar",         "code": "BR", "aliases": ["bihar"]},
-    {"id": 13, "name": "Andhra Pradesh","code": "AP", "aliases": ["andhra", "ap"]},
-    {"id": 14, "name": "Punjab",        "code": "PB", "aliases": ["punjab"]},
-    {"id": 15, "name": "Haryana",       "code": "HR", "aliases": ["haryana"]},
-    {"id": 16, "name": "Odisha",        "code": "OD", "aliases": ["odisha", "orissa"]},
-    {"id": 17, "name": "Jharkhand",     "code": "JH", "aliases": ["jharkhand"]},
-    {"id": 18, "name": "Assam",         "code": "AS", "aliases": ["assam"]},
-    {"id": 19, "name": "Chhattisgarh",  "code": "CG", "aliases": ["chhattisgarh"]},
-    {"id": 20, "name": "Uttarakhand",   "code": "UK", "aliases": ["uttarakhand"]},
-    {"id": 21, "name": "Goa",           "code": "GA", "aliases": ["goa"]},
-    {"id": 22, "name": "Tripura",       "code": "TR", "aliases": ["tripura"]},
-    {"id": 23, "name": "Meghalaya",     "code": "ML", "aliases": ["meghalaya"]},
-    {"id": 24, "name": "Manipur",       "code": "MN", "aliases": ["manipur"]},
-    {"id": 25, "name": "Nagaland",      "code": "NL", "aliases": ["nagaland"]},
-    {"id": 26, "name": "Mizoram",       "code": "MZ", "aliases": ["mizoram"]},
-    {"id": 27, "name": "Arunachal Pradesh", "code": "AR", "aliases": ["arunachal"]},
-    {"id": 28, "name": "Sikkim",        "code": "SK", "aliases": ["sikkim"]}
+    {
+      "id": 1,
+      "name": "Delhi",
+      "code": "DL",
+      "aliases": [
+        "new delhi",
+        "dilli"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Tamil Nadu",
+      "code": "TN",
+      "aliases": [
+        "tamilnadu",
+        "tn"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Maharashtra",
+      "code": "MH",
+      "aliases": [
+        "maha"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Karnataka",
+      "code": "KA",
+      "aliases": [
+        "karnataka"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Uttar Pradesh",
+      "code": "UP",
+      "aliases": [
+        "up"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "West Bengal",
+      "code": "WB",
+      "aliases": [
+        "bengal",
+        "wb"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Telangana",
+      "code": "TS",
+      "aliases": [
+        "telangana"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Kerala",
+      "code": "KL",
+      "aliases": [
+        "kerala"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Gujarat",
+      "code": "GJ",
+      "aliases": [
+        "gujarat"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Rajasthan",
+      "code": "RJ",
+      "aliases": [
+        "rajasthan"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Madhya Pradesh",
+      "code": "MP",
+      "aliases": [
+        "mp"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Bihar",
+      "code": "BR",
+      "aliases": [
+        "bihar"
+      ]
+    },
+    {
+      "id": 13,
+      "name": "Andhra Pradesh",
+      "code": "AP",
+      "aliases": [
+        "andhra",
+        "ap"
+      ]
+    },
+    {
+      "id": 14,
+      "name": "Punjab",
+      "code": "PB",
+      "aliases": [
+        "punjab"
+      ]
+    },
+    {
+      "id": 15,
+      "name": "Haryana",
+      "code": "HR",
+      "aliases": [
+        "haryana"
+      ]
+    },
+    {
+      "id": 16,
+      "name": "Odisha",
+      "code": "OD",
+      "aliases": [
+        "odisha",
+        "orissa"
+      ]
+    },
+    {
+      "id": 17,
+      "name": "Jharkhand",
+      "code": "JH",
+      "aliases": [
+        "jharkhand"
+      ]
+    },
+    {
+      "id": 18,
+      "name": "Assam",
+      "code": "AS",
+      "aliases": [
+        "assam"
+      ]
+    },
+    {
+      "id": 19,
+      "name": "Chhattisgarh",
+      "code": "CG",
+      "aliases": [
+        "chhattisgarh"
+      ]
+    },
+    {
+      "id": 20,
+      "name": "Uttarakhand",
+      "code": "UK",
+      "aliases": [
+        "uttarakhand"
+      ]
+    },
+    {
+      "id": 21,
+      "name": "Goa",
+      "code": "GA",
+      "aliases": [
+        "goa"
+      ]
+    },
+    {
+      "id": 22,
+      "name": "Tripura",
+      "code": "TR",
+      "aliases": [
+        "tripura"
+      ]
+    },
+    {
+      "id": 23,
+      "name": "Meghalaya",
+      "code": "ML",
+      "aliases": [
+        "meghalaya"
+      ]
+    },
+    {
+      "id": 24,
+      "name": "Manipur",
+      "code": "MN",
+      "aliases": [
+        "manipur"
+      ]
+    },
+    {
+      "id": 25,
+      "name": "Nagaland",
+      "code": "NL",
+      "aliases": [
+        "nagaland"
+      ]
+    },
+    {
+      "id": 26,
+      "name": "Mizoram",
+      "code": "MZ",
+      "aliases": [
+        "mizoram"
+      ]
+    },
+    {
+      "id": 27,
+      "name": "Arunachal Pradesh",
+      "code": "AR",
+      "aliases": [
+        "arunachal"
+      ]
+    },
+    {
+      "id": 28,
+      "name": "Sikkim",
+      "code": "SK",
+      "aliases": [
+        "sikkim"
+      ]
+    }
   ],
   "districts": [
-    {"id": 1,  "name": "Central Delhi",       "state_id": 1},
-    {"id": 2,  "name": "South Delhi",         "state_id": 1},
-    {"id": 3,  "name": "North Delhi",         "state_id": 1},
-    {"id": 4,  "name": "East Delhi",          "state_id": 1},
-    {"id": 5,  "name": "West Delhi",          "state_id": 1},
-    {"id": 6,  "name": "New Delhi",           "state_id": 1},
-    {"id": 7,  "name": "Chennai",             "state_id": 2},
-    {"id": 8,  "name": "Coimbatore",          "state_id": 2},
-    {"id": 9,  "name": "Madurai",             "state_id": 2},
-    {"id": 10, "name": "Salem",               "state_id": 2},
-    {"id": 11, "name": "Tiruchirappalli",     "state_id": 2},
-    {"id": 12, "name": "Mumbai",              "state_id": 3},
-    {"id": 13, "name": "Pune",                "state_id": 3},
-    {"id": 14, "name": "Nagpur",              "state_id": 3},
-    {"id": 15, "name": "Thane",               "state_id": 3},
-    {"id": 16, "name": "Bangalore Urban",     "state_id": 4},
-    {"id": 17, "name": "Mysuru",              "state_id": 4},
-    {"id": 18, "name": "Lucknow",             "state_id": 5},
-    {"id": 19, "name": "Varanasi",            "state_id": 5},
-    {"id": 20, "name": "Noida",               "state_id": 5},
-    {"id": 21, "name": "Kanpur",              "state_id": 5},
-    {"id": 22, "name": "Kolkata",             "state_id": 6},
-    {"id": 23, "name": "Hyderabad",           "state_id": 7},
-    {"id": 24, "name": "Thiruvananthapuram",  "state_id": 8},
-    {"id": 25, "name": "Ahmedabad",           "state_id": 9}
+    {
+      "id": 1,
+      "name": "Central Delhi",
+      "state_id": 1
+    },
+    {
+      "id": 2,
+      "name": "South Delhi",
+      "state_id": 1
+    },
+    {
+      "id": 3,
+      "name": "North Delhi",
+      "state_id": 1
+    },
+    {
+      "id": 4,
+      "name": "East Delhi",
+      "state_id": 1
+    },
+    {
+      "id": 5,
+      "name": "West Delhi",
+      "state_id": 1
+    },
+    {
+      "id": 6,
+      "name": "New Delhi",
+      "state_id": 1
+    },
+    {
+      "id": 7,
+      "name": "Chennai",
+      "state_id": 2
+    },
+    {
+      "id": 8,
+      "name": "Coimbatore",
+      "state_id": 2
+    },
+    {
+      "id": 9,
+      "name": "Madurai",
+      "state_id": 2
+    },
+    {
+      "id": 10,
+      "name": "Salem",
+      "state_id": 2
+    },
+    {
+      "id": 11,
+      "name": "Tiruchirappalli",
+      "state_id": 2
+    },
+    {
+      "id": 12,
+      "name": "Mumbai",
+      "state_id": 3
+    },
+    {
+      "id": 13,
+      "name": "Pune",
+      "state_id": 3
+    },
+    {
+      "id": 14,
+      "name": "Nagpur",
+      "state_id": 3
+    },
+    {
+      "id": 15,
+      "name": "Thane",
+      "state_id": 3
+    },
+    {
+      "id": 16,
+      "name": "Bangalore Urban",
+      "state_id": 4
+    },
+    {
+      "id": 17,
+      "name": "Mysuru",
+      "state_id": 4
+    },
+    {
+      "id": 18,
+      "name": "Lucknow",
+      "state_id": 5
+    },
+    {
+      "id": 19,
+      "name": "Varanasi",
+      "state_id": 5
+    },
+    {
+      "id": 20,
+      "name": "Noida",
+      "state_id": 5
+    },
+    {
+      "id": 21,
+      "name": "Kanpur",
+      "state_id": 5
+    },
+    {
+      "id": 22,
+      "name": "Kolkata",
+      "state_id": 6
+    },
+    {
+      "id": 23,
+      "name": "Hyderabad",
+      "state_id": 7
+    },
+    {
+      "id": 24,
+      "name": "Thiruvananthapuram",
+      "state_id": 8
+    },
+    {
+      "id": 25,
+      "name": "Ahmedabad",
+      "state_id": 9
+    }
   ],
   "constituencies": [
-    {"id": 1,  "name": "Chandni Chowk",       "district_id": 1,  "type": "parliamentary", "lat": 28.6562, "lng": 77.2300},
-    {"id": 2,  "name": "New Delhi",            "district_id": 6,  "type": "parliamentary", "lat": 28.6139, "lng": 77.2090},
-    {"id": 3,  "name": "South Delhi",          "district_id": 2,  "type": "parliamentary", "lat": 28.5244, "lng": 77.2090},
-    {"id": 4,  "name": "East Delhi",           "district_id": 4,  "type": "parliamentary", "lat": 28.6280, "lng": 77.2960},
-    {"id": 5,  "name": "Chennai South",        "district_id": 7,  "type": "parliamentary", "lat": 13.0475, "lng": 80.2090},
-    {"id": 6,  "name": "Chennai North",        "district_id": 7,  "type": "parliamentary", "lat": 13.1127, "lng": 80.2540},
-    {"id": 7,  "name": "Chennai Central",      "district_id": 7,  "type": "parliamentary", "lat": 13.0827, "lng": 80.2707},
-    {"id": 8,  "name": "Coimbatore",           "district_id": 8,  "type": "parliamentary", "lat": 11.0168, "lng": 76.9558},
-    {"id": 9,  "name": "Madurai",              "district_id": 9,  "type": "parliamentary", "lat": 9.9252,  "lng": 78.1198},
-    {"id": 10, "name": "Mumbai North",         "district_id": 12, "type": "parliamentary", "lat": 19.1900, "lng": 72.8500},
-    {"id": 11, "name": "Mumbai South",         "district_id": 12, "type": "parliamentary", "lat": 18.9388, "lng": 72.8354},
-    {"id": 12, "name": "Pune",                 "district_id": 13, "type": "parliamentary", "lat": 18.5204, "lng": 73.8567},
-    {"id": 13, "name": "Bangalore South",      "district_id": 16, "type": "parliamentary", "lat": 12.9141, "lng": 77.5946},
-    {"id": 14, "name": "Bangalore North",      "district_id": 16, "type": "parliamentary", "lat": 13.0194, "lng": 77.5737},
-    {"id": 15, "name": "Lucknow",              "district_id": 18, "type": "parliamentary", "lat": 26.8467, "lng": 80.9462},
-    {"id": 16, "name": "Varanasi",             "district_id": 19, "type": "parliamentary", "lat": 25.3176, "lng": 83.0063},
-    {"id": 17, "name": "Kolkata North",        "district_id": 22, "type": "parliamentary", "lat": 22.6000, "lng": 88.3700},
-    {"id": 18, "name": "Kolkata South",        "district_id": 22, "type": "parliamentary", "lat": 22.5100, "lng": 88.3500},
-    {"id": 19, "name": "Hyderabad",            "district_id": 23, "type": "parliamentary", "lat": 17.3850, "lng": 78.4867},
-    {"id": 20, "name": "Thiruvananthapuram",   "district_id": 24, "type": "parliamentary", "lat": 8.5241,  "lng": 76.9366}
+    {
+      "id": 1,
+      "name": "Chandni Chowk",
+      "district_id": 1,
+      "type": "parliamentary",
+      "lat": 28.6562,
+      "lng": 77.23
+    },
+    {
+      "id": 2,
+      "name": "New Delhi",
+      "district_id": 6,
+      "type": "parliamentary",
+      "lat": 28.6139,
+      "lng": 77.209
+    },
+    {
+      "id": 3,
+      "name": "South Delhi",
+      "district_id": 2,
+      "type": "parliamentary",
+      "lat": 28.5244,
+      "lng": 77.209
+    },
+    {
+      "id": 4,
+      "name": "East Delhi",
+      "district_id": 4,
+      "type": "parliamentary",
+      "lat": 28.628,
+      "lng": 77.296
+    },
+    {
+      "id": 5,
+      "name": "Chennai South",
+      "district_id": 7,
+      "type": "parliamentary",
+      "lat": 13.0475,
+      "lng": 80.209
+    },
+    {
+      "id": 6,
+      "name": "Chennai North",
+      "district_id": 7,
+      "type": "parliamentary",
+      "lat": 13.1127,
+      "lng": 80.254
+    },
+    {
+      "id": 7,
+      "name": "Chennai Central",
+      "district_id": 7,
+      "type": "parliamentary",
+      "lat": 13.0827,
+      "lng": 80.2707
+    },
+    {
+      "id": 8,
+      "name": "Coimbatore",
+      "district_id": 8,
+      "type": "parliamentary",
+      "lat": 11.0168,
+      "lng": 76.9558
+    },
+    {
+      "id": 9,
+      "name": "Madurai",
+      "district_id": 9,
+      "type": "parliamentary",
+      "lat": 9.9252,
+      "lng": 78.1198
+    },
+    {
+      "id": 10,
+      "name": "Mumbai North",
+      "district_id": 12,
+      "type": "parliamentary",
+      "lat": 19.19,
+      "lng": 72.85
+    },
+    {
+      "id": 11,
+      "name": "Mumbai South",
+      "district_id": 12,
+      "type": "parliamentary",
+      "lat": 18.9388,
+      "lng": 72.8354
+    },
+    {
+      "id": 12,
+      "name": "Pune",
+      "district_id": 13,
+      "type": "parliamentary",
+      "lat": 18.5204,
+      "lng": 73.8567
+    },
+    {
+      "id": 13,
+      "name": "Bangalore South",
+      "district_id": 16,
+      "type": "parliamentary",
+      "lat": 12.9141,
+      "lng": 77.5946
+    },
+    {
+      "id": 14,
+      "name": "Bangalore North",
+      "district_id": 16,
+      "type": "parliamentary",
+      "lat": 13.0194,
+      "lng": 77.5737
+    },
+    {
+      "id": 15,
+      "name": "Lucknow",
+      "district_id": 18,
+      "type": "parliamentary",
+      "lat": 26.8467,
+      "lng": 80.9462
+    },
+    {
+      "id": 16,
+      "name": "Varanasi",
+      "district_id": 19,
+      "type": "parliamentary",
+      "lat": 25.3176,
+      "lng": 83.0063
+    },
+    {
+      "id": 17,
+      "name": "Kolkata North",
+      "district_id": 22,
+      "type": "parliamentary",
+      "lat": 22.6,
+      "lng": 88.37
+    },
+    {
+      "id": 18,
+      "name": "Kolkata South",
+      "district_id": 22,
+      "type": "parliamentary",
+      "lat": 22.51,
+      "lng": 88.35
+    },
+    {
+      "id": 19,
+      "name": "Hyderabad",
+      "district_id": 23,
+      "type": "parliamentary",
+      "lat": 17.385,
+      "lng": 78.4867
+    },
+    {
+      "id": 20,
+      "name": "Thiruvananthapuram",
+      "district_id": 24,
+      "type": "parliamentary",
+      "lat": 8.5241,
+      "lng": 76.9366
+    },
+    {
+      "id": 1000,
+      "name": "Narela",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1001,
+      "name": "Burari",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1002,
+      "name": "Timarpur",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1003,
+      "name": "Adarsh Nagar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1004,
+      "name": "Badli",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1005,
+      "name": "Rithala",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1006,
+      "name": "Bawana",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1007,
+      "name": "Mundka",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1008,
+      "name": "Kirari",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1009,
+      "name": "Sultanpur Majra",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1010,
+      "name": "Nangloi Jat",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1011,
+      "name": "Mangol Puri",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1012,
+      "name": "Rohini",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1013,
+      "name": "Shalimar Bagh",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1014,
+      "name": "Shakur Basti",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1015,
+      "name": "Tri Nagar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1016,
+      "name": "Wazirpur",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1017,
+      "name": "Model Town",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1018,
+      "name": "Sadar Bazar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1019,
+      "name": "Chandni Chowk",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1020,
+      "name": "Matia Mahal",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1021,
+      "name": "Ballimaran",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1022,
+      "name": "Karol Bagh",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1023,
+      "name": "Patel Nagar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1024,
+      "name": "Moti Nagar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1025,
+      "name": "Madipur",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1026,
+      "name": "Rajouri Garden",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1027,
+      "name": "Hari Nagar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1028,
+      "name": "Tilak Nagar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1029,
+      "name": "Janakpuri",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1030,
+      "name": "Vikaspuri",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1031,
+      "name": "Uttam Nagar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1032,
+      "name": "Dwarka",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1033,
+      "name": "Matiala",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1034,
+      "name": "Najafgarh",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1035,
+      "name": "Bijwasan",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1036,
+      "name": "Palam",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1037,
+      "name": "Rajinder Nagar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1038,
+      "name": "Jangpura",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1039,
+      "name": "Kasturba Nagar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1040,
+      "name": "Malviya Nagar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1041,
+      "name": "RK Puram",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1042,
+      "name": "Mehrauli",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1043,
+      "name": "Chhatarpur",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1044,
+      "name": "Deoli",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1045,
+      "name": "Ambedkar Nagar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1046,
+      "name": "Sangam Vihar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1047,
+      "name": "Greater Kailash",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1048,
+      "name": "Kalkaji",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1049,
+      "name": "Tughlakabad",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1050,
+      "name": "Badarpur",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1051,
+      "name": "Okhla",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1052,
+      "name": "Trilokpuri",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1053,
+      "name": "Kondli",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1054,
+      "name": "Patparganj",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1055,
+      "name": "Laxmi Nagar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1056,
+      "name": "Vishwas Nagar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1057,
+      "name": "Krishna Nagar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1058,
+      "name": "Gandhi Nagar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1059,
+      "name": "Shahdara",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1060,
+      "name": "Seema Puri",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1061,
+      "name": "Rohtas Nagar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1062,
+      "name": "Seelampur",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1063,
+      "name": "Ghonda",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1064,
+      "name": "Babarpur",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1065,
+      "name": "Gokalpur",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1066,
+      "name": "Mustafabad",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    },
+    {
+      "id": 1067,
+      "name": "Karawal Nagar",
+      "district_id": 1,
+      "state_id": 1,
+      "type": "assembly"
+    }
   ],
   "wards": [
-    {"id": 1,  "name": "Karol Bagh Ward",       "constituency_id": 1, "lat": 28.6519, "lng": 77.1909},
-    {"id": 2,  "name": "Paharganj Ward",         "constituency_id": 1, "lat": 28.6440, "lng": 77.2141},
-    {"id": 3,  "name": "Connaught Place Ward",   "constituency_id": 2, "lat": 28.6315, "lng": 77.2167},
-    {"id": 4,  "name": "Lajpat Nagar Ward",      "constituency_id": 3, "lat": 28.5700, "lng": 77.2400},
-    {"id": 5,  "name": "Mylapore Ward",          "constituency_id": 5, "lat": 13.0368, "lng": 80.2676},
-    {"id": 6,  "name": "T. Nagar Ward",          "constituency_id": 5, "lat": 13.0418, "lng": 80.2341},
-    {"id": 7,  "name": "Velachery Ward",         "constituency_id": 5, "lat": 12.9815, "lng": 80.2180},
-    {"id": 8,  "name": "Anna Nagar Ward",        "constituency_id": 6, "lat": 13.0850, "lng": 80.2101},
-    {"id": 9,  "name": "Andheri Ward",           "constituency_id": 10, "lat": 19.1136, "lng": 72.8697},
-    {"id": 10, "name": "Bandra Ward",            "constituency_id": 10, "lat": 19.0596, "lng": 72.8295},
-    {"id": 11, "name": "Koramangala Ward",       "constituency_id": 13, "lat": 12.9352, "lng": 77.6245},
-    {"id": 12, "name": "Indiranagar Ward",       "constituency_id": 13, "lat": 12.9719, "lng": 77.6412}
+    {
+      "id": 1,
+      "name": "Narela",
+      "constituency_id": 1000,
+      "state_id": 1,
+      "population": 54908,
+      "sc_population": 11618
+    },
+    {
+      "id": 2,
+      "name": "Bankner",
+      "constituency_id": 1000,
+      "state_id": 1,
+      "population": 52874,
+      "sc_population": 12650
+    },
+    {
+      "id": 3,
+      "name": "Holambi Kalan",
+      "constituency_id": 1000,
+      "state_id": 1,
+      "population": 80238,
+      "sc_population": 18845
+    },
+    {
+      "id": 4,
+      "name": "Alipur",
+      "constituency_id": 1000,
+      "state_id": 1,
+      "population": 74449,
+      "sc_population": 15359
+    },
+    {
+      "id": 5,
+      "name": "Bakhtawarpur",
+      "constituency_id": 1000,
+      "state_id": 1,
+      "population": 55144,
+      "sc_population": 10926
+    },
+    {
+      "id": 6,
+      "name": "Burari",
+      "constituency_id": 1001,
+      "state_id": 1,
+      "population": 71180,
+      "sc_population": 6441
+    },
+    {
+      "id": 7,
+      "name": "Kadipur",
+      "constituency_id": 1001,
+      "state_id": 1,
+      "population": 70169,
+      "sc_population": 12232
+    },
+    {
+      "id": 8,
+      "name": "Mukundpur",
+      "constituency_id": 1001,
+      "state_id": 1,
+      "population": 86243,
+      "sc_population": 18359
+    },
+    {
+      "id": 9,
+      "name": "Sant Nagar",
+      "constituency_id": 1001,
+      "state_id": 1,
+      "population": 54096,
+      "sc_population": 7685
+    },
+    {
+      "id": 10,
+      "name": "Jharoda",
+      "constituency_id": 1001,
+      "state_id": 1,
+      "population": 83406,
+      "sc_population": 8954
+    },
+    {
+      "id": 11,
+      "name": "Timarpur",
+      "constituency_id": 1002,
+      "state_id": 1,
+      "population": 76596,
+      "sc_population": 14624
+    },
+    {
+      "id": 12,
+      "name": "Malka Ganj",
+      "constituency_id": 1002,
+      "state_id": 1,
+      "population": 68941,
+      "sc_population": 22081
+    },
+    {
+      "id": 13,
+      "name": "Mukherjee Nagar",
+      "constituency_id": 1002,
+      "state_id": 1,
+      "population": 79914,
+      "sc_population": 7337
+    },
+    {
+      "id": 14,
+      "name": "Dhirpur",
+      "constituency_id": 1003,
+      "state_id": 1,
+      "population": 59858,
+      "sc_population": 10544
+    },
+    {
+      "id": 15,
+      "name": "Adarsh Nagar",
+      "constituency_id": 1003,
+      "state_id": 1,
+      "population": 59139,
+      "sc_population": 7578
+    },
+    {
+      "id": 16,
+      "name": "Azadpur",
+      "constituency_id": 1003,
+      "state_id": 1,
+      "population": 69220,
+      "sc_population": 15031
+    },
+    {
+      "id": 17,
+      "name": "Bhalswa",
+      "constituency_id": 1004,
+      "state_id": 1,
+      "population": 63537,
+      "sc_population": 13939
+    },
+    {
+      "id": 18,
+      "name": "Jahangir Puri",
+      "constituency_id": 1004,
+      "state_id": 1,
+      "population": 80335,
+      "sc_population": 15048
+    },
+    {
+      "id": 19,
+      "name": "Sarup Nagar",
+      "constituency_id": 1004,
+      "state_id": 1,
+      "population": 78653,
+      "sc_population": 10629
+    },
+    {
+      "id": 20,
+      "name": "Samaypur Badli",
+      "constituency_id": 1004,
+      "state_id": 1,
+      "population": 67788,
+      "sc_population": 15621
+    },
+    {
+      "id": 21,
+      "name": "Rohini-A",
+      "constituency_id": 1005,
+      "state_id": 1,
+      "population": 66482,
+      "sc_population": 4014
+    },
+    {
+      "id": 22,
+      "name": "Rohini-B",
+      "constituency_id": 1005,
+      "state_id": 1,
+      "population": 60621,
+      "sc_population": 2939
+    },
+    {
+      "id": 23,
+      "name": "Rithala",
+      "constituency_id": 1005,
+      "state_id": 1,
+      "population": 71698,
+      "sc_population": 9069
+    },
+    {
+      "id": 24,
+      "name": "Vijay Vihar",
+      "constituency_id": 1005,
+      "state_id": 1,
+      "population": 68107,
+      "sc_population": 12902
+    },
+    {
+      "id": 25,
+      "name": "Budh Vihar",
+      "constituency_id": 1005,
+      "state_id": 1,
+      "population": 51524,
+      "sc_population": 3755
+    },
+    {
+      "id": 26,
+      "name": "Pooth Kalan",
+      "constituency_id": 1006,
+      "state_id": 1,
+      "population": 70203,
+      "sc_population": 16038
+    },
+    {
+      "id": 27,
+      "name": "Begumpur",
+      "constituency_id": 1006,
+      "state_id": 1,
+      "population": 78987,
+      "sc_population": 12816
+    },
+    {
+      "id": 28,
+      "name": "Shahbaad Dairy",
+      "constituency_id": 1006,
+      "state_id": 1,
+      "population": 54537,
+      "sc_population": 18554
+    },
+    {
+      "id": 29,
+      "name": "Pooth Khurd",
+      "constituency_id": 1006,
+      "state_id": 1,
+      "population": 57630,
+      "sc_population": 11704
+    },
+    {
+      "id": 30,
+      "name": "Bawana",
+      "constituency_id": 1006,
+      "state_id": 1,
+      "population": 64013,
+      "sc_population": 8619
+    },
+    {
+      "id": 31,
+      "name": "Nangal Thakran",
+      "constituency_id": 1006,
+      "state_id": 1,
+      "population": 57612,
+      "sc_population": 12911
+    },
+    {
+      "id": 32,
+      "name": "Kanjhawala",
+      "constituency_id": 1007,
+      "state_id": 1,
+      "population": 40467,
+      "sc_population": 7769
+    },
+    {
+      "id": 33,
+      "name": "Rani Khera",
+      "constituency_id": 1007,
+      "state_id": 1,
+      "population": 69553,
+      "sc_population": 10652
+    },
+    {
+      "id": 34,
+      "name": "Nangloi",
+      "constituency_id": 1007,
+      "state_id": 1,
+      "population": 71856,
+      "sc_population": 27068
+    },
+    {
+      "id": 35,
+      "name": "Mundka",
+      "constituency_id": 1007,
+      "state_id": 1,
+      "population": 50839,
+      "sc_population": 7539
+    },
+    {
+      "id": 36,
+      "name": "Nilothi",
+      "constituency_id": 1007,
+      "state_id": 1,
+      "population": 79992,
+      "sc_population": 7108
+    },
+    {
+      "id": 37,
+      "name": "Kirari",
+      "constituency_id": 1008,
+      "state_id": 1,
+      "population": 57703,
+      "sc_population": 10787
+    },
+    {
+      "id": 38,
+      "name": "Prem Nagar",
+      "constituency_id": 1008,
+      "state_id": 1,
+      "population": 63337,
+      "sc_population": 10299
+    },
+    {
+      "id": 39,
+      "name": "Mubarikpur",
+      "constituency_id": 1008,
+      "state_id": 1,
+      "population": 81734,
+      "sc_population": 11903
+    },
+    {
+      "id": 40,
+      "name": "Nithari",
+      "constituency_id": 1008,
+      "state_id": 1,
+      "population": 63982,
+      "sc_population": 6447
+    },
+    {
+      "id": 41,
+      "name": "Aman Vihar",
+      "constituency_id": 1008,
+      "state_id": 1,
+      "population": 78962,
+      "sc_population": 18331
+    },
+    {
+      "id": 42,
+      "name": "Mangol Puri",
+      "constituency_id": 1009,
+      "state_id": 1,
+      "population": 68404,
+      "sc_population": 26576
+    },
+    {
+      "id": 43,
+      "name": "Sultanpuri-A",
+      "constituency_id": 1009,
+      "state_id": 1,
+      "population": 74003,
+      "sc_population": 37206
+    },
+    {
+      "id": 44,
+      "name": "Sultanpuri-B",
+      "constituency_id": 1009,
+      "state_id": 1,
+      "population": 72975,
+      "sc_population": 31777
+    },
+    {
+      "id": 45,
+      "name": "Jawalapuri",
+      "constituency_id": 1010,
+      "state_id": 1,
+      "population": 80685,
+      "sc_population": 33731
+    },
+    {
+      "id": 46,
+      "name": "Nangloi Jat",
+      "constituency_id": 1010,
+      "state_id": 1,
+      "population": 64870,
+      "sc_population": 6874
+    },
+    {
+      "id": 47,
+      "name": "Nihal Vihar",
+      "constituency_id": 1010,
+      "state_id": 1,
+      "population": 52919,
+      "sc_population": 7460
+    },
+    {
+      "id": 48,
+      "name": "Guru Harkishan Nagar",
+      "constituency_id": 1010,
+      "state_id": 1,
+      "population": 62946,
+      "sc_population": 5334
+    },
+    {
+      "id": 49,
+      "name": "Mangolpuri-A",
+      "constituency_id": 1011,
+      "state_id": 1,
+      "population": 78867,
+      "sc_population": 33950
+    },
+    {
+      "id": 50,
+      "name": "Mangolpuri-B",
+      "constituency_id": 1011,
+      "state_id": 1,
+      "population": 81344,
+      "sc_population": 41151
+    },
+    {
+      "id": 51,
+      "name": "Rohini-C",
+      "constituency_id": 1011,
+      "state_id": 1,
+      "population": 71696,
+      "sc_population": 8133
+    },
+    {
+      "id": 52,
+      "name": "Rohini-F",
+      "constituency_id": 1012,
+      "state_id": 1,
+      "population": 81298,
+      "sc_population": 4021
+    },
+    {
+      "id": 53,
+      "name": "Rohini-E",
+      "constituency_id": 1012,
+      "state_id": 1,
+      "population": 66795,
+      "sc_population": 1196
+    },
+    {
+      "id": 54,
+      "name": "Rohini-D",
+      "constituency_id": 1012,
+      "state_id": 1,
+      "population": 80948,
+      "sc_population": 6191
+    },
+    {
+      "id": 55,
+      "name": "Shalimar Bagh-A",
+      "constituency_id": 1013,
+      "state_id": 1,
+      "population": 61220,
+      "sc_population": 10480
+    },
+    {
+      "id": 56,
+      "name": "Shalimar Bagh-B",
+      "constituency_id": 1013,
+      "state_id": 1,
+      "population": 72416,
+      "sc_population": 4861
+    },
+    {
+      "id": 57,
+      "name": "Pitampura",
+      "constituency_id": 1013,
+      "state_id": 1,
+      "population": 80594,
+      "sc_population": 5366
+    },
+    {
+      "id": 58,
+      "name": "Saraswati Vihar",
+      "constituency_id": 1014,
+      "state_id": 1,
+      "population": 63630,
+      "sc_population": 3390
+    },
+    {
+      "id": 59,
+      "name": "Paschim Vihar",
+      "constituency_id": 1014,
+      "state_id": 1,
+      "population": 67423,
+      "sc_population": 7643
+    },
+    {
+      "id": 60,
+      "name": "Rani Bagh",
+      "constituency_id": 1014,
+      "state_id": 1,
+      "population": 66602,
+      "sc_population": 5562
+    },
+    {
+      "id": 61,
+      "name": "Kohat Enclave",
+      "constituency_id": 1015,
+      "state_id": 1,
+      "population": 66252,
+      "sc_population": 6349
+    },
+    {
+      "id": 62,
+      "name": "Shakur Pur",
+      "constituency_id": 1015,
+      "state_id": 1,
+      "population": 71833,
+      "sc_population": 25266
+    },
+    {
+      "id": 63,
+      "name": "Tri Nagar",
+      "constituency_id": 1015,
+      "state_id": 1,
+      "population": 69013,
+      "sc_population": 1914
+    },
+    {
+      "id": 64,
+      "name": "Keshav Puram",
+      "constituency_id": 1016,
+      "state_id": 1,
+      "population": 65433,
+      "sc_population": 7237
+    },
+    {
+      "id": 65,
+      "name": "Ashok Vihar",
+      "constituency_id": 1016,
+      "state_id": 1,
+      "population": 55773,
+      "sc_population": 12206
+    },
+    {
+      "id": 66,
+      "name": "Wazirpur",
+      "constituency_id": 1016,
+      "state_id": 1,
+      "population": 87397,
+      "sc_population": 26071
+    },
+    {
+      "id": 67,
+      "name": "Sangam Park",
+      "constituency_id": 1017,
+      "state_id": 1,
+      "population": 54854,
+      "sc_population": 23074
+    },
+    {
+      "id": 68,
+      "name": "Model Town",
+      "constituency_id": 1017,
+      "state_id": 1,
+      "population": 65907,
+      "sc_population": 7141
+    },
+    {
+      "id": 69,
+      "name": "Kamla Nagar",
+      "constituency_id": 1017,
+      "state_id": 1,
+      "population": 61009,
+      "sc_population": 6774
+    },
+    {
+      "id": 70,
+      "name": "Shastri Nagar",
+      "constituency_id": 1018,
+      "state_id": 1,
+      "population": 78483,
+      "sc_population": 7232
+    },
+    {
+      "id": 71,
+      "name": "Kishan Ganj",
+      "constituency_id": 1018,
+      "state_id": 1,
+      "population": 74022,
+      "sc_population": 21251
+    },
+    {
+      "id": 72,
+      "name": "Sadar Bazar",
+      "constituency_id": 1018,
+      "state_id": 1,
+      "population": 66050,
+      "sc_population": 11501
+    },
+    {
+      "id": 73,
+      "name": "Civil Lines",
+      "constituency_id": 1019,
+      "state_id": 1,
+      "population": 55142,
+      "sc_population": 15510
+    },
+    {
+      "id": 74,
+      "name": "Chandni Chowk",
+      "constituency_id": 1019,
+      "state_id": 1,
+      "population": 51672,
+      "sc_population": 10139
+    },
+    {
+      "id": 75,
+      "name": "Jama Masjid",
+      "constituency_id": 1019,
+      "state_id": 1,
+      "population": 46051,
+      "sc_population": 2258
+    },
+    {
+      "id": 76,
+      "name": "Chandani Mahal",
+      "constituency_id": 1020,
+      "state_id": 1,
+      "population": 58169,
+      "sc_population": 1784
+    },
+    {
+      "id": 77,
+      "name": "Delhi Gate",
+      "constituency_id": 1020,
+      "state_id": 1,
+      "population": 55397,
+      "sc_population": 16210
+    },
+    {
+      "id": 78,
+      "name": "Bazar Sita Ram",
+      "constituency_id": 1020,
+      "state_id": 1,
+      "population": 57774,
+      "sc_population": 3449
+    },
+    {
+      "id": 79,
+      "name": "Ballimaran",
+      "constituency_id": 1021,
+      "state_id": 1,
+      "population": 62034,
+      "sc_population": 3069
+    },
+    {
+      "id": 80,
+      "name": "Ram Nagar",
+      "constituency_id": 1021,
+      "state_id": 1,
+      "population": 69121,
+      "sc_population": 30402
+    },
+    {
+      "id": 81,
+      "name": "Quraish Nagar",
+      "constituency_id": 1021,
+      "state_id": 1,
+      "population": 60053,
+      "sc_population": 13059
+    },
+    {
+      "id": 82,
+      "name": "Pahar Ganj",
+      "constituency_id": 1022,
+      "state_id": 1,
+      "population": 67390,
+      "sc_population": 14936
+    },
+    {
+      "id": 83,
+      "name": "Karol Bagh",
+      "constituency_id": 1022,
+      "state_id": 1,
+      "population": 66938,
+      "sc_population": 20985
+    },
+    {
+      "id": 84,
+      "name": "Dev Nagar",
+      "constituency_id": 1022,
+      "state_id": 1,
+      "population": 64451,
+      "sc_population": 44756
+    },
+    {
+      "id": 85,
+      "name": "West Patel Nagar",
+      "constituency_id": 1023,
+      "state_id": 1,
+      "population": 69686,
+      "sc_population": 25390
+    },
+    {
+      "id": 86,
+      "name": "East Patel Nagar",
+      "constituency_id": 1023,
+      "state_id": 1,
+      "population": 44420,
+      "sc_population": 7685
+    },
+    {
+      "id": 87,
+      "name": "Ranjeet Nagar",
+      "constituency_id": 1023,
+      "state_id": 1,
+      "population": 54256,
+      "sc_population": 8884
+    },
+    {
+      "id": 88,
+      "name": "Baljeet Nagar",
+      "constituency_id": 1023,
+      "state_id": 1,
+      "population": 54213,
+      "sc_population": 6240
+    },
+    {
+      "id": 89,
+      "name": "Karam Pura",
+      "constituency_id": 1024,
+      "state_id": 1,
+      "population": 72228,
+      "sc_population": 7693
+    },
+    {
+      "id": 90,
+      "name": "Moti Nagar",
+      "constituency_id": 1024,
+      "state_id": 1,
+      "population": 59046,
+      "sc_population": 4349
+    },
+    {
+      "id": 91,
+      "name": "Ramesh Nagar",
+      "constituency_id": 1024,
+      "state_id": 1,
+      "population": 72577,
+      "sc_population": 7801
+    },
+    {
+      "id": 92,
+      "name": "Punjabi Bagh",
+      "constituency_id": 1025,
+      "state_id": 1,
+      "population": 69946,
+      "sc_population": 9880
+    },
+    {
+      "id": 93,
+      "name": "Madipur",
+      "constituency_id": 1025,
+      "state_id": 1,
+      "population": 71727,
+      "sc_population": 34405
+    },
+    {
+      "id": 94,
+      "name": "Raghubir Nagar",
+      "constituency_id": 1025,
+      "state_id": 1,
+      "population": 78369,
+      "sc_population": 20161
+    },
+    {
+      "id": 95,
+      "name": "Vishnu Garden",
+      "constituency_id": 1026,
+      "state_id": 1,
+      "population": 73302,
+      "sc_population": 6517
+    },
+    {
+      "id": 96,
+      "name": "Rajouri Garden",
+      "constituency_id": 1026,
+      "state_id": 1,
+      "population": 65596,
+      "sc_population": 6507
+    },
+    {
+      "id": 97,
+      "name": "Chaukhandi Nagar",
+      "constituency_id": 1026,
+      "state_id": 1,
+      "population": 67284,
+      "sc_population": 11289
+    },
+    {
+      "id": 98,
+      "name": "Subhash Nagar",
+      "constituency_id": 1027,
+      "state_id": 1,
+      "population": 59595,
+      "sc_population": 4633
+    },
+    {
+      "id": 99,
+      "name": "Hari Nagar",
+      "constituency_id": 1027,
+      "state_id": 1,
+      "population": 74020,
+      "sc_population": 7847
+    },
+    {
+      "id": 100,
+      "name": "Fateh Nagar",
+      "constituency_id": 1027,
+      "state_id": 1,
+      "population": 57335,
+      "sc_population": 2034
+    },
+    {
+      "id": 101,
+      "name": "Tilak Nagar",
+      "constituency_id": 1028,
+      "state_id": 1,
+      "population": 52859,
+      "sc_population": 1754
+    },
+    {
+      "id": 102,
+      "name": "Khyala",
+      "constituency_id": 1028,
+      "state_id": 1,
+      "population": 72421,
+      "sc_population": 10904
+    },
+    {
+      "id": 103,
+      "name": "Keshopur",
+      "constituency_id": 1028,
+      "state_id": 1,
+      "population": 72766,
+      "sc_population": 4690
+    },
+    {
+      "id": 104,
+      "name": "Janakpuri South",
+      "constituency_id": 1029,
+      "state_id": 1,
+      "population": 80061,
+      "sc_population": 5578
+    },
+    {
+      "id": 105,
+      "name": "Mahaveer Enclave",
+      "constituency_id": 1029,
+      "state_id": 1,
+      "population": 70924,
+      "sc_population": 5917
+    },
+    {
+      "id": 106,
+      "name": "Janakpuri West",
+      "constituency_id": 1029,
+      "state_id": 1,
+      "population": 69625,
+      "sc_population": 5701
+    },
+    {
+      "id": 107,
+      "name": "Vikas Puri",
+      "constituency_id": 1030,
+      "state_id": 1,
+      "population": 74846,
+      "sc_population": 12043
+    },
+    {
+      "id": 108,
+      "name": "Hastsal",
+      "constituency_id": 1030,
+      "state_id": 1,
+      "population": 68864,
+      "sc_population": 9374
+    },
+    {
+      "id": 109,
+      "name": "Vikas Nagar",
+      "constituency_id": 1030,
+      "state_id": 1,
+      "population": 51864,
+      "sc_population": 6999
+    },
+    {
+      "id": 110,
+      "name": "Kunwar Singh Nagar",
+      "constituency_id": 1030,
+      "state_id": 1,
+      "population": 55270,
+      "sc_population": 10830
+    },
+    {
+      "id": 111,
+      "name": "Baprola",
+      "constituency_id": 1030,
+      "state_id": 1,
+      "population": 54328,
+      "sc_population": 7657
+    },
+    {
+      "id": 112,
+      "name": "Sainik Enclave",
+      "constituency_id": 1030,
+      "state_id": 1,
+      "population": 88571,
+      "sc_population": 7262
+    },
+    {
+      "id": 113,
+      "name": "Mohan Garden",
+      "constituency_id": 1031,
+      "state_id": 1,
+      "population": 60029,
+      "sc_population": 5854
+    },
+    {
+      "id": 114,
+      "name": "Nawada",
+      "constituency_id": 1031,
+      "state_id": 1,
+      "population": 86959,
+      "sc_population": 7407
+    },
+    {
+      "id": 115,
+      "name": "Uttam Nagar",
+      "constituency_id": 1031,
+      "state_id": 1,
+      "population": 68309,
+      "sc_population": 3410
+    },
+    {
+      "id": 116,
+      "name": "Bindapur",
+      "constituency_id": 1031,
+      "state_id": 1,
+      "population": 58750,
+      "sc_population": 6992
+    },
+    {
+      "id": 117,
+      "name": "Dabri",
+      "constituency_id": 1032,
+      "state_id": 1,
+      "population": 66907,
+      "sc_population": 8083
+    },
+    {
+      "id": 118,
+      "name": "Sagarpur",
+      "constituency_id": 1032,
+      "state_id": 1,
+      "population": 78790,
+      "sc_population": 8447
+    },
+    {
+      "id": 119,
+      "name": "Manglapuri",
+      "constituency_id": 1032,
+      "state_id": 1,
+      "population": 68160,
+      "sc_population": 10348
+    },
+    {
+      "id": 120,
+      "name": "Dwarka-B",
+      "constituency_id": 1033,
+      "state_id": 1,
+      "population": 62971,
+      "sc_population": 2683
+    },
+    {
+      "id": 121,
+      "name": "Dwarka-A",
+      "constituency_id": 1033,
+      "state_id": 1,
+      "population": 73208,
+      "sc_population": 6039
+    },
+    {
+      "id": 122,
+      "name": "Matiala",
+      "constituency_id": 1033,
+      "state_id": 1,
+      "population": 54631,
+      "sc_population": 6093
+    },
+    {
+      "id": 123,
+      "name": "Kakrola",
+      "constituency_id": 1033,
+      "state_id": 1,
+      "population": 65930,
+      "sc_population": 10503
+    },
+    {
+      "id": 124,
+      "name": "Nangli Sakrawati",
+      "constituency_id": 1033,
+      "state_id": 1,
+      "population": 83159,
+      "sc_population": 10490
+    },
+    {
+      "id": 125,
+      "name": "Chhawla",
+      "constituency_id": 1033,
+      "state_id": 1,
+      "population": 81500,
+      "sc_population": 14750
+    },
+    {
+      "id": 126,
+      "name": "Isapur",
+      "constituency_id": 1034,
+      "state_id": 1,
+      "population": 76423,
+      "sc_population": 12170
+    },
+    {
+      "id": 127,
+      "name": "Najafgarh",
+      "constituency_id": 1034,
+      "state_id": 1,
+      "population": 68559,
+      "sc_population": 11316
+    },
+    {
+      "id": 128,
+      "name": "Dichaon Kalan",
+      "constituency_id": 1034,
+      "state_id": 1,
+      "population": 71665,
+      "sc_population": 10004
+    },
+    {
+      "id": 129,
+      "name": "Roshan Pura",
+      "constituency_id": 1034,
+      "state_id": 1,
+      "population": 69828,
+      "sc_population": 10462
+    },
+    {
+      "id": 130,
+      "name": "Dwarka-C",
+      "constituency_id": 1035,
+      "state_id": 1,
+      "population": 45075,
+      "sc_population": 5926
+    },
+    {
+      "id": 131,
+      "name": "Bijwasan",
+      "constituency_id": 1035,
+      "state_id": 1,
+      "population": 47291,
+      "sc_population": 7015
+    },
+    {
+      "id": 132,
+      "name": "Kapashera",
+      "constituency_id": 1035,
+      "state_id": 1,
+      "population": 74073,
+      "sc_population": 6503
+    },
+    {
+      "id": 133,
+      "name": "Mahipalpur",
+      "constituency_id": 1035,
+      "state_id": 1,
+      "population": 65162,
+      "sc_population": 11490
+    },
+    {
+      "id": 134,
+      "name": "Raj Nagar",
+      "constituency_id": 1035,
+      "state_id": 1,
+      "population": 66635,
+      "sc_population": 10170
+    },
+    {
+      "id": 135,
+      "name": "Palam",
+      "constituency_id": 1036,
+      "state_id": 1,
+      "population": 54900,
+      "sc_population": 5637
+    },
+    {
+      "id": 136,
+      "name": "Madhu Vihar",
+      "constituency_id": 1036,
+      "state_id": 1,
+      "population": 67394,
+      "sc_population": 6236
+    },
+    {
+      "id": 137,
+      "name": "Mahavir Enclave",
+      "constituency_id": 1036,
+      "state_id": 1,
+      "population": 67473,
+      "sc_population": 9134
+    },
+    {
+      "id": 138,
+      "name": "Sadh Nagar",
+      "constituency_id": 1036,
+      "state_id": 1,
+      "population": 56487,
+      "sc_population": 5826
+    },
+    {
+      "id": 139,
+      "name": "Naraina",
+      "constituency_id": 1037,
+      "state_id": 1,
+      "population": 80240,
+      "sc_population": 15689
+    },
+    {
+      "id": 140,
+      "name": "Inder Puri",
+      "constituency_id": 1037,
+      "state_id": 1,
+      "population": 59603,
+      "sc_population": 17847
+    },
+    {
+      "id": 141,
+      "name": "Rajinder Nagar",
+      "constituency_id": 1037,
+      "state_id": 1,
+      "population": 62224,
+      "sc_population": 10420
+    },
+    {
+      "id": 142,
+      "name": "Daryaganj",
+      "constituency_id": 1038,
+      "state_id": 1,
+      "population": 44956,
+      "sc_population": 8037
+    },
+    {
+      "id": 143,
+      "name": "Sidhartha Nagar",
+      "constituency_id": 1038,
+      "state_id": 1,
+      "population": 52058,
+      "sc_population": 12208
+    },
+    {
+      "id": 144,
+      "name": "Lajpat Nagar",
+      "constituency_id": 1038,
+      "state_id": 1,
+      "population": 53035,
+      "sc_population": 6325
+    },
+    {
+      "id": 145,
+      "name": "Andrews Ganj",
+      "constituency_id": 1039,
+      "state_id": 1,
+      "population": 66237,
+      "sc_population": 9643
+    },
+    {
+      "id": 146,
+      "name": "Amar Colony",
+      "constituency_id": 1039,
+      "state_id": 1,
+      "population": 56045,
+      "sc_population": 2235
+    },
+    {
+      "id": 147,
+      "name": "Kotla Mubarakpur",
+      "constituency_id": 1039,
+      "state_id": 1,
+      "population": 49669,
+      "sc_population": 11030
+    },
+    {
+      "id": 148,
+      "name": "Hauz Khas",
+      "constituency_id": 1040,
+      "state_id": 1,
+      "population": 45509,
+      "sc_population": 4368
+    },
+    {
+      "id": 149,
+      "name": "Malviya Nagar",
+      "constituency_id": 1040,
+      "state_id": 1,
+      "population": 62475,
+      "sc_population": 5106
+    },
+    {
+      "id": 150,
+      "name": "Green Park",
+      "constituency_id": 1040,
+      "state_id": 1,
+      "population": 49705,
+      "sc_population": 4068
+    },
+    {
+      "id": 151,
+      "name": "Munirka",
+      "constituency_id": 1041,
+      "state_id": 1,
+      "population": 64543,
+      "sc_population": 8943
+    },
+    {
+      "id": 152,
+      "name": "RK Puram",
+      "constituency_id": 1041,
+      "state_id": 1,
+      "population": 54347,
+      "sc_population": 10587
+    },
+    {
+      "id": 153,
+      "name": "Vasant Vihar",
+      "constituency_id": 1041,
+      "state_id": 1,
+      "population": 55960,
+      "sc_population": 9430
+    },
+    {
+      "id": 154,
+      "name": "Lado Sarai",
+      "constituency_id": 1042,
+      "state_id": 1,
+      "population": 68172,
+      "sc_population": 16349
+    },
+    {
+      "id": 155,
+      "name": "Mehrauli",
+      "constituency_id": 1042,
+      "state_id": 1,
+      "population": 74939,
+      "sc_population": 8317
+    },
+    {
+      "id": 156,
+      "name": "Vasant Kunj",
+      "constituency_id": 1042,
+      "state_id": 1,
+      "population": 57080,
+      "sc_population": 5467
+    },
+    {
+      "id": 157,
+      "name": "Aya Nagar",
+      "constituency_id": 1043,
+      "state_id": 1,
+      "population": 51783,
+      "sc_population": 7027
+    },
+    {
+      "id": 158,
+      "name": "Bhati",
+      "constituency_id": 1043,
+      "state_id": 1,
+      "population": 71373,
+      "sc_population": 11057
+    },
+    {
+      "id": 159,
+      "name": "Chhatarpur",
+      "constituency_id": 1043,
+      "state_id": 1,
+      "population": 58988,
+      "sc_population": 8849
+    },
+    {
+      "id": 160,
+      "name": "Said-Ul-Ajaib",
+      "constituency_id": 1043,
+      "state_id": 1,
+      "population": 70967,
+      "sc_population": 8905
+    },
+    {
+      "id": 161,
+      "name": "Deoli",
+      "constituency_id": 1044,
+      "state_id": 1,
+      "population": 69916,
+      "sc_population": 12113
+    },
+    {
+      "id": 162,
+      "name": "Tigri",
+      "constituency_id": 1044,
+      "state_id": 1,
+      "population": 70576,
+      "sc_population": 24661
+    },
+    {
+      "id": 163,
+      "name": "Sangam Vihar-A",
+      "constituency_id": 1044,
+      "state_id": 1,
+      "population": 75114,
+      "sc_population": 11363
+    },
+    {
+      "id": 164,
+      "name": "Dakshin Puri",
+      "constituency_id": 1044,
+      "state_id": 1,
+      "population": 72967,
+      "sc_population": 25724
+    },
+    {
+      "id": 165,
+      "name": "Madangir",
+      "constituency_id": 1045,
+      "state_id": 1,
+      "population": 52695,
+      "sc_population": 23458
+    },
+    {
+      "id": 166,
+      "name": "Pushp Vihar",
+      "constituency_id": 1045,
+      "state_id": 1,
+      "population": 82509,
+      "sc_population": 29433
+    },
+    {
+      "id": 167,
+      "name": "Khanpur",
+      "constituency_id": 1045,
+      "state_id": 1,
+      "population": 64453,
+      "sc_population": 9414
+    },
+    {
+      "id": 168,
+      "name": "Sangam Vihar-C",
+      "constituency_id": 1046,
+      "state_id": 1,
+      "population": 73215,
+      "sc_population": 8611
+    },
+    {
+      "id": 169,
+      "name": "Sangam Vihar-B",
+      "constituency_id": 1046,
+      "state_id": 1,
+      "population": 72010,
+      "sc_population": 8365
+    },
+    {
+      "id": 170,
+      "name": "Tughlakabad Extension",
+      "constituency_id": 1046,
+      "state_id": 1,
+      "population": 72486,
+      "sc_population": 5834
+    },
+    {
+      "id": 171,
+      "name": "Chitaranjan Park",
+      "constituency_id": 1047,
+      "state_id": 1,
+      "population": 62940,
+      "sc_population": 3184
+    },
+    {
+      "id": 172,
+      "name": "Chirag Delhi",
+      "constituency_id": 1047,
+      "state_id": 1,
+      "population": 74850,
+      "sc_population": 10313
+    },
+    {
+      "id": 173,
+      "name": "Greater Kailash",
+      "constituency_id": 1047,
+      "state_id": 1,
+      "population": 47763,
+      "sc_population": 1582
+    },
+    {
+      "id": 174,
+      "name": "Sri Niwas Puri",
+      "constituency_id": 1048,
+      "state_id": 1,
+      "population": 70489,
+      "sc_population": 8174
+    },
+    {
+      "id": 175,
+      "name": "Kalkaji",
+      "constituency_id": 1048,
+      "state_id": 1,
+      "population": 45038,
+      "sc_population": 3016
+    },
+    {
+      "id": 176,
+      "name": "Govind Puri",
+      "constituency_id": 1048,
+      "state_id": 1,
+      "population": 74610,
+      "sc_population": 10566
+    },
+    {
+      "id": 177,
+      "name": "Harkesh Nagar",
+      "constituency_id": 1049,
+      "state_id": 1,
+      "population": 65932,
+      "sc_population": 16071
+    },
+    {
+      "id": 178,
+      "name": "Tughlakabad",
+      "constituency_id": 1049,
+      "state_id": 1,
+      "population": 63172,
+      "sc_population": 8944
+    },
+    {
+      "id": 179,
+      "name": "Pul Pehladpur",
+      "constituency_id": 1049,
+      "state_id": 1,
+      "population": 69724,
+      "sc_population": 17853
+    },
+    {
+      "id": 180,
+      "name": "Badarpur",
+      "constituency_id": 1050,
+      "state_id": 1,
+      "population": 70836,
+      "sc_population": 20750
+    },
+    {
+      "id": 181,
+      "name": "Molarband",
+      "constituency_id": 1050,
+      "state_id": 1,
+      "population": 66525,
+      "sc_population": 8292
+    },
+    {
+      "id": 182,
+      "name": "Meethapur",
+      "constituency_id": 1050,
+      "state_id": 1,
+      "population": 69837,
+      "sc_population": 6727
+    },
+    {
+      "id": 183,
+      "name": "Hari Nagar Extension",
+      "constituency_id": 1050,
+      "state_id": 1,
+      "population": 66979,
+      "sc_population": 5570
+    },
+    {
+      "id": 184,
+      "name": "Jaitpur",
+      "constituency_id": 1050,
+      "state_id": 1,
+      "population": 62317,
+      "sc_population": 4642
+    },
+    {
+      "id": 185,
+      "name": "Madanpur Khadar East",
+      "constituency_id": 1051,
+      "state_id": 1,
+      "population": 55119,
+      "sc_population": 16500
+    },
+    {
+      "id": 186,
+      "name": "Madanpur Khadar West",
+      "constituency_id": 1051,
+      "state_id": 1,
+      "population": 56323,
+      "sc_population": 7091
+    },
+    {
+      "id": 187,
+      "name": "Sarita Vihar",
+      "constituency_id": 1051,
+      "state_id": 1,
+      "population": 55385,
+      "sc_population": 5399
+    },
+    {
+      "id": 188,
+      "name": "Abul Fazal Enclave",
+      "constituency_id": 1051,
+      "state_id": 1,
+      "population": 76012,
+      "sc_population": 1557
+    },
+    {
+      "id": 189,
+      "name": "Zakir Nagar",
+      "constituency_id": 1051,
+      "state_id": 1,
+      "population": 76470,
+      "sc_population": 699
+    },
+    {
+      "id": 190,
+      "name": "New Ashok Nagar",
+      "constituency_id": 1052,
+      "state_id": 1,
+      "population": 63870,
+      "sc_population": 4961
+    },
+    {
+      "id": 191,
+      "name": "Mayur Vihar Phase-I",
+      "constituency_id": 1052,
+      "state_id": 1,
+      "population": 88878,
+      "sc_population": 24363
+    },
+    {
+      "id": 192,
+      "name": "Trilokpuri",
+      "constituency_id": 1052,
+      "state_id": 1,
+      "population": 88792,
+      "sc_population": 47282
+    },
+    {
+      "id": 193,
+      "name": "Kondli",
+      "constituency_id": 1053,
+      "state_id": 1,
+      "population": 66098,
+      "sc_population": 5743
+    },
+    {
+      "id": 194,
+      "name": "Gharoli",
+      "constituency_id": 1053,
+      "state_id": 1,
+      "population": 78926,
+      "sc_population": 21747
+    },
+    {
+      "id": 195,
+      "name": "Kalyanpuri",
+      "constituency_id": 1053,
+      "state_id": 1,
+      "population": 87375,
+      "sc_population": 34937
+    },
+    {
+      "id": 196,
+      "name": "Mayur Vihar Phase-II",
+      "constituency_id": 1054,
+      "state_id": 1,
+      "population": 55663,
+      "sc_population": 10835
+    },
+    {
+      "id": 197,
+      "name": "Patparganj",
+      "constituency_id": 1054,
+      "state_id": 1,
+      "population": 58762,
+      "sc_population": 7093
+    },
+    {
+      "id": 198,
+      "name": "Vinod Nagar",
+      "constituency_id": 1054,
+      "state_id": 1,
+      "population": 58936,
+      "sc_population": 5864
+    },
+    {
+      "id": 199,
+      "name": "Mandawali",
+      "constituency_id": 1054,
+      "state_id": 1,
+      "population": 49753,
+      "sc_population": 6804
+    },
+    {
+      "id": 200,
+      "name": "Pandav Nagar",
+      "constituency_id": 1055,
+      "state_id": 1,
+      "population": 71022,
+      "sc_population": 6682
+    },
+    {
+      "id": 201,
+      "name": "Lalita Park",
+      "constituency_id": 1055,
+      "state_id": 1,
+      "population": 55805,
+      "sc_population": 3044
+    },
+    {
+      "id": 202,
+      "name": "Shakarpur",
+      "constituency_id": 1055,
+      "state_id": 1,
+      "population": 66256,
+      "sc_population": 6640
+    },
+    {
+      "id": 203,
+      "name": "Laxmi Nagar",
+      "constituency_id": 1055,
+      "state_id": 1,
+      "population": 47859,
+      "sc_population": 2258
+    },
+    {
+      "id": 204,
+      "name": "Preet Vihar",
+      "constituency_id": 1056,
+      "state_id": 1,
+      "population": 52293,
+      "sc_population": 2150
+    },
+    {
+      "id": 205,
+      "name": "IP Extension",
+      "constituency_id": 1056,
+      "state_id": 1,
+      "population": 60343,
+      "sc_population": 4041
+    },
+    {
+      "id": 206,
+      "name": "Anand Vihar",
+      "constituency_id": 1056,
+      "state_id": 1,
+      "population": 56495,
+      "sc_population": 7107
+    },
+    {
+      "id": 207,
+      "name": "Vishwas Nagar",
+      "constituency_id": 1056,
+      "state_id": 1,
+      "population": 53057,
+      "sc_population": 15149
+    },
+    {
+      "id": 208,
+      "name": "Anarkali",
+      "constituency_id": 1057,
+      "state_id": 1,
+      "population": 57322,
+      "sc_population": 5866
+    },
+    {
+      "id": 209,
+      "name": "Jagat Puri",
+      "constituency_id": 1057,
+      "state_id": 1,
+      "population": 76170,
+      "sc_population": 5932
+    },
+    {
+      "id": 210,
+      "name": "Geeta Colony",
+      "constituency_id": 1057,
+      "state_id": 1,
+      "population": 59249,
+      "sc_population": 4782
+    },
+    {
+      "id": 211,
+      "name": "Krishna Nagar",
+      "constituency_id": 1057,
+      "state_id": 1,
+      "population": 61458,
+      "sc_population": 3690
+    },
+    {
+      "id": 212,
+      "name": "Gandhi Nagar",
+      "constituency_id": 1058,
+      "state_id": 1,
+      "population": 62052,
+      "sc_population": 7127
+    },
+    {
+      "id": 213,
+      "name": "Shastri Park",
+      "constituency_id": 1058,
+      "state_id": 1,
+      "population": 68530,
+      "sc_population": 6720
+    },
+    {
+      "id": 214,
+      "name": "Azad Nagar",
+      "constituency_id": 1058,
+      "state_id": 1,
+      "population": 66674,
+      "sc_population": 6994
+    },
+    {
+      "id": 215,
+      "name": "Shahdara",
+      "constituency_id": 1059,
+      "state_id": 1,
+      "population": 69110,
+      "sc_population": 16796
+    },
+    {
+      "id": 216,
+      "name": "Jhilmil",
+      "constituency_id": 1059,
+      "state_id": 1,
+      "population": 68555,
+      "sc_population": 11476
+    },
+    {
+      "id": 217,
+      "name": "Dilshad Colony",
+      "constituency_id": 1059,
+      "state_id": 1,
+      "population": 76598,
+      "sc_population": 10854
+    },
+    {
+      "id": 218,
+      "name": "Sundar Nagri",
+      "constituency_id": 1060,
+      "state_id": 1,
+      "population": 83935,
+      "sc_population": 20704
+    },
+    {
+      "id": 219,
+      "name": "Dilshad Garden",
+      "constituency_id": 1060,
+      "state_id": 1,
+      "population": 79248,
+      "sc_population": 15189
+    },
+    {
+      "id": 220,
+      "name": "Nand Nagri",
+      "constituency_id": 1060,
+      "state_id": 1,
+      "population": 73753,
+      "sc_population": 36402
+    },
+    {
+      "id": 221,
+      "name": "Ashok Nagar",
+      "constituency_id": 1061,
+      "state_id": 1,
+      "population": 59850,
+      "sc_population": 13216
+    },
+    {
+      "id": 222,
+      "name": "Ram Nagar East",
+      "constituency_id": 1061,
+      "state_id": 1,
+      "population": 59874,
+      "sc_population": 13201
+    },
+    {
+      "id": 223,
+      "name": "Rohtash Nagar",
+      "constituency_id": 1061,
+      "state_id": 1,
+      "population": 55550,
+      "sc_population": 12468
+    },
+    {
+      "id": 224,
+      "name": "Welcome Colony",
+      "constituency_id": 1061,
+      "state_id": 1,
+      "population": 65707,
+      "sc_population": 10033
+    },
+    {
+      "id": 225,
+      "name": "Seelampur",
+      "constituency_id": 1062,
+      "state_id": 1,
+      "population": 63039,
+      "sc_population": 7542
+    },
+    {
+      "id": 226,
+      "name": "Gautam Puri",
+      "constituency_id": 1062,
+      "state_id": 1,
+      "population": 51072,
+      "sc_population": 7144
+    },
+    {
+      "id": 227,
+      "name": "Chauhan Banger",
+      "constituency_id": 1062,
+      "state_id": 1,
+      "population": 58344,
+      "sc_population": 124
+    },
+    {
+      "id": 228,
+      "name": "Maujpur",
+      "constituency_id": 1062,
+      "state_id": 1,
+      "population": 63960,
+      "sc_population": 4461
+    },
+    {
+      "id": 229,
+      "name": "Brahampuri",
+      "constituency_id": 1063,
+      "state_id": 1,
+      "population": 66203,
+      "sc_population": 7166
+    },
+    {
+      "id": 230,
+      "name": "Bhajanpura",
+      "constituency_id": 1063,
+      "state_id": 1,
+      "population": 57248,
+      "sc_population": 9295
+    },
+    {
+      "id": 231,
+      "name": "Ghonda",
+      "constituency_id": 1063,
+      "state_id": 1,
+      "population": 65273,
+      "sc_population": 10923
+    },
+    {
+      "id": 232,
+      "name": "Yamuna Vihar",
+      "constituency_id": 1063,
+      "state_id": 1,
+      "population": 53966,
+      "sc_population": 3791
+    },
+    {
+      "id": 233,
+      "name": "Subhash Mohalla",
+      "constituency_id": 1064,
+      "state_id": 1,
+      "population": 57209,
+      "sc_population": 2236
+    },
+    {
+      "id": 234,
+      "name": "Kabir Nagar",
+      "constituency_id": 1064,
+      "state_id": 1,
+      "population": 54811,
+      "sc_population": 4070
+    },
+    {
+      "id": 235,
+      "name": "Gorakh Park",
+      "constituency_id": 1064,
+      "state_id": 1,
+      "population": 63353,
+      "sc_population": 3295
+    },
+    {
+      "id": 236,
+      "name": "Kardam Puri",
+      "constituency_id": 1064,
+      "state_id": 1,
+      "population": 64940,
+      "sc_population": 4648
+    },
+    {
+      "id": 237,
+      "name": "Harsh Vihar",
+      "constituency_id": 1065,
+      "state_id": 1,
+      "population": 78698,
+      "sc_population": 31746
+    },
+    {
+      "id": 238,
+      "name": "Saboli",
+      "constituency_id": 1065,
+      "state_id": 1,
+      "population": 71019,
+      "sc_population": 22218
+    },
+    {
+      "id": 239,
+      "name": "Gokal Puri",
+      "constituency_id": 1065,
+      "state_id": 1,
+      "population": 73943,
+      "sc_population": 33590
+    },
+    {
+      "id": 240,
+      "name": "Joharipur",
+      "constituency_id": 1065,
+      "state_id": 1,
+      "population": 71269,
+      "sc_population": 21411
+    },
+    {
+      "id": 241,
+      "name": "Karawal Nagar-East",
+      "constituency_id": 1066,
+      "state_id": 1,
+      "population": 65474,
+      "sc_population": 14352
+    },
+    {
+      "id": 242,
+      "name": "Dayalpur",
+      "constituency_id": 1066,
+      "state_id": 1,
+      "population": 54188,
+      "sc_population": 11316
+    },
+    {
+      "id": 243,
+      "name": "Mustafabad",
+      "constituency_id": 1066,
+      "state_id": 1,
+      "population": 55586,
+      "sc_population": 385
+    },
+    {
+      "id": 244,
+      "name": "Nehru Vihar",
+      "constituency_id": 1066,
+      "state_id": 1,
+      "population": 73213,
+      "sc_population": 6021
+    },
+    {
+      "id": 245,
+      "name": "Brij Puri",
+      "constituency_id": 1066,
+      "state_id": 1,
+      "population": 63040,
+      "sc_population": 4075
+    },
+    {
+      "id": 246,
+      "name": "Sri Ram Colony",
+      "constituency_id": 1067,
+      "state_id": 1,
+      "population": 83347,
+      "sc_population": 3146
+    },
+    {
+      "id": 247,
+      "name": "Sadatpur",
+      "constituency_id": 1067,
+      "state_id": 1,
+      "population": 60181,
+      "sc_population": 5739
+    },
+    {
+      "id": 248,
+      "name": "Karawal Nagar-West",
+      "constituency_id": 1067,
+      "state_id": 1,
+      "population": 69926,
+      "sc_population": 8413
+    },
+    {
+      "id": 249,
+      "name": "Sonia Vihar",
+      "constituency_id": 1067,
+      "state_id": 1,
+      "population": 65031,
+      "sc_population": 6071
+    },
+    {
+      "id": 250,
+      "name": "Sabapur",
+      "constituency_id": 1067,
+      "state_id": 1,
+      "population": 42819,
+      "sc_population": 3852
+    }
   ]
 }

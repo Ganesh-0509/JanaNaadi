@@ -23,6 +23,47 @@ from app.services.inference_engine import generate_inferred_edges, generate_mult
 
 logger = logging.getLogger("jananaadi.entity_extraction")
 
+VALID_DOMAINS = {"geopolitics", "economics", "defense", "climate", "technology", "society", "general"}
+ALLOWED_RELATIONSHIP_TYPES = {
+    "supports",
+    "opposes",
+    "impacts",
+    "related_to",
+    "part_of",
+    "causes",
+    "mentioned_in",
+    "located_in",
+    "cross_domain_impact",
+}
+
+RELATIONSHIP_TYPE_ALIASES = {
+    "affects": "impacts",
+    "influences": "impacts",
+    "drives": "causes",
+    "threatens": "impacts",
+    "strains": "impacts",
+    "enables": "supports",
+    "enhances": "supports",
+    "warns_of": "impacts",
+    "allocates": "impacts",
+    "announces": "mentioned_in",
+    "on": "related_to",
+    "with": "related_to",
+    "in": "located_in",
+    "at": "located_in",
+}
+
+
+def _normalize_domain(domain: str | None) -> str:
+    d = (domain or "").strip().lower()
+    return d if d in VALID_DOMAINS else "general"
+
+
+def _normalize_relationship_type(rel_type: str | None) -> str:
+    candidate = (rel_type or "related_to").strip().lower()
+    mapped = RELATIONSHIP_TYPE_ALIASES.get(candidate, candidate)
+    return mapped if mapped in ALLOWED_RELATIONSHIP_TYPES else "related_to"
+
 # ── Shared entity cache ────────────────────────────────────────────────────────
 # nlp_service.py imports this dict and writes into it after each combined call.
 # extract_entities() reads from it — always a hit for articles already analyzed.
@@ -75,15 +116,11 @@ async def extract_entities(text: str, entry_id: str | None = None) -> dict:
         logger.debug(f"Entity cache HIT {text_hash[:8]} — 0 API calls")
         return _entity_cache[text_hash]
 
-    # ── Cache miss (fallback — only during isolated testing) ──────────────────
+    # Cache miss fallback path (rare): try local LLM first.
     logger.warning(
-        f"Entity cache MISS {text_hash[:8]} — making direct Bytez call. "
-        "This should not happen during normal ingestion (nlp_service should "
-        "have already populated the cache)."
+        "Entity cache MISS %s - fallback extraction path used",
+        text_hash[:8],
     )
-
-    if not _check_api_limit():
-        return {"entities": [], "relationships": []}
 
     prompt = f"""Extract entities and relationships from this text. Return ONLY valid JSON.
 
@@ -97,6 +134,37 @@ async def extract_entities(text: str, entry_id: str | None = None) -> dict:
 }}
 
 Text: {text[:1500]}"""
+
+    # 1) Local LLM fallback
+    try:
+        from app.core.settings import get_settings
+        from app.services.local_llm_service import generate_json
+
+        settings = get_settings()
+        result = await generate_json(prompt, max_tokens=600)
+        result.setdefault("entities", [])
+        result.setdefault("relationships", [])
+
+        _entity_cache[text_hash] = result
+        if len(_entity_cache) > 1000:
+            del _entity_cache[list(_entity_cache.keys())[0]]
+
+        return result
+    except Exception as e:
+        logger.warning("Entity local fallback failed: %s", e)
+
+    # 2) Optional cloud fallback when explicitly enabled
+    try:
+        from app.core.settings import get_settings
+        settings = get_settings()
+    except Exception:
+        settings = None
+
+    if not settings or not settings.allow_cloud_fallback:
+        return {"entities": [], "relationships": []}
+
+    if not _check_api_limit():
+        return {"entities": [], "relationships": []}
 
     for attempt in range(2):
         try:
@@ -179,7 +247,7 @@ async def create_cross_domain_edges(
             try:
                 existing = await db_retry(
                     lambda sb: sb.table("entity_relationships")
-                    .select("id, strength, evidence_entry_ids")
+                    .select("id, strength")
                     .eq("source_entity_id", id_a)
                     .eq("target_entity_id", id_b)
                     .eq("relationship_type", "cross_domain_impact")
@@ -190,20 +258,14 @@ async def create_cross_domain_edges(
                 if existing and existing.data:
                     rel_id = existing.data[0]["id"]
                     new_strength = min(round(existing.data[0].get("strength", 0.3) + 0.05, 2), 1.0)
-                    
-                    # Append entry_id to evidence list
-                    existing_evidence = existing.data[0].get("evidence_entry_ids", []) or []
-                    if entry_id and entry_id not in existing_evidence:
-                        existing_evidence.append(entry_id)
-                    
+
                     await db_retry(
                         lambda sb: sb.table("entity_relationships")
-                        .update({"strength": new_strength, "evidence_entry_ids": existing_evidence})
+                        .update({"strength": new_strength})
                         .eq("id", rel_id)
                         .execute()
                     )
                 else:
-                    evidence_ids = [entry_id] if entry_id else []
                     await db_retry(
                         lambda sb: sb.table("entity_relationships")
                         .insert({
@@ -213,7 +275,6 @@ async def create_cross_domain_edges(
                             "strength": 0.3,
                             "context": f"Co-occurred in same article: {domain_a} ↔ {domain_b}",
                             "source_entry_id": entry_id,
-                            "evidence_entry_ids": evidence_ids,
                             "metadata": {"domain_a": domain_a, "domain_b": domain_b, "edge_type": "cross_domain"},
                         })
                         .execute()
@@ -257,6 +318,8 @@ async def store_entities_and_relationships(
         return None
 
     try:
+        normalized_entry_domain = _normalize_domain(entry_domain)
+
         for entity_data in extraction_result.get("entities", []):
             name = entity_data.get("name", "").strip()
             if not name or len(name) > 200:
@@ -268,8 +331,8 @@ async def store_entities_and_relationships(
             aliases = entity_data.get("aliases", [])[:10]
             sentiment = entity_data.get("sentiment")
 
-            if entry_domain:
-                entity_domain_map[name] = entry_domain
+            if normalized_entry_domain:
+                entity_domain_map[name] = normalized_entry_domain
 
             try:
                 existing = await db_retry(
@@ -307,7 +370,7 @@ async def store_entities_and_relationships(
                             "aliases": aliases,
                             "sentiment_score": sv,
                             "mention_count": 0,
-                            "domain": entry_domain or "unspecified",
+                            "domain": normalized_entry_domain,
                             "first_seen": datetime.now(timezone.utc).isoformat(),
                             "last_seen": datetime.now(timezone.utc).isoformat(),
                         }).execute()
@@ -346,7 +409,7 @@ async def store_entities_and_relationships(
             try:
                 existing_rel = await db_retry(
                     lambda sb: sb.table("entity_relationships")
-                    .select("id, strength, evidence_entry_ids")
+                    .select("id, strength")
                     .eq("source_entity_id", source_id)
                     .eq("target_entity_id", target_id)
                     .limit(1)
@@ -356,28 +419,22 @@ async def store_entities_and_relationships(
                 if existing_rel and existing_rel.data:
                     rel_id = existing_rel.data[0]["id"]
                     new_strength = min(existing_rel.data[0].get("strength", 1.0) + 0.1, 1.0)
-                    
-                    # Append entry_id to evidence list (avoid duplicates)
-                    existing_evidence = existing_rel.data[0].get("evidence_entry_ids", []) or []
-                    if entry_id and entry_id not in existing_evidence:
-                        existing_evidence.append(entry_id)
-                    
+
                     await db_retry(
                         lambda sb: sb.table("entity_relationships")
-                        .update({"strength": new_strength, "evidence_entry_ids": existing_evidence}).eq("id", rel_id).execute()
+                        .update({"strength": new_strength}).eq("id", rel_id).execute()
                     )
                 else:
                     # New relationship
-                    evidence_ids = [entry_id] if entry_id else []
+                    normalized_rel_type = _normalize_relationship_type(rel_data.get("type"))
                     await db_retry(
                         lambda sb: sb.table("entity_relationships").insert({
                             "source_entity_id": source_id,
                             "target_entity_id": target_id,
-                            "relationship_type": rel_data.get("type", "related_to"),
+                            "relationship_type": normalized_rel_type,
                             "context": rel_data.get("context", "")[:500],
                             "source_entry_id": entry_id,
                             "strength": 1.0,
-                            "evidence_entry_ids": evidence_ids,
                         }).execute()
                     )
                     relationships_stored += 1
@@ -385,7 +442,7 @@ async def store_entities_and_relationships(
             except Exception as e:
                 logger.warning(f"Relationship failed {source_name}->{target_name}: {e}")
 
-        if len(entity_id_map) >= 2 and entry_domain:
+        if len(entity_id_map) >= 2 and normalized_entry_domain:
             cross_domain_edges = await create_cross_domain_edges(
                 entity_id_map=entity_id_map,
                 entity_domain_map=entity_domain_map,

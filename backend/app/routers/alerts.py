@@ -2,10 +2,10 @@
 
 from fastapi import APIRouter, Depends, Query, Path, HTTPException, Request
 from app.core.auth import require_admin
+from app.core.settings import get_settings
 from app.core.supabase_client import get_supabase_admin
 from app.core.rate_limiter import limiter
 from app.models.schemas import AlertOut
-from app.services.gemini_service import generate_action_recommendations
 
 router = APIRouter(prefix="/api/alerts", tags=["alerts"])
 
@@ -151,6 +151,11 @@ async def get_recommendations(
     if rec_key in rec_cache and (now - rec_cache_time[rec_key] < TTL_SECONDS):
         recommendations = rec_cache[rec_key]
     else:
+        settings = get_settings()
+        if settings.use_local_llm:
+            from app.services.local_llm_service import generate_action_recommendations
+        else:
+            from app.services.gemini_service import generate_action_recommendations
         recommendations = await generate_action_recommendations(
             alert_type=alert["alert_type"],
             severity=alert["severity"],

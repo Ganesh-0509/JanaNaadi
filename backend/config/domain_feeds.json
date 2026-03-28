@@ -1,44 +1,48 @@
 {
   "defense": [
-    "https://pib.gov.in/RssMain.aspx?ModId=9&Lang=1&Regid=3",
-    "https://mod.gov.in/rss/press-releases",
-    "https://indianarmy.nic.in/rss/press-releases.xml",
-    "https://www.thehindu.com/news/national/feeder/default.rss",
-    "https://economictimes.indiatimes.com/news/defence/rssfeeds/48883182.cms",
-    "https://www.ndtv.com/india/rss/defence",
-    "https://www.deccanherald.com/rss/national-defence.rss"
+    "https://news.google.com/rss/search?q=Delhi+security+alert+law+order&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+police+special+cell+operation&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://www.ndtv.com/delhi-news/rss"
   ],
   "climate": [
-    "https://www.thehindu.com/sci-tech/energy-and-environment/feeder/default.rss",
-    "https://indianexpress.com/section/india/environment/feed/",
-    "https://www.downtoearth.org.in/rss",
-    "https://www.ndtv.com/environment/rss",
-    "https://timesofindia.indiatimes.com/rssfeeds/2647163.cms",
-    "https://www.hindustantimes.com/rss/environment/rssfeed.xml",
-    "https://www.news18.com/rss/environment.xml"
+    "https://news.google.com/rss/search?q=Delhi+air+quality+AQI+pollution&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+waterlogging+flood+rain+ward&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+heatwave+weather+IMD&hl=en-IN&gl=IN&ceid=IN:en"
   ],
   "technology": [
-    "https://pib.gov.in/RssMain.aspx?ModId=9&Lang=1&Regid=4",
-    "https://www.thehindu.com/sci-tech/technology/feeder/default.rss",
-    "https://economictimes.indiatimes.com/tech/rssfeeds/13357270.cms",
-    "https://www.ndtv.com/convergence/ndtv/rss/technology.xml",
-    "https://indianexpress.com/section/technology/feed/",
-    "https://www.news18.com/rss/tech.xml"
+    "https://news.google.com/rss/search?q=Delhi+smart+city+digital+governance&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+metro+technology+infrastructure&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+traffic+camera+AI+enforcement&hl=en-IN&gl=IN&ceid=IN:en"
   ],
   "economics": [
-    "https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms",
-    "https://www.thehindubusinessline.com/economy/feed/",
-    "https://indianexpress.com/section/business/economy/feed/",
-    "https://www.livemint.com/rss/economy",
-    "https://www.business-standard.com/rss/economy-policy-102.rss",
-    "https://www.moneycontrol.com/rss/economy.xml"
+    "https://news.google.com/rss/search?q=Delhi+budget+municipal+MCD+funds&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+inflation+jobs+markets&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+property+tax+MCD+collections&hl=en-IN&gl=IN&ceid=IN:en"
   ],
   "geopolitics": [
-    "https://pib.gov.in/RssMain.aspx?ModId=9&Lang=1&Regid=2",
-    "https://www.thehindu.com/news/international/feeder/default.rss",
-    "https://indianexpress.com/section/world/feed/",
-    "https://economictimes.indiatimes.com/news/politics-and-nation/rssfeeds/1052732854.cms",
-    "https://www.ndtv.com/world-news/rss",
-    "https://timesofindia.indiatimes.com/world/rssfeeds/-2128936835.cms"
+    "https://news.google.com/rss/search?q=Delhi+assembly+policy+governance&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+Lieutenant+Governor+policy+decision&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://timesofindia.indiatimes.com/city/delhi/rssfeeds/2147477844.cms"
+  ],
+  "society": [
+    "https://news.google.com/rss/search?q=Delhi+school+hospital+civic+services&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+women+safety+crime+ward&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Delhi+sanitation+garbage+MCD+ward&hl=en-IN&gl=IN&ceid=IN:en"
+  ],
+  "delhi": [
+    "https://timesofindia.indiatimes.com/city/delhi/rssfeeds/2147477844.cms",
+    "https://www.hindustantimes.com/feeds/rss/cities/delhi/rssfeed.xml",
+    "https://www.ndtv.com/delhi-news/rss",
+    "https://www.thehindu.com/news/cities/Delhi/feeder/default.rss",
+    "https://indianexpress.com/section/cities/delhi/feed/",
+    "https://news.google.com/rss/search?q=Delhi+ward+municipal+MCD&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Rohini+Delhi+ward+news&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Dwarka+Delhi+ward+news&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Karol+Bagh+Delhi+ward+news&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Chandni+Chowk+Delhi+ward+news&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Okhla+Delhi+ward+news&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Wazirpur+Delhi+ward+news&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Shahdara+Delhi+ward+news&hl=en-IN&gl=IN&ceid=IN:en",
+    "https://news.google.com/rss/search?q=Mustafabad+Delhi+ward+news&hl=en-IN&gl=IN&ceid=IN:en"
   ]
 }

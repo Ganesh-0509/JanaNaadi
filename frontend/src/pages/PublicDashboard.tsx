@@ -1,83 +1,261 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { getNationalPulse, getStateRankings, getTrendingTopics, getRecentVoices, getAreaPulse, getKeywords, getHotspots, getMCDNews } from '../api/public';
-import SentimentGauge from '../components/SentimentGauge';
-import StatCard from '../components/StatCard';
+import { Link } from 'react-router-dom';
+import {
+  Activity,
+  ArrowRight,
+  Landmark,
+  ShieldHalf,
+  TrendingUp,
+  Users,
+  Zap,
+} from 'lucide-react';
 import TopicCard from '../components/TopicCard';
 import KeywordCloud from '../components/KeywordCloud';
-import { StatCardSkeleton, VoiceCardSkeleton, TopicCardSkeleton, TableRowSkeleton, CardSkeleton } from '../components/Skeleton';
-import { formatNumber, formatRelative, formatCurrency } from '../utils/formatters';
-import { Link, useNavigate } from 'react-router-dom';
-import { Map, ArrowRight, Search, MessageSquare, Users, TrendingUp, Send, Activity, ShieldHalf, Landmark, Zap } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useFilters } from '../context/FilterContext';
-import {
-  type Pulse, type StateRanking, type TrendingTopic, type Voice, type AreaResult
-} from '../types/api';
+import { TableRowSkeleton } from '../components/Skeleton';
+import { formatNumber } from '../utils/formatters';
+import { useLivePulse } from '../hooks/useLivePulse';
+import { useLiveStream } from '../hooks/useLiveStream';
+import { resolveMcdEntity } from '../utils/wardMapping';
+import { type Pulse, type StateRanking, type TrendingTopic } from '../types/api';
+
+type Hotspot = {
+  state_id: number;
+  state: string;
+  state_code: string;
+  urgency_score: number;
+  avg_sentiment: number;
+  volume: number;
+};
+
+type NewsCard = {
+  title: string;
+  link: string | null;
+  summary: string;
+  source: string;
+  published: string;
+};
+
+const STOP_WORDS = new Set([
+  'the', 'and', 'for', 'that', 'with', 'this', 'from', 'have', 'has', 'had', 'are', 'was', 'were', 'not',
+  'you', 'your', 'our', 'but', 'all', 'any', 'can', 'will', 'about', 'into', 'out', 'just', 'more', 'very',
+  'they', 'them', 'their', 'there', 'what', 'when', 'where', 'why', 'how', 'who', 'which', 'should', 'would',
+  'could', 'than', 'then', 'also', 'because', 'been', 'being', 'over', 'under', 'after', 'before', 'near', 'ward',
+  'delhi', 'mcd', 'civic', 'issues', 'issue', 'please', 'need', 'needs', 'still', 'much', 'many', 'some', 'make',
+  'made', 'doing', 'done', 'across', 'within', 'without', 'through', 'between', 'today', 'yesterday',
+]);
+
+function sanitizeTopic(topic: string | null | undefined): string {
+  const val = (topic ?? '').trim();
+  return val.length > 0 ? val : 'General civic issues';
+}
+
+function tokenizeKeywords(text: string): string[] {
+  return (text.toLowerCase().match(/[a-z]{3,}/g) ?? [])
+    .filter((token) => token.length > 2 && !STOP_WORDS.has(token));
+}
+
+function sentimentLed(score: number): { label: string; color: string } {
+  if (score <= -0.12) {
+    return { label: 'critical', color: '#ef4444' };
+  }
+  if (score <= 0.08) {
+    return { label: 'monitor', color: '#facc15' };
+  }
+  return { label: 'stable', color: '#22c55e' };
+}
 
 export default function PublicDashboard() {
-  const { user } = useAuth();
-  const { filters } = useFilters();
-  const navigate = useNavigate();
-  const [pulse, setPulse] = useState<Pulse | null>(null);
-  const [wards, setWards] = useState<StateRanking[]>([]);
-  const [trending, setTrending] = useState<TrendingTopic[]>([]);
-  const [voices, setVoices] = useState<Voice[]>([]);
-  const [keywords, setKeywords] = useState<{ keyword: string; count: number }[]>([]);
-  const [hotspots, setHotspots] = useState<any[]>([]);
-  const [mcdNews, setMcdNews] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { pulse: livePulse, status: pulseStatus } = useLivePulse();
+  const { entries: liveEntries, status: streamStatus } = useLiveStream(300);
 
-  // Area lookup
-  const [areaQuery, setAreaQuery] = useState('');
-  const [areaResult, setAreaResult] = useState<AreaResult | null>(null);
-  const [areaLoading, setAreaLoading] = useState(false);
+  const dashboardData = useMemo(() => {
+    const delhiEntries = liveEntries.filter((entry) => {
+      const combined = `${entry.state ?? ''} ${entry.ward ?? ''} ${entry.text ?? ''}`.toLowerCase();
+      return combined.includes('delhi') || combined.includes('mcd') || entry.ward_id !== null || (entry.ward ?? '').trim().length > 0;
+    });
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      try {
-        const [p, s, t, v, kw, h, n] = await Promise.all([
-          getNationalPulse(),
-          getStateRankings(),
-          getTrendingTopics(),
-          getRecentVoices(12),
-          getKeywords(40),
-          getHotspots(10),
-          getMCDNews(),
-        ]);
-        setPulse(p);
-        setWards(s);
-        setTrending(t);
-        setVoices(v);
-        setKeywords(kw);
-        setHotspots(h);
-        setMcdNews(n);
-      } catch (e) {
-        console.error('Dashboard load error:', e);
-      } finally {
-        setLoading(false);
+    const byEntity = new Map<string, {
+      state_code: string;
+      ward_id: number | null;
+      label: string;
+      zone: string;
+      volume: number;
+      sentimentTotal: number;
+      positive: number;
+      negative: number;
+      neutral: number;
+    }>();
+    const byTopic = new Map<string, { mentions: number; scoreTotal: number }>();
+    const keywordCounts = new Map<string, number>();
+
+    let sentimentTotal = 0;
+    let positiveCount = 0;
+    let negativeCount = 0;
+    let neutralCount = 0;
+
+    for (const entry of delhiEntries) {
+      const score = Number(entry.sentiment_score ?? 0);
+      sentimentTotal += score;
+
+      if (entry.sentiment === 'positive') positiveCount += 1;
+      else if (entry.sentiment === 'negative') negativeCount += 1;
+      else neutralCount += 1;
+
+      const resolved = resolveMcdEntity({
+        wardId: entry.ward_id,
+        ward: entry.ward,
+        state: entry.state,
+        text: entry.text,
+      });
+
+      const entityKey = resolved.stateCode;
+      const current = byEntity.get(entityKey) ?? {
+        state_code: resolved.stateCode,
+        ward_id: resolved.wardId,
+        label: resolved.label,
+        zone: resolved.zone,
+        volume: 0,
+        sentimentTotal: 0,
+        positive: 0,
+        negative: 0,
+        neutral: 0,
+      };
+
+      current.volume += 1;
+      current.sentimentTotal += score;
+      if (entry.sentiment === 'positive') current.positive += 1;
+      else if (entry.sentiment === 'negative') current.negative += 1;
+      else current.neutral += 1;
+      byEntity.set(entityKey, current);
+
+      const topic = sanitizeTopic(entry.topic);
+      const topicCurrent = byTopic.get(topic) ?? { mentions: 0, scoreTotal: 0 };
+      topicCurrent.mentions += 1;
+      topicCurrent.scoreTotal += score;
+      byTopic.set(topic, topicCurrent);
+
+      for (const token of tokenizeKeywords(entry.text ?? '')) {
+        keywordCounts.set(token, (keywordCounts.get(token) ?? 0) + 1);
       }
-    };
-    load();
-  }, [filters.timeRange]);
-
-  const handleAreaSearch = async () => {
-    if (!areaQuery.trim()) return;
-    setAreaLoading(true);
-    try {
-      const result = await getAreaPulse(areaQuery.trim());
-      setAreaResult(result);
-    } catch {
-      setAreaResult({ found: false, message: 'Search failed. Try again.' });
-    } finally {
-      setAreaLoading(false);
     }
-  };
+
+    const entityValues = Array.from(byEntity.values());
+
+    const wards: StateRanking[] = entityValues
+      .map((stats, index) => ({
+        state_id: stats.ward_id ?? index + 1001,
+        state: stats.label,
+        state_code: stats.state_code,
+        avg_sentiment: stats.volume > 0 ? stats.sentimentTotal / stats.volume : 0,
+        volume: stats.volume,
+        top_issue: stats.zone,
+      }))
+      .sort((a, b) => b.avg_sentiment - a.avg_sentiment);
+
+    const trending: TrendingTopic[] = Array.from(byTopic.entries())
+      .map(([topic, stats]) => ({
+        topic,
+        mention_count: stats.mentions,
+        sentiment_trend: stats.mentions > 0 ? stats.scoreTotal / stats.mentions : 0,
+        seven_day_change: 0,
+      }))
+      .sort((a, b) => b.mention_count - a.mention_count)
+      .slice(0, 10);
+
+    const keywords = Array.from(keywordCounts.entries())
+      .map(([keyword, count]) => ({ keyword, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 40);
+
+    const hotspots: Hotspot[] = entityValues
+      .map((stats, index) => {
+        const avg = stats.volume > 0 ? stats.sentimentTotal / stats.volume : 0;
+        const volNorm = 1 - Math.exp(-stats.volume / 50);
+        const negIntensity = Math.max(0, -avg);
+        const urgency = Math.max(0, Math.min(1, 0.5 * negIntensity + 0.5 * volNorm));
+        return {
+          state_id: stats.ward_id ?? index + 1001,
+          state: stats.label,
+          state_code: stats.state_code,
+          urgency_score: urgency,
+          avg_sentiment: avg,
+          volume: stats.volume,
+        };
+      })
+      .sort((a, b) => b.urgency_score - a.urgency_score)
+      .slice(0, 10);
+
+    const mcdNews: NewsCard[] = delhiEntries.slice(0, 6).map((entry) => ({
+      title: entry.text.length > 92 ? `${entry.text.slice(0, 92)}...` : entry.text,
+      link: entry.source_url,
+      summary: entry.text,
+      source: entry.source,
+      published: entry.receivedAt ? new Date(entry.receivedAt).toLocaleTimeString() : 'Now',
+    }));
+
+    const pulseFromEntries: Pulse | null = delhiEntries.length > 0
+      ? {
+          total_entries_24h: delhiEntries.length,
+          avg_sentiment: sentimentTotal / delhiEntries.length,
+          positive_count: positiveCount,
+          negative_count: negativeCount,
+          neutral_count: neutralCount,
+          top_3_issues: Array.from(byTopic.entries())
+            .map(([topic, stats]) => ({ topic, count: stats.mentions }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 3),
+          top_3_positive: [],
+          language_breakdown: {},
+        }
+      : null;
+
+    return {
+      wards,
+      trending,
+      keywords,
+      hotspots,
+      mcdNews,
+      pulseFromEntries,
+    };
+  }, [liveEntries]);
+
+  const pulse: Pulse | null = useMemo(() => {
+    if (livePulse) {
+      return {
+        total_entries_24h: livePulse.total_entries_24h,
+        avg_sentiment: livePulse.avg_sentiment,
+        positive_count: livePulse.positive_count,
+        negative_count: livePulse.negative_count,
+        neutral_count: livePulse.neutral_count,
+        top_3_issues: livePulse.top_3_issues,
+        top_3_positive: [],
+        language_breakdown: {},
+      };
+    }
+    return dashboardData.pulseFromEntries;
+  }, [dashboardData.pulseFromEntries, livePulse]);
+
+  const wards = dashboardData.wards;
+  const trending = dashboardData.trending;
+  const keywords = dashboardData.keywords;
+  const hotspots = dashboardData.hotspots;
+  const mcdNews = dashboardData.mcdNews;
+
+  const loading = useMemo(() => {
+    return streamStatus === 'connecting' && liveEntries.length === 0 && !pulse;
+  }, [liveEntries.length, pulse, streamStatus]);
+
+  const avgSentiment = pulse?.avg_sentiment ?? 0;
+  const govPerformanceIndex = Math.max(0, Math.min(100, ((avgSentiment + 1) / 2) * 100));
+  const activeWardCount = wards.filter((w) => w.volume > 0).length;
+  const wardCoverage = activeWardCount || wards.length || hotspots.length;
+  const topHotspot = hotspots.length > 0 ? hotspots[0] : null;
+  const topHotspotUrgencyPct = topHotspot ? Math.round((topHotspot.urgency_score ?? 0) * 100) : 0;
 
   if (loading) {
     return (
-      <div className="p-6 space-y-8 bg-white min-h-screen">
+      <div className="min-h-screen space-y-8 bg-[#0B0C10] p-6 text-slate-100">
         <TableRowSkeleton />
       </div>
     );
@@ -85,240 +263,198 @@ export default function PublicDashboard() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="p-6 space-y-12 bg-white"
+      transition={{ duration: 0.35 }}
+      className="relative space-y-5 overflow-hidden bg-[#0B0C10] p-4 text-slate-100 md:p-6"
     >
-      {/* 🏙️ HEADER — MCD INTELLIGENCE CORE — Light Ivory Variant */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-4">
-        <div className="flex items-center gap-6">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-saffron flex items-center justify-center text-white mcd-glow-saffron shadow-lg relative italic">
-            <Users size={28} />
+      <div className="pointer-events-none absolute -left-16 top-0 h-72 w-72 rounded-full bg-[#00E5FF]/10 blur-3xl" />
+      <div className="pointer-events-none absolute -right-20 top-24 h-72 w-72 rounded-full bg-[#FF8C42]/10 blur-3xl" />
+
+      <section className="relative z-10 rounded-2xl border border-[#1a1f2b] bg-[#0f1219]/95 p-4 md:p-5">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#00E5FF]/20 bg-[#00E5FF]/10 text-[#00E5FF]">
+              <Users size={22} />
+            </div>
+            <div>
+              <h1 className="text-xl font-black uppercase tracking-tight text-slate-100 md:text-2xl">
+                Community Core Command Grid
+              </h1>
+              <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                Municipal Corporation of Delhi | {formatNumber(wardCoverage)} mapped entities
+              </p>
+            </div>
           </div>
+          <div className="inline-flex items-center gap-2 rounded-xl border border-[#00E5FF]/30 bg-[#00E5FF]/10 px-3 py-2">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-[#00E5FF] shadow-[0_0_10px_rgba(0,229,255,0.8)]" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#9cefff]">
+              {streamStatus === 'connected' && pulseStatus === 'connected' ? 'Live Data Signal' : 'Signal Syncing'}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative z-10 grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="rounded-2xl border border-[#1a1f2b] bg-[#111622] p-5">
+          <div className="mb-2 flex items-center justify-between text-[11px] uppercase tracking-[0.14em] text-slate-400">
+            <span>Top Hotspot Urgency</span>
+            <Landmark size={14} className="text-[#FF8C42]" />
+          </div>
+          <div className="font-mono text-3xl font-black text-[#FF8C42]">{topHotspotUrgencyPct}%</div>
+          <div className="mt-2 text-xs uppercase tracking-[0.08em] text-slate-300">{topHotspot?.state || 'MCD Strategic Center'}</div>
+        </div>
+
+        <div className="rounded-2xl border border-[#1a1f2b] bg-[#111622] p-5">
+          <div className="mb-2 flex items-center justify-between text-[11px] uppercase tracking-[0.14em] text-slate-400">
+            <span>Gov Performance Index</span>
+            <ShieldHalf size={14} className="text-[#00E5FF]" />
+          </div>
+          <div className="font-mono text-3xl font-black text-[#00E5FF]">{govPerformanceIndex.toFixed(1)}%</div>
+          <div className="mt-2 text-xs uppercase tracking-[0.08em] text-slate-300">
+            {govPerformanceIndex >= 70 ? 'Systems Optimal' : 'Needs Attention'}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-[#1a1f2b] bg-[#111622] p-5">
+          <div className="mb-2 flex items-center justify-between text-[11px] uppercase tracking-[0.14em] text-slate-400">
+            <span>Active Realities Sync</span>
+            <Zap size={14} className="text-[#00E5FF]" />
+          </div>
+          <div className="font-mono text-3xl font-black text-slate-100">{formatNumber(pulse?.total_entries_24h ?? 0)}</div>
+          <div className="mt-2 text-xs uppercase tracking-[0.08em] text-slate-300">Integrated across {formatNumber(wardCoverage)} entities</div>
+        </div>
+
+        <div className="rounded-2xl border border-[#1a1f2b] bg-[#111622] p-5">
+          <div className="mb-2 flex items-center justify-between text-[11px] uppercase tracking-[0.14em] text-slate-400">
+            <span>Negative Signals</span>
+            <Activity size={14} className="text-[#FF8C42]" />
+          </div>
+          <div className="font-mono text-3xl font-black text-[#FF8C42]">{formatNumber(pulse?.negative_count ?? 0)}</div>
+          <div className="mt-2 text-xs uppercase tracking-[0.08em] text-slate-300">Critical stream monitoring</div>
+        </div>
+      </section>
+
+      <section className="relative z-10 overflow-hidden rounded-2xl border border-[#1a1f2b] bg-[#0f1219]/95">
+        <div className="flex flex-col gap-4 border-b border-[#1d2331] px-4 py-4 md:flex-row md:items-center md:justify-between md:px-5">
           <div>
-            <h1 className="text-3xl font-black uppercase tracking-tight leading-none text-[#3E2C23] italic">
-              COMMUNITY <span className="text-[#E76F2E]">CORE</span>
-            </h1>
-            <p className="text-[10px] font-bold text-[#6B5E57] uppercase tracking-[0.25em] mt-2 italic">
-              Municipal Corporation of Delhi <span className="text-[#6B5E57]/40 mx-2">|</span> 250 Wards Sync Active
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-3 px-5 py-2.5 bg-[#FAF5ED] border border-[#3E2C23]/10 rounded-2xl shadow-sm group transition-all hover:bg-[#FAF5ED]/50">
-          <div className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
-          <span className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest italic">Global MCD Systems Operational</span>
-        </div>
-      </div>
-
-      {/* 📊 TOP-LEVEL REVENUE & PERFORMANCE SYNC */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="mcd-card border-[#3E2C23]/5 bg-white relative overflow-hidden group hover:border-[#E76F2E]/20 transition-all rounded-[32px] shadow-sm">
-          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform pointer-events-none text-[#E76F2E]">
-            <Landmark size={60} />
-          </div>
-          <h3 className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest mb-6 italic">MCD Fund Transfer (24h)</h3>
-          <div className="text-4xl font-black text-[#3E2C23] mb-2 tracking-tighter">₹142.8 Cr</div>
-          <div className="flex items-center gap-2 text-[#10B981] text-[10px] font-black uppercase tracking-widest">
-            <TrendingUp size={14} /> +4.2% Capacity
-          </div>
-        </div>
-
-        <div className="mcd-card border-[#3E2C23]/5 bg-white relative overflow-hidden group hover:border-[#0FD2B5]/20 transition-all rounded-[32px] shadow-sm">
-          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform pointer-events-none text-[#0FD2B5]">
-            <ShieldHalf size={60} />
-          </div>
-          <h3 className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest mb-6 italic">Gov Performance Index</h3>
-          <div className="text-4xl font-black text-[#3E2C23] mb-2 tracking-tighter">86.4%</div>
-          <div className="flex items-center gap-2 text-[#10B981] text-[10px] font-black uppercase tracking-widest">
-            <Activity size={14} /> Systems Optimal
-          </div>
-        </div>
-
-        <div className="mcd-card border-[#3E2C23]/5 bg-white relative overflow-hidden group hover:border-[#E76F2E]/20 transition-all rounded-[32px] shadow-sm">
-          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform pointer-events-none text-[#E76F2E]">
-            <Zap size={60} />
-          </div>
-          <h3 className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest mb-6 italic">Active Realities Sync</h3>
-          <div className="text-4xl font-black text-[#3E2C23] mb-2 tracking-tighter">{formatNumber(pulse?.total_entries_24h ?? 0)}</div>
-          <div className="flex items-center gap-2 text-[#6B5E57] text-[10px] font-black uppercase tracking-widest italic">
-             Integrated across 25 Wards
-          </div>
-        </div>
-      </div>
-
-      {/* 🔍 WARD / ZONE LOOKUP — Light ivory Version */}
-      <div className="mcd-card rounded-[40px] p-10 border border-[#3E2C23]/5 bg-[#FAF5ED]/40 relative overflow-hidden group shadow-sm transition-all hover:shadow-lg">
-        <div className="absolute top-[-20%] left-[-20%] w-[50%] h-[100%] bg-[#E76F2E]/5 blur-[100px] rounded-full group-hover:bg-[#E76F2E]/8 transition-all duration-700" />
-        
-        <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
-          <div className="flex-1">
-            <h2 className="text-2xl font-black uppercase tracking-tighter mb-2 italic text-[#3E2C23]">
-              SYNC YOUR <span className="text-[#E76F2E]">WARD PULSE</span>
+            <h2 className="text-lg font-black uppercase tracking-tight text-slate-100 md:text-xl">
+              Ward Integrity Rankings
             </h2>
-            <p className="text-[#6B5E57] text-[10px] font-black uppercase tracking-widest leading-relaxed max-w-sm italic opacity-80">
-              Analyze sentiment metrics, active budget allocations, and reality voices for any Delhi Ward in real-time.
+            <p className="text-[11px] uppercase tracking-[0.16em] text-slate-400">
+              Sentiment-volume matrix across {formatNumber(wards.length || wardCoverage)} mapped entities
             </p>
           </div>
-          <div className="flex-[1.5] w-full relative group">
-            <div className="absolute inset-0 bg-[#E76F2E]/5 blur-xl rounded-2xl group-focus-within:bg-[#E76F2E]/10 transition-all opacity-0 group-focus-within:opacity-100" />
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-[#6B5E57] group-focus-within/input:text-[#E76F2E] transition-colors" size={20} />
-            <input
-              value={areaQuery}
-              onChange={(e) => setAreaQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAreaSearch()}
-              placeholder="SEARCH WARD (E.G. NARELA, ROHINI, DWARKA)..."
-              className="w-full bg-white border-2 border-[#3E2C23]/5 rounded-2xl pl-16 pr-8 py-4 text-xs text-[#3E2C23] font-black uppercase placeholder-slate-400 focus:border-[#E76F2E]/30 focus:outline-none transition-all shadow-sm tracking-widest"
-            />
-          </div>
-          <button
-            onClick={handleAreaSearch}
-            className="px-10 py-4 bg-gradient-saffron hover:scale-[1.02] active:scale-[0.98] text-white rounded-2xl text-[10px] font-black mcd-glow-saffron transition-all shadow-xl uppercase tracking-widest shadow-[#E76F2E]/10"
+          <Link
+            to="/compare"
+            className="inline-flex items-center gap-2 rounded-lg border border-[#00E5FF]/35 bg-[#00E5FF]/10 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[#9cefff]"
           >
-            SYNC AREA
-          </button>
-        </div>
-
-        {areaResult && areaResult.found && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.98 }} 
-            animate={{ opacity: 1, scale: 1 }} 
-            className="mt-12 pt-12 border-t border-[#3E2C23]/5 grid grid-cols-2 lg:grid-cols-4 gap-6"
-          >
-            <div className="p-6 bg-white rounded-[24px] border border-[#3E2C23]/5 hover:border-[#E76F2E]/20 transition-all group/stat shadow-sm">
-              <div className="text-[9px] font-black text-[#6B5E57] uppercase tracking-widest mb-3 italic">Target Ward Entity</div>
-              <div className="text-xl font-black text-[#3E2C23] uppercase tracking-tighter group-hover/stat:translate-x-1 transition-transform">{areaResult.state}</div>
-            </div>
-            <div className="p-6 bg-white rounded-[24px] border border-[#3E2C23]/5 hover:border-emerald-500/20 transition-all group/stat shadow-sm">
-              <div className="text-[9px] font-black text-[#6B5E57] uppercase tracking-widest mb-3 italic">Integrity Sync Score</div>
-              <div className="text-xl font-black text-emerald-600 font-mono group-hover/stat:translate-x-1 transition-transform">{(areaResult.avg_sentiment ?? 0 + 0.5).toFixed(3)}</div>
-            </div>
-            <div className="p-6 bg-white rounded-[24px] border border-[#3E2C23]/5 hover:border-[#E76F2E]/20 transition-all group/stat shadow-sm">
-              <div className="text-[9px] font-black text-[#6B5E57] uppercase tracking-widest mb-3 italic">Active Reality Voices</div>
-              <div className="text-xl font-black text-[#3E2C23] group-hover/stat:translate-x-1 transition-transform">{formatNumber(areaResult.total_entries)}</div>
-            </div>
-            <div className="p-6 bg-white rounded-[24px] border border-[#3E2C23]/5 hover:border-red-500/20 transition-all group/stat shadow-sm">
-              <div className="text-[9px] font-black text-[#6B5E57] uppercase tracking-widest mb-3 italic">Strategic Risk Status</div>
-              <div className={`text-xl font-black uppercase tracking-tighter group-hover/stat:translate-x-1 transition-transform ${((areaResult?.negative ?? 0) > 5) ? 'text-[#EF4444]' : 'text-[#6B5E57]'}`}>
-                {((areaResult?.negative ?? 0) > 5) ? 'HIGH AUDIT' : 'STABLE'}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </div>
-
-      {/* 🏆 WARD PERFORMANCE RANKINGS — Light Version */}
-      <div className="mcd-card border-[#3E2C23]/5 relative overflow-hidden bg-[#FAF5ED]/20 shadow-sm p-0 rounded-[40px]">
-        <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none text-[#3E2C23]">
-           <Landmark size={200} />
-        </div>
-        
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-0 gap-6 relative z-10 p-10 pb-6 border-b border-[#3E2C23]/5 bg-white/50">
-          <div>
-            <h2 className="text-2xl font-black uppercase tracking-tighter italic text-[#3E2C23]">WARD <span className="text-[#E76F2E]">INTEGRITY</span> RANKINGS</h2>
-            <p className="text-[9px] font-black text-[#6B5E57] uppercase tracking-[0.3em] mt-2 italic">Sentiment-Volume Delta Analysis across 250 Wards</p>
-          </div>
-          <Link to="/compare" className="px-6 py-3 bg-white hover:bg-[#FAF5ED] rounded-xl text-[9px] font-black text-[#E76F2E] uppercase tracking-widest flex items-center gap-2 transition-all border border-[#3E2C23]/10 shadow-sm">
-            Full Matrix Audit <ArrowRight size={14} />
+            Full Matrix Audit <ArrowRight size={12} />
           </Link>
         </div>
 
-        <div className="overflow-x-auto relative z-10">
-          <table className="w-full">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[700px]">
             <thead>
-              <tr className="text-left border-b border-[#3E2C23]/5 bg-[#FAF5ED]/30">
-                <th className="py-6 px-10 text-[9px] font-black text-[#6B5E57] uppercase tracking-[0.2em] italic">Rank</th>
-                <th className="py-6 px-10 text-[9px] font-black text-[#6B5E57] uppercase tracking-[0.2em] italic">Ward Intelligence Entity</th>
-                <th className="py-6 px-10 text-[9px] font-black text-[#6B5E57] uppercase tracking-[0.2em] italic">Integrity Score</th>
-                <th className="py-6 px-10 text-[9px] font-black text-[#6B5E57] uppercase tracking-[0.2em] italic">Audit Volume</th>
-                <th className="py-6 px-10 text-[9px] font-black text-[#6B5E57] uppercase tracking-[0.2em] italic">Risk Status</th>
+              <tr className="border-b border-[#1d2331] bg-[#0d1017] text-left">
+                <th className="px-4 py-3 text-[11px] uppercase tracking-[0.14em] text-slate-400">Rank</th>
+                <th className="px-4 py-3 text-[11px] uppercase tracking-[0.14em] text-slate-400">Ward / Zone</th>
+                <th className="px-4 py-3 text-[11px] uppercase tracking-[0.14em] text-slate-400">ID</th>
+                <th className="px-4 py-3 text-[11px] uppercase tracking-[0.14em] text-slate-400">Integrity</th>
+                <th className="px-4 py-3 text-[11px] uppercase tracking-[0.14em] text-slate-400">Volume</th>
+                <th className="px-4 py-3 text-[11px] uppercase tracking-[0.14em] text-slate-400">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 bg-white">
-              {wards.slice(0, 10).map((w, i) => (
-                <tr key={w.state_code} className="group hover:bg-[#FAF5ED]/80 transition-all cursor-pointer">
-                  <td className="py-6 px-10">
-                    <span className="text-lg font-black text-[#6B5E57]/60 group-hover:text-[#E76F2E]/40 transition-colors uppercase tracking-tight italic">#{String(i + 1).padStart(2, '0')}</span>
-                  </td>
-                  <td className="py-6 px-10">
-                    <div className="font-black text-[#3E2C23] text-sm uppercase tracking-tight group-hover:translate-x-1 transition-transform italic">{w.state}</div>
-                    <div className="text-[8px] font-black text-[#6B5E57] uppercase tracking-widest mt-1">MCD Zonal Intelligence Unit</div>
-                  </td>
-                  <td className="py-6 px-10">
-                    <div className={`text-sm font-black font-mono ${w.avg_sentiment > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+            <tbody>
+              {wards.length > 0 ? wards.slice(0, 8).map((w, i) => {
+                const led = sentimentLed(w.avg_sentiment);
+                return (
+                  <tr key={w.state_code} className="border-b border-[#151a25] hover:bg-[#121826]">
+                    <td className="px-4 py-3 font-mono text-sm font-bold text-slate-400">#{String(i + 1).padStart(2, '0')}</td>
+                    <td className="px-4 py-3 text-sm font-semibold uppercase tracking-[0.05em] text-slate-100">{w.state}</td>
+                    <td className="px-4 py-3 font-mono text-sm text-[#9cefff]">{w.state_code}</td>
+                    <td className={`px-4 py-3 font-mono text-sm font-black ${w.avg_sentiment > 0 ? 'text-[#22c55e]' : 'text-[#FF8C42]'}`}>
                       {w.avg_sentiment > 0 ? '+' : ''}{w.avg_sentiment.toFixed(3)}
-                    </div>
-                  </td>
-                  <td className="py-8 px-6">
-                    <div className="text-lg font-black text-[#6B5E57] font-mono">{formatNumber(w.volume)}</div>
-                  </td>
-                  <td className="py-8 px-6 text-right">
-                    <div className={`inline-flex px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${
-                      w.avg_sentiment < -0.1 ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 
-                      'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                    }`}>
-                      {w.avg_sentiment < -0.1 ? 'CRITICAL AUDIT' : 'HEALTHY SYNC'}
-                    </div>
+                    </td>
+                    <td className="px-4 py-3 font-mono text-sm font-bold text-slate-300">{formatNumber(w.volume)}</td>
+                    <td className="px-4 py-3">
+                      <div className="inline-flex items-center gap-2">
+                        <span
+                          className="h-2.5 w-2.5 rounded-full"
+                          style={{
+                            backgroundColor: led.color,
+                            boxShadow: `0 0 10px ${led.color}`,
+                          }}
+                        />
+                        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">{led.label}</span>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              }) : (
+                <tr>
+                  <td colSpan={6} className="px-4 py-8 text-center text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+                    No ward ranking data available right now
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
-      {/* 📰 REAL-TIME MCD NEWS FEED — DIRECT RSS SYNC — Light Version */}
-      <div className="bg-[#FAF5ED]/50 rounded-[40px] p-10 border border-[#3E2C23]/5 mcd-card shadow-sm">
-        <div className="flex items-center gap-4 mb-10">
-          <div className="w-10 h-10 rounded-xl bg-[#E76F2E]/10 flex items-center justify-center text-[#E76F2E] border border-[#E76F2E]/20 italic">
-            <TrendingUp size={20} />
+      <section className="relative z-10 rounded-2xl border border-[#1a1f2b] bg-[#0f1219]/95 p-4 md:p-5">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#FF8C42]/30 bg-[#FF8C42]/10 text-[#FF8C42]">
+            <TrendingUp size={16} />
           </div>
-          <h2 className="text-2xl font-black uppercase tracking-tight text-[#3E2C23] italic">Real-Time MCD <span className="text-[#E76F2E]">Intelligence</span> Feed</h2>
-          <div className="ml-auto flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
-            <span className="text-[10px] font-black text-[#6B5E57] uppercase tracking-widest italic">RSS Stream Active</span>
+          <h2 className="text-lg font-black uppercase tracking-tight text-slate-100 md:text-xl">
+            Real-Time MCD Intelligence Feed
+          </h2>
+          <div className="ml-auto inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[#9cefff]">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-[#00E5FF] shadow-[0_0_8px_rgba(0,229,255,0.75)]" /> RSS active
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
           {mcdNews.slice(0, 6).map((n, i) => (
             <motion.div
               key={i}
-              whileHover={{ y: -5 }}
-              className="bg-white rounded-[32px] p-8 border border-[#3E2C23]/5 hover:border-[#E76F2E]/20 transition-all shadow-sm hover:shadow-xl flex flex-col h-full italic"
+              whileHover={{ y: -3 }}
+              className="flex h-full flex-col rounded-xl border border-[#1d2331] bg-[#111622] p-4"
             >
-              <div className="text-[10px] font-black text-[#E76F2E] uppercase tracking-widest mb-4 flex items-center gap-2">
-                <ShieldHalf size={12} /> {n.source}
-              </div>
-              <h4 className="text-[#3E2C23] font-black text-lg leading-tight mb-4 group-hover:text-[#E76F2E] transition-all">
-                {n.title}
-              </h4>
-              <p className="text-[#6B5E57] text-xs leading-relaxed line-clamp-3 mb-6 font-medium">
-                {n.summary}
-              </p>
-              <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
-                <span className="text-[9px] font-bold text-[#6B5E57] uppercase tracking-widest">{n.published || 'Just now'}</span>
-                <a href={n.link} target="_blank" rel="noreferrer" className="text-[9px] font-black text-[#3E2C23] hover:text-[#E76F2E] uppercase transition-all flex items-center gap-1 italic">
-                  Read Audit <ArrowRight size={10} />
+              <div className="mb-3 text-[10px] font-bold uppercase tracking-[0.13em] text-[#FF8C42]">{n.source}</div>
+              <h4 className="mb-3 text-sm font-bold leading-tight text-slate-100">{n.title}</h4>
+              <p className="mb-4 line-clamp-3 text-xs leading-relaxed text-slate-400">{n.summary}</p>
+              <div className="mt-auto flex items-center justify-between border-t border-[#1d2331] pt-3">
+                <span className="font-mono text-[11px] text-slate-500">{n.published || 'Just now'}</span>
+                <a
+                  href={n.link || '#'}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.1em] text-[#9cefff]"
+                >
+                  Read <ArrowRight size={11} />
                 </a>
               </div>
             </motion.div>
           ))}
           {mcdNews.length === 0 && (
-            <div className="col-span-full py-20 text-center border-2 border-dashed border-[#3E2C23]/10 rounded-3xl">
-              <p className="text-[#6B5E57] font-black uppercase tracking-widest italic">Integrating Live MCD News Sources…</p>
+            <div className="col-span-full rounded-xl border border-dashed border-[#1d2331] bg-[#111622] py-12 text-center">
+              <Activity size={42} className="mx-auto mb-3 text-slate-600" />
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Awaiting Live Source Events</p>
             </div>
           )}
         </div>
-      </div>
+      </section>
 
-      {/* 🏷️ TOPIC MAP & TRENDS */}
-      <div className="grid md:grid-cols-2 gap-10">
-        <div className="mcd-card border-[#3E2C23]/5 bg-white shadow-sm">
-          <h2 className="text-2xl font-black uppercase tracking-tighter mb-10 italic text-[#3E2C23]">Crisis Intensity <span className="text-[#E76F2E]">Areas</span></h2>
-          <div className="grid grid-cols-2 gap-6">
-            {trending.slice(0, 6).map((t) => (
+      <section className="relative z-10 grid grid-cols-1 gap-4 xl:grid-cols-5">
+        <div className="rounded-2xl border border-[#1a1f2b] bg-[#0f1219]/95 p-4 xl:col-span-3">
+          <h2 className="mb-4 text-lg font-black uppercase tracking-tight text-slate-100 md:text-xl">
+            Crisis Intensity Areas
+          </h2>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {trending.length > 0 ? trending.slice(0, 6).map((t) => (
               <TopicCard
                 key={t.topic}
                 topic={t.topic}
@@ -326,17 +462,29 @@ export default function PublicDashboard() {
                 sentiment={t.sentiment_trend > 0 ? 'positive' : t.sentiment_trend < 0 ? 'negative' : 'neutral'}
                 onClick={() => {}}
               />
-            ))}
+            )) : (
+              <div className="col-span-2 py-10 text-center text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+                Loading trending topics
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="mcd-card border-[#3E2C23]/5 bg-white shadow-sm flex flex-col">
-          <h2 className="text-2xl font-black uppercase tracking-tighter mb-10 italic text-[#3E2C23]">Discourse <span className="text-[#E76F2E]">Keywords</span></h2>
-          <div className="flex-1 min-h-[300px]">
-             <KeywordCloud keywords={keywords} />
+        <div className="rounded-2xl border border-[#1a1f2b] bg-[#0f1219]/95 p-4 xl:col-span-2">
+          <h2 className="mb-4 text-lg font-black uppercase tracking-tight text-slate-100 md:text-xl">
+            Discourse Keywords
+          </h2>
+          <div className="min-h-[240px]">
+            {keywords.length > 0 ? (
+              <KeywordCloud keywords={keywords} />
+            ) : (
+              <div className="flex h-full items-center justify-center text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+                Loading keywords
+              </div>
+            )}
           </div>
         </div>
-      </div>
+      </section>
     </motion.div>
   );
 }

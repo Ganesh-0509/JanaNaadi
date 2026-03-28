@@ -15,6 +15,27 @@ logger = logging.getLogger("jananaadi.domain_ingester")
 
 class DomainIngester:
     """Fetch RSS feeds for specific intelligence domains."""
+
+    DELHI_WARD_KEYWORDS = {
+        "karol bagh": 83,
+        "paharganj": 82,
+        "chandni chowk": 74,
+        "rohini": 52,
+        "dwarka": 226,
+        "saket": 149,
+        "lajpat nagar": 176,
+        "kalkaji": 174,
+        "okhla": 187,
+        "connaught place": 145,
+        "cp": 145,
+        "shahdara": 218,
+        "mustafabad": 236,
+        "wazirpur": 66,
+        "shalimar bagh": 55,
+        "malviya nagar": 149,
+        "govindpuri": 185,
+        "anand vihar": 228,
+    }
     
     def __init__(self):
         config_path = Path(__file__).parent.parent.parent / "config" / "domain_feeds.json"
@@ -35,7 +56,7 @@ class DomainIngester:
         """Fetch entries for a specific domain.
         
         Args:
-            domain: One of: defense, climate, technology, economics, geopolitics
+            domain: One of: defense, climate, technology, economics, geopolitics, society, delhi
             max_items: Maximum items per feed
             
         Returns:
@@ -76,6 +97,20 @@ class DomainIngester:
         logger.info(f"Fetched {len(all_entries)} entries for domain: {domain}")
         return all_entries
     
+    def _extract_delhi_ward(self, text: str) -> dict:
+        """Extract Delhi ward/constituency hints from article text."""
+        text_lower = text.lower()
+        for keyword, ward_id in self.DELHI_WARD_KEYWORDS.items():
+            if keyword in text_lower:
+                return {
+                    "location_hint": "delhi",
+                    "state_id": 1,
+                    "ward_id": ward_id,
+                }
+        if "delhi" in text_lower:
+            return {"location_hint": "delhi", "state_id": 1}
+        return {}
+
     def _fetch_single_feed(self, url: str, domain: str, max_items: int) -> list[dict]:
         """Synchronous RSS feed fetch (runs in executor)."""
         try:
@@ -104,6 +139,11 @@ class DomainIngester:
                     if state in text_lower:
                         location_hint = state
                         break
+
+                if domain == "delhi":
+                    delhi_hint = self._extract_delhi_ward(text)
+                    if delhi_hint:
+                        location_hint = delhi_hint
                 
                 entries.append({
                     "text": text,
@@ -124,7 +164,7 @@ class DomainIngester:
         Returns:
             Dict mapping domain name to list of entries
         """
-        domains = ["defense", "climate", "technology", "economics", "geopolitics"]
+        domains = ["defense", "climate", "technology", "economics", "geopolitics", "society", "delhi"]
         
         tasks = [
             self.fetch_domain(domain, max_items_per_feed)
